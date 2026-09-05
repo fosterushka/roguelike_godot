@@ -1,0 +1,17 @@
+import { pathToFileURL } from 'node:url';
+import { writeFileSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import path from 'node:path';
+const source=process.argv[2];
+const load=relative=>import(pathToFileURL(path.join(source,relative)).href);
+const {generateWorldLayout}=await load('src/shared/world-layout.ts');
+const {createWorldCollisionManifest}=await load('src/shared/world-collision-manifest.ts');
+const {createRockObstacleField,steerAroundRockObstacles}=await load('src/client/contexts/world/rock-obstacles.ts');
+const {createRoadRibbonData}=await load('src/client/infrastructure/three/road-network.ts');
+const seeds=[0,72841,991827,4294967295];
+const fixtures=seeds.map(seed=>({seed,layout:generateWorldLayout(seed),roads:generateWorldLayout(seed).roads.map(road=>createRoadRibbonData(road.points,road.width)),collision:createWorldCollisionManifest(seed)}));
+const rocks=[{id:'rock:a',x:0,z:5,radius:2},{id:'rock:b',x:5,z:8,radius:3}];
+const steering=[{position:{x:0,z:0},desired:{x:0,z:1},radius:.7,speed:6},{position:{x:2,z:0},desired:{x:0,z:1},radius:1.2,speed:3},{position:{x:-20,z:0},desired:{x:1,z:0},radius:.7,speed:2}].map(input=>({...input,result:steerAroundRockObstacles(input.position,input.desired.x,input.desired.z,input.radius,Math.max(5,input.radius*2.5+Math.abs(input.speed)*1.2),createRockObstacleField(rocks))}));
+const provenance=['src/shared/world-layout.ts','src/shared/world-collision-manifest.ts','src/client/contexts/world/rock-obstacles.ts'].map(file=>({file,sha256:createHash('sha256').update(readFileSync(path.join(source,file))).digest('hex')}));
+writeFileSync('tests/fixtures/world_generation.json',JSON.stringify({provenance,fixtures,rocks,steering}));
+console.log('World fixtures exported for '+seeds.join(', '));

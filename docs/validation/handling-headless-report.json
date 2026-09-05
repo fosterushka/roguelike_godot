@@ -1,0 +1,270 @@
+{
+  "mode": "headless automated; no GPU rendering, listening or balance-playthrough claim",
+  "project": "/private/tmp/iron-godot-finish-9siuihzq",
+  "results": [
+    {
+      "test": "vehicle_motion_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.14
+    },
+    {
+      "test": "offline_session_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.74
+    },
+    {
+      "test": "combat_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.15
+    },
+    {
+      "test": "advanced_combat_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.15
+    },
+    {
+      "test": "enemy_ai_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.15
+    },
+    {
+      "test": "progression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.14
+    },
+    {
+      "test": "world_generation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44
+    },
+    {
+      "test": "natural_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "authored_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.07
+    },
+    {
+      "test": "world_builder_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 6.25
+    },
+    {
+      "test": "world_gameplay_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.22
+    },
+    {
+      "test": "world_activities_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.22
+    },
+    {
+      "test": "ambient_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.22
+    },
+    {
+      "test": "world_rebuild_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.98
+    },
+    {
+      "test": "world_result_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 12.45
+    },
+    {
+      "test": "presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 7.24
+    },
+    {
+      "test": "visual_smoke.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.32
+    },
+    {
+      "test": "ui_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 12.72
+    },
+    {
+      "test": "integration_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 12.73
+    },
+    {
+      "test": "composed_world_seed_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 24.2
+    },
+    {
+      "test": "full_run_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.28
+    },
+    {
+      "test": "combat_soak_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 4.05
+    },
+    {
+      "test": "combat_presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.54
+    },
+    {
+      "test": "source_fx_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "world_presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.14
+    },
+    {
+      "test": "run_clock_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.15
+    },
+    {
+      "test": "session_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 12.3
+    },
+    {
+      "test": "presentation_details_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "loading_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.18
+    },
+    {
+      "test": "minimap_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24
+    },
+    {
+      "test": "ui_menu_regression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "ui_language_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 7.43
+    },
+    {
+      "test": "hud_layout_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "ground_effect_depth_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24
+    },
+    {
+      "test": "countdown_ui_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.15
+    },
+    {
+      "test": "reward_radar_mount_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.18
+    },
+    {
+      "test": "armory_tiles_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 7.48
+    },
+    {
+      "test": "ground_surface_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "wheel_vehicle_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.83
+    },
+    {
+      "test": "radar_progression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24
+    },
+    {
+      "test": "radar_armory_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 7.4
+    },
+    {
+      "test": "vehicle_response_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24
+    },
+    {
+      "test": "vehicle_render_runtime_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 4.2
+    },
+    {
+      "test": "tire_trails_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    }
+  ]
+}

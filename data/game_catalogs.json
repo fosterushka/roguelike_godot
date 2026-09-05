@@ -1,0 +1,2581 @@
+{
+  "_meta": {
+    "schemaVersion": 1,
+    "scope": "singleplayer-offline",
+    "origin": "original TypeScript exports evaluated through esbuild; no tuning invented",
+    "sources": {
+      "catalog": {
+        "path": "src/client/contexts/caravan/catalog.ts",
+        "sha256": "6737b35c986a318b120cd85add9a0a8cb9632f4f404f2b86817a1b8755a994b4"
+      },
+      "carriers": {
+        "path": "src/client/contexts/caravan/carrier-catalog.ts",
+        "sha256": "8b08128a4c84105ab4d38ac97ba9df8f8b816a57929eac8c76e1e85e9d7ec8d1"
+      },
+      "coreUpgrades": {
+        "path": "src/client/contexts/caravan/vehicle-upgrades.ts",
+        "sha256": "c9ba37ddd89bbec93f0a7d6021a05c30651e4dff72a24a07dc9c81f9f7e455e8"
+      },
+      "buildRules": {
+        "path": "src/client/contexts/caravan/build-rules.ts",
+        "sha256": "7f6f70537db4e62c17bcd8e919821d66d9228e815949e4c5816bfbde38915b6d"
+      },
+      "roadFury": {
+        "path": "src/client/contexts/caravan/road-fury.ts",
+        "sha256": "3e8c664d06283c10a98938563aa7275f025e00273fdf51b0b3adcfd4a629c5eb"
+      },
+      "contracts": {
+        "path": "src/client/contexts/progression/contracts.ts",
+        "sha256": "dd3344e9f21366c76a3a82529ab710b2bae0ad48108361430edb3c4bd247bc30"
+      },
+      "sidegrades": {
+        "path": "src/client/contexts/progression/sidegrades.ts",
+        "sha256": "9e94bee8bb59f83176366915b454e2c02473351391880d2ee1895c9cb4bfa3c4"
+      },
+      "spawning": {
+        "path": "src/client/contexts/combat/spawning.ts",
+        "sha256": "2967eda50df4ce5cf1ca294bec1e968f18e1623c2efac03a487e32df99d73b48"
+      },
+      "director": {
+        "path": "src/client/contexts/combat/director.ts",
+        "sha256": "5cb482ac89d66c516b37491191794b9d6f55c7b66e14625abe60ccffdadc8fc3"
+      },
+      "priorityVehicles": {
+        "path": "src/client/contexts/combat/priority-vehicles.ts",
+        "sha256": "689e147e54ad937bac8f8ca7f32b6b93611b6e6026295bbb0df0642232bae642"
+      },
+      "garrison": {
+        "path": "src/client/contexts/combat/garrison-tuning.ts",
+        "sha256": "5cd82174a9a0c42bbcfdb0baa21d56861e600f0c5a081a55c60066c1f3656a81"
+      },
+      "leviathan": {
+        "path": "src/client/contexts/combat/leviathan.ts",
+        "sha256": "533944bb70b20263bf101eb89b917224d67014bdd4a2c283bc6ef0b42b007cdb"
+      },
+      "counterDroneJammer": {
+        "path": "src/client/contexts/combat/counter-drone-jammer.ts",
+        "sha256": "745770cabdb8da3db6ec362c8b870ff9329fa195d6a7a3930d78419bc7bc304f"
+      },
+      "jammerRocket": {
+        "path": "src/client/contexts/combat/jammer-rocket.ts",
+        "sha256": "7b3ea1c96baf353d4b43c8fcd4a417e0c3d306e08d17f8b7f832a7e86cd2e921"
+      },
+      "mineHacking": {
+        "path": "src/client/contexts/combat/mine-hacking.ts",
+        "sha256": "15044e436cba11033f3c1abe363d52ce6dfbbeaa390bc8cd5b0820934a6608da"
+      },
+      "hazards": {
+        "path": "src/client/contexts/combat/hazards.ts",
+        "sha256": "7ca584056dde6c03453af42f8e1b633b62c81c7c3435bac782ff9f05c1ba188c"
+      },
+      "tornado": {
+        "path": "src/client/contexts/combat/tornado.ts",
+        "sha256": "5fd70575a7ca198563ff33679f3d38c1449c346d7854bd7067f2537dcfe8f3d9"
+      },
+      "combatSynergies": {
+        "path": "src/client/contexts/combat/combat-synergies.ts",
+        "sha256": "513b10ee7fd34c1d7df1c3401e604cf6089c2b06e5bfc48c96a42cc1548db300"
+      },
+      "encounterEffects": {
+        "path": "src/client/contexts/combat/encounter-effects.ts",
+        "sha256": "84cc27c926fc35595a8bfdda7fefd71b9ac84c3b1a6339ea01edb59ffe5fc9aa"
+      },
+      "spawnTelegraphs": {
+        "path": "src/client/contexts/combat/spawn-telegraphs.ts",
+        "sha256": "17b41ce1350c90fde8b9fb889230014a6afa1d8878ebcb384a305b6d86edb18a"
+      },
+      "worldActivities": {
+        "path": "src/client/contexts/world/world-activity.ts",
+        "sha256": "b6465da2bd65bbd2bcf9e9f2b3fb38caaf3968f9ed1ca43a5e90ea01396c6090"
+      },
+      "extraction": {
+        "path": "src/client/contexts/world/extraction.ts",
+        "sha256": "1812956013ab2597308d31fb0731efbd4e2aa39039366557ee05ce733b38b999"
+      },
+      "weather": {
+        "path": "src/shared/gameplay-weather.ts",
+        "sha256": "1df04cbd44c6bc76be7b0510e19d722baa2bc386f420354b3b706a1688c493b3"
+      },
+      "waves": {
+        "path": "src/shared/wave-progression.ts",
+        "sha256": "44df1e93dee70c4f490178719db4d7b016e029ada2488db2a8f9cc4b5d9aef33"
+      },
+      "worldBoundary": {
+        "path": "src/shared/world-boundary.ts",
+        "sha256": "78ac5b60538f219e88b79d256aeb50836037be00033292371229136b8344b6cf"
+      },
+      "worldLayout": {
+        "path": "src/shared/world-layout.ts",
+        "sha256": "9e44fa4b7c9a4411466a3873414f3b5a29f8a102fe0e500d7142b35a187e67a9"
+      },
+      "worldCollision": {
+        "path": "src/shared/world-collision-manifest.ts",
+        "sha256": "5e8ce317bcbab5b2d8cb482e09d56b0f5505642ac674718d8727ae67a1b0bdf0"
+      },
+      "config": {
+        "path": "src/client/core/config.ts",
+        "sha256": "4d0b4aee9cac952e6412b001728825be023ebf46bd8718fd4fb5a7001064e730"
+      }
+    },
+    "omittedFunctions": [
+      "catalog.canApplyExpandedWeaponRack",
+      "catalog.expandedWeaponRackRequiredLevel",
+      "catalog.upgradeDefinitions[0].apply",
+      "catalog.upgradeDefinitions[1].apply",
+      "catalog.upgradeDefinitions[2].apply",
+      "catalog.upgradeDefinitions[3].apply",
+      "catalog.upgradeDefinitions[4].apply",
+      "catalog.upgradeDefinitions[5].apply",
+      "catalog.upgradeDefinitions[6].apply",
+      "catalog.upgradeDefinitions[7].apply",
+      "catalog.upgradeDefinitions[8].apply",
+      "catalog.upgradeDefinitions[9].apply",
+      "catalog.upgradeDefinitions[10].apply",
+      "catalog.upgradeDefinitions[11].apply",
+      "catalog.upgradeDefinitions[12].apply",
+      "catalog.upgradeDefinitions[13].apply",
+      "catalog.upgradeDefinitions[14].apply",
+      "catalog.upgradeDefinitions[15].apply",
+      "catalog.upgradeDefinitions[16].available",
+      "catalog.upgradeDefinitions[16].apply",
+      "carriers.walkerTrailerId",
+      "carriers.walkerTrailerRequiredLevel",
+      "coreUpgrades.applyVehicleUpgrade",
+      "coreUpgrades.baseVehicleMaxSpeed",
+      "coreUpgrades.consumeVehicleFuel",
+      "coreUpgrades.formatUpgradeResult",
+      "coreUpgrades.formatUpgradeValue",
+      "coreUpgrades.fuelSpeedMultiplier",
+      "coreUpgrades.previewVehicleUpgrade",
+      "coreUpgrades.previewWeaponUpgrade",
+      "coreUpgrades.refuelFromNearbyLandmark",
+      "coreUpgrades.refuelVehicle",
+      "coreUpgrades.vehicleDriveAcceleration",
+      "coreUpgrades.vehicleMaxSpeed",
+      "buildRules.availableProtocolChoices",
+      "buildRules.deriveActiveSynergies",
+      "buildRules.hasModuleFamily",
+      "buildRules.moduleFamilies",
+      "buildRules.protocolAvailableInContext",
+      "buildRules.protocolPrerequisitesMet",
+      "buildRules.protocolPresentationModel",
+      "roadFury.accumulateDriftDistance",
+      "roadFury.advanceRoadFuryDrift",
+      "roadFury.clampMomentum",
+      "roadFury.comboMultiplier",
+      "roadFury.consumeDriftEvents",
+      "roadFury.createRoadFuryState",
+      "roadFury.isDriftEligible",
+      "roadFury.recordRoadFuryEvent",
+      "roadFury.updateRoadFury",
+      "contracts.contractProgressForEvent",
+      "contracts.isKnownContractId",
+      "contracts.selectContractIds",
+      "sidegrades.advanceSidegradeStatus",
+      "sidegrades.availableSidegrades",
+      "sidegrades.effectiveSidegradeEnemySpeed",
+      "sidegrades.isKnownSidegradeId",
+      "sidegrades.normalizeSidegradeSelection",
+      "sidegrades.pveWeaponTuning",
+      "sidegrades.sidegradeAppliesToTarget",
+      "spawning.createCombatSpawning",
+      "spawning.getInfantryKindsForWave",
+      "spawning.getWaveComposition",
+      "spawning.isWithinSpawnBounds",
+      "spawning.normalizeDroneKind",
+      "director.activeDirectorPressure",
+      "director.activeMobileHostileCount",
+      "director.advanceDirectorModel",
+      "director.cancelPendingDirectorEvent",
+      "director.chooseWeightedDirectorEvent",
+      "director.committedDirectorPressure",
+      "director.createCombatDirector",
+      "director.createDirectorModel",
+      "director.directorMercyScale",
+      "director.directorPhaseDuration",
+      "director.directorPlacementDue",
+      "director.directorPressureBudget",
+      "director.eligibleDirectorEvents",
+      "director.getWaveUnlockGuidance",
+      "director.hardDirectorPressureLimit",
+      "director.livingFoundryPressureCapacity",
+      "director.mandatoryBossPressureReserve",
+      "director.ordinaryDirectorPressureBudget",
+      "director.ordinaryMobileHostileLimit",
+      "director.reservedBossSlots",
+      "director.resetDirectorModel",
+      "director.resolveDirectorPlacement",
+      "priorityVehicles.boundedRepairAmount",
+      "priorityVehicles.healRepairTarget",
+      "priorityVehicles.isPriorityVehicleKind",
+      "priorityVehicles.isValidRepairTarget",
+      "priorityVehicles.priorityVehicleCounts",
+      "priorityVehicles.priorityVehicleDefinition",
+      "priorityVehicles.selectRepairTarget",
+      "garrison.garrisonAimHeight",
+      "garrison.garrisonCollapseRadius",
+      "garrison.garrisonDamageSmokeHeight",
+      "garrison.garrisonGateOffset",
+      "garrison.garrisonHealthBarHeight",
+      "garrison.garrisonHealthBarWidth",
+      "garrison.garrisonModelScale",
+      "garrison.garrisonRadius",
+      "garrison.normalizeGarrisonTier",
+      "leviathan.createLeviathanSystem",
+      "leviathan.leviathanHudState",
+      "leviathan.leviathanMovementMultiplier",
+      "counterDroneJammer.counterDroneJammerEffect",
+      "counterDroneJammer.hasCounterDroneJammer",
+      "counterDroneJammer.isDroneInsideCounterJammer",
+      "counterDroneJammer.resolveCounterDroneJammerOrigin",
+      "jammerRocket.createJammerRocketProfile",
+      "jammerRocket.deflectJammerRocketTarget",
+      "jammerRocket.jammerRocketDetonationDue",
+      "jammerRocket.replicatedJammerRocketSeed",
+      "jammerRocket.sampleJammerRocket",
+      "mineHacking.advanceMineHackProgress",
+      "mineHacking.horizontalDistanceSquared",
+      "mineHacking.isInsideMineHackRadius",
+      "mineHacking.isInsideMineTriggerRadius",
+      "mineHacking.isLivingMineTarget",
+      "mineHacking.isMineHackable",
+      "hazards.createHazardSystem",
+      "hazards.movementSegmentCrossesMine",
+      "hazards.pointToSegmentDistanceSquared",
+      "tornado.advanceTornadoFade",
+      "tornado.createTornadoState",
+      "tornado.createTornadoSystem",
+      "tornado.isTornadoVulnerableNpc",
+      "tornado.sampleTornadoInfluence",
+      "tornado.tornadoPhaseSample",
+      "tornado.tornadoPositionForPhase",
+      "combatSynergies.addSuppression",
+      "combatSynergies.advancePveStatus",
+      "combatSynergies.applyBreach",
+      "combatSynergies.applyRelayMark",
+      "combatSynergies.buildSynergyHudModel",
+      "combatSynergies.canBreachTarget",
+      "combatSynergies.chargeSalvage",
+      "combatSynergies.clearPveStatuses",
+      "combatSynergies.consumeBreach",
+      "combatSynergies.consumeCombinedFeedOpportunity",
+      "combatSynergies.consumeRelayMark",
+      "combatSynergies.consumeSuppression",
+      "combatSynergies.createBuildSynergyState",
+      "combatSynergies.createCombatSynergies",
+      "combatSynergies.createPveStatusState",
+      "combatSynergies.isLocalPveTarget",
+      "combatSynergies.recordAlternatingFamily",
+      "combatSynergies.resetBuildSynergyState",
+      "combatSynergies.triggerSalvagePulse",
+      "encounterEffects.applyEncounterRangeMultiplier",
+      "encounterEffects.createEncounterEffects",
+      "encounterEffects.deriveJammerState",
+      "encounterEffects.effectiveEnemySpeed",
+      "encounterEffects.enemyCadenceDelta",
+      "encounterEffects.enemyEncounterTuning",
+      "encounterEffects.isInsideFoundrySector",
+      "encounterEffects.playerInsideJammerField",
+      "encounterEffects.strongestFoundrySectorEffect",
+      "encounterEffects.syncEncounterFieldVisual",
+      "spawnTelegraphs.createSpawnTelegraphSystem",
+      "spawnTelegraphs.spawnTelegraphDuration",
+      "spawnTelegraphs.spawnTelegraphPhaseReservation",
+      "worldActivities.activeActivityCount",
+      "worldActivities.activityHudModel",
+      "worldActivities.canReserveActivitySlot",
+      "worldActivities.convoyParticipantTravel",
+      "worldActivities.createWorldActivityState",
+      "worldActivities.createWorldActivitySystem",
+      "worldActivities.currentWorldActivity",
+      "worldActivities.deriveWorldActivitySeed",
+      "worldActivities.isActivityPlacementSafe",
+      "worldActivities.isActivityPositionClear",
+      "worldActivities.isDistressDeploymentPositionClear",
+      "worldActivities.isMajorActivity",
+      "worldActivities.isVillageActivityEligible",
+      "worldActivities.liveWorldActivities",
+      "worldActivities.routeLength",
+      "worldActivities.sampleRoutePosition",
+      "worldActivities.updateAmbientFigureBehavior",
+      "extraction.createExtractionState",
+      "extraction.extractionProgressStep",
+      "extraction.nearestExtractionSite",
+      "weather.canWetGroundNpc",
+      "weather.createWeatherScheduleCursor",
+      "weather.gameplayWeatherRule",
+      "weather.isPhaseSafeConductiveTarget",
+      "weather.isWetAt",
+      "weather.lightningImpactTargets",
+      "weather.lightningTarget",
+      "weather.localPveAcquisitionRange",
+      "weather.mudMovementEffectAt",
+      "weather.nearestStormConductorTarget",
+      "weather.nextWeatherPhase",
+      "weather.normalizeWeatherEpoch",
+      "weather.npcAcquisitionRange",
+      "weather.resolveWeatherScheduleCursor",
+      "weather.stormConductorChainDamage",
+      "weather.weatherAllowsMud",
+      "weather.weatherIsWet",
+      "weather.weatherLightningSample",
+      "weather.weatherPhaseAt",
+      "weather.weatherPhaseDurationMs",
+      "waves.normalizeWave",
+      "waves.waveAreaFraction",
+      "waves.waveComposition",
+      "waves.waveEnemyCount",
+      "waves.waveMinimumClearSeconds",
+      "waves.waveRadius",
+      "worldBoundary.advanceWorldBoundaryTimer",
+      "worldLayout.WorldLayoutRandom",
+      "worldLayout.generateWorldLayout",
+      "worldCollision.createRockFormationCollisionSegments",
+      "worldCollision.createWorldCollisionManifest",
+      "worldCollision.runtimeWorldPropId"
+    ],
+    "warning": "Data equality does not imply Godot behavior or visual parity. Function effects must be ported and tested."
+  },
+  "modules": {
+    "assaultRifle": {
+      "name": "M4 Turret",
+      "icon": "M4",
+      "weight": 2,
+      "desc": "Accurate automatic rifle fire for infantry and light vehicles.",
+      "range": 32,
+      "cooldown": 0.3,
+      "damage": 9,
+      "projectile": "bullet",
+      "maxLevel": 6
+    },
+    "akTurret": {
+      "name": "AK Battle Station",
+      "icon": "AK",
+      "weight": 3,
+      "desc": "Hard-hitting automatic fire with a fast cyclic rate.",
+      "range": 30,
+      "cooldown": 0.22,
+      "damage": 10,
+      "projectile": "bullet",
+      "maxLevel": 6
+    },
+    "bazooka": {
+      "name": "Bazooka Pod",
+      "icon": "RPG",
+      "weight": 5,
+      "desc": "Direct-fire anti-armor rockets with heavy splash damage.",
+      "range": 50,
+      "cooldown": 2.35,
+      "damage": 52,
+      "projectile": "rocket",
+      "maxLevel": 5
+    },
+    "grenadeLauncher": {
+      "name": "Grenade Launcher",
+      "icon": "GL",
+      "weight": 5,
+      "desc": "Arcing grenades clear dense infantry groups.",
+      "range": 44,
+      "cooldown": 2.1,
+      "damage": 44,
+      "projectile": "grenade",
+      "maxLevel": 5
+    },
+    "minigun": {
+      "name": "M134 Minigun",
+      "icon": "MG",
+      "weight": 4,
+      "desc": "Extreme sustained fire for drones, bikes, and infantry.",
+      "range": 29,
+      "cooldown": 0.12,
+      "damage": 6,
+      "projectile": "bullet",
+      "maxLevel": 6
+    },
+    "railgun": {
+      "name": "Coil Railgun",
+      "icon": "RG",
+      "weight": 7,
+      "desc": "Long-range electromagnetic sabot with massive single-target damage.",
+      "range": 66,
+      "cooldown": 3.15,
+      "damage": 76,
+      "projectile": "sabot",
+      "maxLevel": 5
+    },
+    "missileRack": {
+      "name": "Guided Missile Rack",
+      "icon": "MSL",
+      "weight": 6,
+      "desc": "Guided rockets for armored vehicles and heavy drones.",
+      "range": 56,
+      "cooldown": 2.65,
+      "damage": 60,
+      "projectile": "rocket",
+      "maxLevel": 5
+    },
+    "workshop": {
+      "name": "Field Repair Bay",
+      "icon": "FIX",
+      "weight": 3,
+      "desc": "Patches hull integrity every four seconds.",
+      "passive": "repair"
+    },
+    "armor": {
+      "name": "Composite Armor",
+      "icon": "ARM",
+      "weight": 5,
+      "desc": "+55 maximum integrity and stronger collision resistance.",
+      "passive": "armor"
+    },
+    "treasury": {
+      "name": "Logistics Locker",
+      "icon": "SUP",
+      "weight": 3,
+      "desc": "+15% value from every collected salvage part.",
+      "passive": "treasury"
+    },
+    "bumper": {
+      "name": "Assault Ram",
+      "icon": "RAM",
+      "weight": 5,
+      "desc": "Shoves hostile armored vehicles and amplifies impact damage.",
+      "passive": "bumper",
+      "unique": true
+    },
+    "radar": {
+      "name": "Radar Array",
+      "icon": "◉",
+      "weight": 2,
+      "cost": 55,
+      "range": 40,
+      "desc": "Detects nearby enemies. Upgrade coverage: 40 / 90 / 160 / 260 m.",
+      "passive": "radar",
+      "unique": true,
+      "purchasable": true,
+      "maxRange": 260,
+      "maxLevel": 4
+    },
+    "counterDroneJammer": {
+      "name": "Counter-Drone Jammer",
+      "icon": "CDJ",
+      "weight": 3,
+      "cost": 68,
+      "range": 32,
+      "desc": "Within 32m, enemy drones move and fire at 55% rate; kamikaze drones cannot detonate.",
+      "passive": "counterDroneJammer",
+      "unique": true,
+      "purchasable": true
+    }
+  },
+  "moduleSlots": [
+    [
+      -2.7,
+      2.9,
+      -2.2
+    ],
+    [
+      2.7,
+      2.9,
+      -2.2
+    ],
+    [
+      -3.2,
+      2.3,
+      0.2
+    ],
+    [
+      3.2,
+      2.3,
+      0.2
+    ],
+    [
+      -2.5,
+      2.4,
+      2.4
+    ],
+    [
+      2.5,
+      2.4,
+      2.4
+    ],
+    [
+      0,
+      4.8,
+      -0.4
+    ],
+    [
+      0,
+      2.3,
+      3.3
+    ],
+    [
+      -4,
+      2.5,
+      -1.4
+    ],
+    [
+      4,
+      2.5,
+      -1.4
+    ],
+    [
+      -3.8,
+      2.6,
+      1.8
+    ],
+    [
+      3.8,
+      2.6,
+      1.8
+    ]
+  ],
+  "levelUpgrades": [
+    {
+      "icon": "🛞",
+      "title": "High-Flow Turbo",
+      "desc": "Top speed and acceleration increase by 14%.",
+      "category": "mobility"
+    },
+    {
+      "icon": "⚙",
+      "title": "Racing Transmission",
+      "desc": "Top speed and acceleration increase by 10%.",
+      "category": "mobility"
+    },
+    {
+      "icon": "⏱",
+      "title": "Nitro Calibration",
+      "desc": "Gain 8% speed and recover nitro 18% faster.",
+      "category": "mobility"
+    },
+    {
+      "icon": "❤️",
+      "title": "Reinforced Core",
+      "desc": "+70 maximum integrity and restore 70 integrity."
+    },
+    {
+      "icon": "🧲",
+      "title": "Salvage Chains",
+      "desc": "Pickup radius grows by 42%."
+    },
+    {
+      "icon": "🔧",
+      "title": "Combat Engineer",
+      "desc": "Manual repairs restore 18 more integrity."
+    },
+    {
+      "icon": "🧱",
+      "title": "Layered Plating",
+      "desc": "Reduce incoming damage by 8%."
+    },
+    {
+      "icon": "🪙",
+      "title": "Salvage Rush",
+      "desc": "Gain 55 coins and increase future coin value by 10%."
+    },
+    {
+      "icon": "⛏",
+      "title": "Plow Momentum",
+      "desc": "Ram cooldown is reduced by 28%, while Road Fury combo grace lasts longer and momentum decays slower."
+    },
+    {
+      "icon": "🎖",
+      "title": "Fire Control Officer",
+      "desc": "Every weapon gains 12% range and 12% damage.",
+      "rare": true
+    },
+    {
+      "icon": "⚡",
+      "title": "Overdrive Feed",
+      "desc": "Moving above half speed grants 16% faster firing.",
+      "rare": true
+    },
+    {
+      "icon": "🎯",
+      "title": "Targeting Computer",
+      "desc": "All equipped weapons gain 18% targeting range."
+    },
+    {
+      "icon": "♨",
+      "title": "Emergency Nanoweld",
+      "desc": "Slowly regenerate integrity while below 35% health.",
+      "rare": true
+    },
+    {
+      "icon": "⚙",
+      "title": "Twin Feed Mechanism",
+      "desc": "Every weapon has a 16% chance to fire a second reduced-damage shot.",
+      "rare": true
+    },
+    {
+      "icon": "⏱",
+      "title": "Pressure Recovery",
+      "desc": "Nitro cooldown recovers 24% faster."
+    },
+    {
+      "icon": "🧯",
+      "title": "Fire Suppression",
+      "desc": "Reduce damage taken while integrity is below 30%."
+    },
+    {
+      "id": "expandedWeaponRack",
+      "icon": "📦",
+      "title": "Expanded Weapon Rack",
+      "desc": "Increase crawler weapon capacity by one, up to six guns. The sixth slot requires LV 4.",
+      "rare": true
+    }
+  ],
+  "coreUpgrades": {
+    "motor": {
+      "id": "motor",
+      "code": "MTR",
+      "title": "Motor",
+      "description": "Raises top speed and acceleration."
+    },
+    "armor": {
+      "id": "armor",
+      "code": "ARM",
+      "title": "Armor",
+      "description": "Raises maximum integrity and damage resistance, but adds weight."
+    },
+    "fuel": {
+      "id": "fuel",
+      "code": "FUEL",
+      "title": "Fuel system",
+      "description": "Raises tank capacity and reduces fuel consumption."
+    }
+  },
+  "carriers": {
+    "CRAWLER_CARRIER_ID": "crawler",
+    "MAX_WALKER_TRAILERS": 2,
+    "WALKER_TRAILER_DEFINITION": {
+      "type": "walkerTrailer",
+      "name": "Walker Trailer",
+      "code": "WTR",
+      "cost": 90,
+      "weight": 8,
+      "fuelPenalty": 0.12,
+      "slotCount": 3,
+      "description": "Adds three stable module mounts. Its walking frame adds weight and raises fuel use by 12%."
+    },
+    "WALKER_TRAILER_SLOT_COUNT": 3,
+    "WALKER_TRAILER_TYPE": "walkerTrailer"
+  },
+  "protocols": {
+    "breachCrew": {
+      "id": "breachCrew",
+      "name": "Breach Crew",
+      "icon": "BR",
+      "description": "A charged ram breaches one ordinary PvE vehicle or structure for 6s. Its next explosive hit deals 35% more damage.",
+      "requirements": [
+        {
+          "label": "Assault Ram",
+          "types": [
+            "bumper"
+          ],
+          "families": [],
+          "tags": []
+        },
+        {
+          "label": "Explosive weapon",
+          "types": [],
+          "families": [
+            "explosive"
+          ],
+          "tags": []
+        }
+      ]
+    },
+    "targetRelay": {
+      "id": "targetRelay",
+      "name": "Target Relay",
+      "icon": "TR",
+      "description": "Focusing a local target marks it for 8s. The next railgun or missile-rack hit consumes the mark for 40% bonus PvE pierce damage.",
+      "requirements": [
+        {
+          "label": "Radar Array",
+          "types": [
+            "radar"
+          ],
+          "families": [],
+          "tags": []
+        },
+        {
+          "label": "Railgun or Missile Rack",
+          "types": [],
+          "families": [],
+          "tags": [
+            "relay-compatible"
+          ]
+        }
+      ]
+    },
+    "salvageLoop": {
+      "id": "salvageLoop",
+      "name": "Salvage Loop",
+      "icon": "SL",
+      "description": "Offline PvE only. Collected salvage charges a 20-point reserve. At full charge, missing integrity triggers a 30-point repair pulse instead of the locker value bonus.",
+      "offlineOnly": true,
+      "requirements": [
+        {
+          "label": "Field Repair Bay",
+          "types": [
+            "workshop"
+          ],
+          "families": [],
+          "tags": []
+        },
+        {
+          "label": "Logistics Locker",
+          "types": [
+            "treasury"
+          ],
+          "families": [],
+          "tags": []
+        }
+      ]
+    },
+    "suppressionCycle": {
+      "id": "suppressionCycle",
+      "name": "Suppression Cycle",
+      "icon": "SC",
+      "description": "Rapid ballistic hits build up to 5 suppression for 2.5s. A grenade consumes it to interrupt ordinary PvE targets for up to 0.65s.",
+      "requirements": [
+        {
+          "label": "Rapid ballistic weapon",
+          "types": [],
+          "families": [
+            "ballistic"
+          ],
+          "tags": [
+            "rapid"
+          ]
+        },
+        {
+          "label": "Grenade Launcher",
+          "types": [
+            "grenadeLauncher"
+          ],
+          "families": [],
+          "tags": []
+        }
+      ]
+    },
+    "combinedFeed": {
+      "id": "combinedFeed",
+      "name": "Combined Feed",
+      "icon": "CF",
+      "description": "Alternating ballistic and explosive PvE hits within 4s primes one bonus local-PvE shot. The opportunity expires after 3s and never changes PvP cadence.",
+      "requirements": [
+        {
+          "label": "Ballistic weapon",
+          "types": [],
+          "families": [
+            "ballistic"
+          ],
+          "tags": []
+        },
+        {
+          "label": "Explosive weapon",
+          "types": [],
+          "families": [
+            "explosive"
+          ],
+          "tags": []
+        }
+      ]
+    },
+    "stormConductor": {
+      "id": "stormConductor",
+      "name": "Storm Conductor",
+      "icon": "ST",
+      "description": "A railgun hit on a wet local PvE target chains once to the nearest valid wet NPC within 14m for 45% damage.",
+      "requirements": [
+        {
+          "label": "Radar Array",
+          "types": [
+            "radar"
+          ],
+          "families": [],
+          "tags": []
+        },
+        {
+          "label": "Railgun",
+          "types": [
+            "railgun"
+          ],
+          "families": [],
+          "tags": []
+        }
+      ]
+    }
+  },
+  "moduleBuildProfiles": {
+    "assaultRifle": {
+      "families": [
+        "ballistic"
+      ],
+      "tags": [
+        "rapid"
+      ]
+    },
+    "akTurret": {
+      "families": [
+        "ballistic"
+      ],
+      "tags": [
+        "rapid"
+      ]
+    },
+    "bazooka": {
+      "families": [
+        "explosive"
+      ],
+      "tags": [
+        "launcher"
+      ]
+    },
+    "grenadeLauncher": {
+      "families": [
+        "explosive"
+      ],
+      "tags": [
+        "grenade"
+      ]
+    },
+    "minigun": {
+      "families": [
+        "ballistic"
+      ],
+      "tags": [
+        "rapid"
+      ]
+    },
+    "railgun": {
+      "families": [
+        "kinetic"
+      ],
+      "tags": [
+        "heavy",
+        "relay-compatible"
+      ]
+    },
+    "missileRack": {
+      "families": [
+        "explosive"
+      ],
+      "tags": [
+        "heavy",
+        "relay-compatible"
+      ]
+    },
+    "workshop": {
+      "families": [
+        "support"
+      ],
+      "tags": [
+        "repair"
+      ]
+    },
+    "armor": {
+      "families": [
+        "defense"
+      ],
+      "tags": [
+        "armor"
+      ]
+    },
+    "treasury": {
+      "families": [
+        "support"
+      ],
+      "tags": [
+        "salvage"
+      ]
+    },
+    "bumper": {
+      "families": [
+        "impact"
+      ],
+      "tags": [
+        "ram"
+      ]
+    },
+    "radar": {
+      "families": [
+        "support"
+      ],
+      "tags": [
+        "radar"
+      ]
+    },
+    "counterDroneJammer": {
+      "families": [
+        "support"
+      ],
+      "tags": [
+        "counter-drone",
+        "jammer"
+      ]
+    }
+  },
+  "soldiers": {
+    "rifleman": {
+      "health": 12,
+      "speed": 2.25,
+      "damage": 5,
+      "pressureCost": 1,
+      "incomingDamageMultiplier": 1,
+      "armorClass": null
+    },
+    "ak": {
+      "health": 16,
+      "speed": 2.7,
+      "damage": 6,
+      "pressureCost": 1.5,
+      "incomingDamageMultiplier": 1,
+      "armorClass": null
+    },
+    "bazooka": {
+      "health": 24,
+      "speed": 1.75,
+      "damage": 24,
+      "pressureCost": 2.5,
+      "incomingDamageMultiplier": 1,
+      "armorClass": null
+    },
+    "bomber": {
+      "health": 72,
+      "speed": 3.85,
+      "damage": 46,
+      "pressureCost": 3,
+      "incomingDamageMultiplier": 0.72,
+      "armorClass": "juggernaut"
+    }
+  },
+  "drones": {
+    "shooter": {
+      "health": 48,
+      "speed": 4.5,
+      "damage": 7,
+      "pressureCost": 3,
+      "radius": 0.95,
+      "attack": "shoot",
+      "preferredRange": 24,
+      "maximumRange": 46,
+      "fireInterval": 0.78,
+      "detonationRange": 0,
+      "flightHeight": 4.8
+    },
+    "kamikaze": {
+      "health": 38,
+      "speed": 6.4,
+      "damage": 38,
+      "pressureCost": 3,
+      "radius": 1.05,
+      "attack": "detonate",
+      "preferredRange": 0,
+      "maximumRange": 52,
+      "fireInterval": 0,
+      "detonationRange": 4.2,
+      "flightHeight": 3.6
+    }
+  },
+  "priorityVehicles": {
+    "jammerTruck": {
+      "kind": "jammerTruck",
+      "name": "Jammer Truck",
+      "unlock": 2,
+      "weight": 1.8,
+      "cooldown": 18,
+      "pressureCost": 7,
+      "health": 150,
+      "speed": 3.25,
+      "damage": 10,
+      "preferredRange": 29,
+      "maximumRange": 43,
+      "radius": 2.45
+    },
+    "repairCrawler": {
+      "kind": "repairCrawler",
+      "name": "Repair Crawler",
+      "unlock": 3,
+      "weight": 1.35,
+      "cooldown": 22,
+      "pressureCost": 8,
+      "health": 185,
+      "speed": 2.75,
+      "damage": 0,
+      "preferredRange": 31,
+      "maximumRange": 0,
+      "supportRange": 64,
+      "radius": 2.65
+    },
+    "minelayer": {
+      "kind": "minelayer",
+      "name": "Minelayer",
+      "unlock": 3,
+      "weight": 1.55,
+      "cooldown": 20,
+      "pressureCost": 7,
+      "health": 165,
+      "speed": 3.45,
+      "damage": 9,
+      "preferredRange": 27,
+      "maximumRange": 40,
+      "radius": 2.5
+    }
+  },
+  "sidegrades": {
+    "fragmentation-shells": {
+      "id": "fragmentation-shells",
+      "bucket": "grenadeLauncher",
+      "name": "Fragmentation Shells",
+      "tradeoff": "+30% PvE blast radius; -18% PvE targeting range.",
+      "pve": {
+        "rangeMultiplier": 0.82,
+        "splashMultiplier": 1.3
+      }
+    },
+    "penetrator-sabots": {
+      "id": "penetrator-sabots",
+      "bucket": "railgun",
+      "name": "Penetrator Sabots",
+      "tradeoff": "Pierces 1 additional PvE target; -20% PvE damage per target.",
+      "pve": {
+        "damageMultiplier": 0.8,
+        "pierce": 1
+      }
+    },
+    "concussion-rounds": {
+      "id": "concussion-rounds",
+      "bucket": "assaultRifle",
+      "name": "Concussion Rounds",
+      "tradeoff": "Slows PvE targets by 25% for 1.5s; -18% PvE damage.",
+      "pve": {
+        "damageMultiplier": 0.82,
+        "slowMultiplier": 0.75,
+        "slowSeconds": 1.5
+      }
+    },
+    "tracking-rockets": {
+      "id": "tracking-rockets",
+      "bucket": "missileRack",
+      "name": "Tracking Rockets",
+      "tradeoff": "+20% PvE targeting range; -15% PvE damage.",
+      "pve": {
+        "rangeMultiplier": 1.2,
+        "damageMultiplier": 0.85
+      }
+    }
+  },
+  "contracts": {
+    "break-the-line": {
+      "id": "break-the-line",
+      "title": "Break the Line",
+      "description": "Destroy 3 raider foundries across any runs.",
+      "target": 3,
+      "scope": "lifetime",
+      "rewardSidegradeId": "fragmentation-shells"
+    },
+    "answer-the-call": {
+      "id": "answer-the-call",
+      "title": "Answer the Call",
+      "description": "Complete 1 settlement distress activity.",
+      "target": 1,
+      "scope": "lifetime",
+      "rewardSidegradeId": "concussion-rounds"
+    },
+    "mixed-battery": {
+      "id": "mixed-battery",
+      "title": "Mixed Battery",
+      "description": "Fire weapons from 2 projectile families in one run.",
+      "target": 2,
+      "scope": "run",
+      "rewardSidegradeId": "penetrator-sabots"
+    },
+    "powder-dry": {
+      "id": "powder-dry",
+      "title": "Keep the Powder Dry",
+      "description": "Finish a run lasting at least 3 minutes without firing a rocket-family weapon.",
+      "target": 1,
+      "scope": "run",
+      "rewardSidegradeId": "tracking-rockets"
+    },
+    "bad-weather-work": {
+      "id": "bad-weather-work",
+      "title": "Bad Weather Work",
+      "description": "Complete 1 world activity during rain or a storm.",
+      "target": 1,
+      "scope": "lifetime",
+      "rewardSidegradeId": "fragmentation-shells"
+    },
+    "combined-arms": {
+      "id": "combined-arms",
+      "title": "Combined Arms",
+      "description": "Win a run with an M4 Turret and Bazooka Pod installed.",
+      "target": 1,
+      "scope": "run",
+      "rewardSidegradeId": "tracking-rockets"
+    }
+  },
+  "waves": [
+    {
+      "wave": 1,
+      "composition": {
+        "rifleman": 8,
+        "ak": 0,
+        "bazooka": 0,
+        "bomber": 0,
+        "shooterDrone": 0,
+        "kamikazeDrone": 0,
+        "vehicles": 1
+      },
+      "areaFraction": 0.5,
+      "radius": 882.4692629208114,
+      "enemyCount": 9,
+      "minimumClearSeconds": 4.6,
+      "infantryKinds": [
+        "rifleman",
+        "rifleman",
+        "rifleman",
+        "rifleman"
+      ],
+      "unlockGuidance": {
+        "infantry": {
+          "rifleman": 10
+        },
+        "drones": {},
+        "vehicles": {
+          "bike": 6
+        },
+        "priorityVehicles": {},
+        "foundryReinforcements": true,
+        "crawler": false,
+        "crawlerReinforcements": false,
+        "leviathan": false
+      }
+    },
+    {
+      "wave": 2,
+      "composition": {
+        "rifleman": 10,
+        "ak": 3,
+        "bazooka": 0,
+        "bomber": 1,
+        "shooterDrone": 1,
+        "kamikazeDrone": 0,
+        "vehicles": 2
+      },
+      "areaFraction": 0.6,
+      "radius": 966.6966432133713,
+      "enemyCount": 17,
+      "minimumClearSeconds": 8.2,
+      "infantryKinds": [
+        "rifleman",
+        "ak",
+        "bomber",
+        "rifleman"
+      ],
+      "unlockGuidance": {
+        "infantry": {
+          "rifleman": 10,
+          "ak": 5,
+          "bomber": 2.5
+        },
+        "drones": {
+          "shooter": 6
+        },
+        "vehicles": {
+          "bike": 6,
+          "buggy": 4
+        },
+        "priorityVehicles": {
+          "jammerTruck": 1.8
+        },
+        "foundryReinforcements": true,
+        "crawler": false,
+        "crawlerReinforcements": false,
+        "leviathan": false
+      }
+    },
+    {
+      "wave": 3,
+      "composition": {
+        "rifleman": 12,
+        "ak": 4,
+        "bazooka": 1,
+        "bomber": 2,
+        "shooterDrone": 1,
+        "kamikazeDrone": 1,
+        "vehicles": 2
+      },
+      "areaFraction": 0.7,
+      "radius": 1044.1517131145263,
+      "enemyCount": 23,
+      "minimumClearSeconds": 10.9,
+      "infantryKinds": [
+        "rifleman",
+        "ak",
+        "bomber",
+        "bazooka"
+      ],
+      "unlockGuidance": {
+        "infantry": {
+          "rifleman": 10,
+          "ak": 5,
+          "bomber": 2.5,
+          "bazooka": 2.2
+        },
+        "drones": {
+          "shooter": 6,
+          "kamikaze": 4
+        },
+        "vehicles": {
+          "bike": 6,
+          "buggy": 4
+        },
+        "priorityVehicles": {
+          "jammerTruck": 1.8,
+          "repairCrawler": 1.35,
+          "minelayer": 1.55
+        },
+        "foundryReinforcements": true,
+        "crawler": true,
+        "crawlerReinforcements": true,
+        "leviathan": false
+      }
+    },
+    {
+      "wave": 4,
+      "composition": {
+        "rifleman": 14,
+        "ak": 5,
+        "bazooka": 2,
+        "bomber": 3,
+        "shooterDrone": 2,
+        "kamikazeDrone": 1,
+        "vehicles": 3
+      },
+      "areaFraction": 0.8,
+      "radius": 1116.245134367895,
+      "enemyCount": 30,
+      "minimumClearSeconds": 14.05,
+      "infantryKinds": [
+        "rifleman",
+        "ak",
+        "bomber",
+        "bazooka"
+      ],
+      "unlockGuidance": {
+        "infantry": {
+          "rifleman": 10,
+          "ak": 5,
+          "bomber": 2.5,
+          "bazooka": 2.2
+        },
+        "drones": {
+          "shooter": 6,
+          "kamikaze": 4
+        },
+        "vehicles": {
+          "bike": 6,
+          "buggy": 4
+        },
+        "priorityVehicles": {
+          "jammerTruck": 1.8,
+          "repairCrawler": 1.35,
+          "minelayer": 1.55
+        },
+        "foundryReinforcements": true,
+        "crawler": true,
+        "crawlerReinforcements": true,
+        "leviathan": false
+      }
+    },
+    {
+      "wave": 5,
+      "composition": {
+        "rifleman": 16,
+        "ak": 6,
+        "bazooka": 2,
+        "bomber": 4,
+        "shooterDrone": 2,
+        "kamikazeDrone": 2,
+        "vehicles": 3
+      },
+      "areaFraction": 0.9,
+      "radius": 1183.956755967041,
+      "enemyCount": 35,
+      "minimumClearSeconds": 16.3,
+      "infantryKinds": [
+        "rifleman",
+        "ak",
+        "bomber",
+        "bazooka"
+      ],
+      "unlockGuidance": {
+        "infantry": {
+          "rifleman": 10,
+          "ak": 5,
+          "bomber": 2.5,
+          "bazooka": 2.2
+        },
+        "drones": {
+          "shooter": 6,
+          "kamikaze": 4
+        },
+        "vehicles": {
+          "bike": 6,
+          "buggy": 4
+        },
+        "priorityVehicles": {
+          "jammerTruck": 1.8,
+          "repairCrawler": 1.35,
+          "minelayer": 1.55
+        },
+        "foundryReinforcements": true,
+        "crawler": true,
+        "crawlerReinforcements": true,
+        "leviathan": false
+      }
+    },
+    {
+      "wave": 6,
+      "composition": {
+        "rifleman": 18,
+        "ak": 7,
+        "bazooka": 3,
+        "bomber": 5,
+        "shooterDrone": 3,
+        "kamikazeDrone": 2,
+        "vehicles": 4
+      },
+      "areaFraction": 1,
+      "radius": 1248,
+      "enemyCount": 43,
+      "minimumClearSeconds": 19.900000000000002,
+      "infantryKinds": [
+        "rifleman",
+        "ak",
+        "bomber",
+        "bazooka"
+      ],
+      "unlockGuidance": {
+        "infantry": {
+          "rifleman": 10,
+          "ak": 5,
+          "bomber": 2.5,
+          "bazooka": 2.2
+        },
+        "drones": {
+          "shooter": 6,
+          "kamikaze": 4
+        },
+        "vehicles": {
+          "bike": 6,
+          "buggy": 4
+        },
+        "priorityVehicles": {
+          "jammerTruck": 1.8,
+          "repairCrawler": 1.35,
+          "minelayer": 1.55
+        },
+        "foundryReinforcements": true,
+        "crawler": true,
+        "crawlerReinforcements": true,
+        "leviathan": true
+      }
+    }
+  ],
+  "constants": {
+    "catalog": {
+      "moduleDefinitions": {
+        "assaultRifle": {
+          "name": "M4 Turret",
+          "icon": "M4",
+          "weight": 2,
+          "desc": "Accurate automatic rifle fire for infantry and light vehicles.",
+          "range": 32,
+          "cooldown": 0.3,
+          "damage": 9,
+          "projectile": "bullet",
+          "maxLevel": 6
+        },
+        "akTurret": {
+          "name": "AK Battle Station",
+          "icon": "AK",
+          "weight": 3,
+          "desc": "Hard-hitting automatic fire with a fast cyclic rate.",
+          "range": 30,
+          "cooldown": 0.22,
+          "damage": 10,
+          "projectile": "bullet",
+          "maxLevel": 6
+        },
+        "bazooka": {
+          "name": "Bazooka Pod",
+          "icon": "RPG",
+          "weight": 5,
+          "desc": "Direct-fire anti-armor rockets with heavy splash damage.",
+          "range": 50,
+          "cooldown": 2.35,
+          "damage": 52,
+          "projectile": "rocket",
+          "maxLevel": 5
+        },
+        "grenadeLauncher": {
+          "name": "Grenade Launcher",
+          "icon": "GL",
+          "weight": 5,
+          "desc": "Arcing grenades clear dense infantry groups.",
+          "range": 44,
+          "cooldown": 2.1,
+          "damage": 44,
+          "projectile": "grenade",
+          "maxLevel": 5
+        },
+        "minigun": {
+          "name": "M134 Minigun",
+          "icon": "MG",
+          "weight": 4,
+          "desc": "Extreme sustained fire for drones, bikes, and infantry.",
+          "range": 29,
+          "cooldown": 0.12,
+          "damage": 6,
+          "projectile": "bullet",
+          "maxLevel": 6
+        },
+        "railgun": {
+          "name": "Coil Railgun",
+          "icon": "RG",
+          "weight": 7,
+          "desc": "Long-range electromagnetic sabot with massive single-target damage.",
+          "range": 66,
+          "cooldown": 3.15,
+          "damage": 76,
+          "projectile": "sabot",
+          "maxLevel": 5
+        },
+        "missileRack": {
+          "name": "Guided Missile Rack",
+          "icon": "MSL",
+          "weight": 6,
+          "desc": "Guided rockets for armored vehicles and heavy drones.",
+          "range": 56,
+          "cooldown": 2.65,
+          "damage": 60,
+          "projectile": "rocket",
+          "maxLevel": 5
+        },
+        "workshop": {
+          "name": "Field Repair Bay",
+          "icon": "FIX",
+          "weight": 3,
+          "desc": "Patches hull integrity every four seconds.",
+          "passive": "repair"
+        },
+        "armor": {
+          "name": "Composite Armor",
+          "icon": "ARM",
+          "weight": 5,
+          "desc": "+55 maximum integrity and stronger collision resistance.",
+          "passive": "armor"
+        },
+        "treasury": {
+          "name": "Logistics Locker",
+          "icon": "SUP",
+          "weight": 3,
+          "desc": "+15% value from every collected salvage part.",
+          "passive": "treasury"
+        },
+        "bumper": {
+          "name": "Assault Ram",
+          "icon": "RAM",
+          "weight": 5,
+          "desc": "Shoves hostile armored vehicles and amplifies impact damage.",
+          "passive": "bumper",
+          "unique": true
+        },
+        "radar": {
+          "name": "Radar Array",
+          "icon": "◉",
+          "weight": 2,
+          "cost": 55,
+          "range": 40,
+          "desc": "Detects nearby enemies. Upgrade coverage: 40 / 90 / 160 / 260 m.",
+          "passive": "radar",
+          "unique": true,
+          "purchasable": true,
+          "maxRange": 260,
+          "maxLevel": 4
+        },
+        "counterDroneJammer": {
+          "name": "Counter-Drone Jammer",
+          "icon": "CDJ",
+          "weight": 3,
+          "cost": 68,
+          "range": 32,
+          "desc": "Within 32m, enemy drones move and fire at 55% rate; kamikaze drones cannot detonate.",
+          "passive": "counterDroneJammer",
+          "unique": true,
+          "purchasable": true
+        }
+      },
+      "moduleSlots": [
+        [
+          -2.7,
+          2.9,
+          -2.2
+        ],
+        [
+          2.7,
+          2.9,
+          -2.2
+        ],
+        [
+          -3.2,
+          2.3,
+          0.2
+        ],
+        [
+          3.2,
+          2.3,
+          0.2
+        ],
+        [
+          -2.5,
+          2.4,
+          2.4
+        ],
+        [
+          2.5,
+          2.4,
+          2.4
+        ],
+        [
+          0,
+          4.8,
+          -0.4
+        ],
+        [
+          0,
+          2.3,
+          3.3
+        ],
+        [
+          -4,
+          2.5,
+          -1.4
+        ],
+        [
+          4,
+          2.5,
+          -1.4
+        ],
+        [
+          -3.8,
+          2.6,
+          1.8
+        ],
+        [
+          3.8,
+          2.6,
+          1.8
+        ]
+      ],
+      "upgradeDefinitions": [
+        {
+          "icon": "🛞",
+          "title": "High-Flow Turbo",
+          "desc": "Top speed and acceleration increase by 14%.",
+          "category": "mobility"
+        },
+        {
+          "icon": "⚙",
+          "title": "Racing Transmission",
+          "desc": "Top speed and acceleration increase by 10%.",
+          "category": "mobility"
+        },
+        {
+          "icon": "⏱",
+          "title": "Nitro Calibration",
+          "desc": "Gain 8% speed and recover nitro 18% faster.",
+          "category": "mobility"
+        },
+        {
+          "icon": "❤️",
+          "title": "Reinforced Core",
+          "desc": "+70 maximum integrity and restore 70 integrity."
+        },
+        {
+          "icon": "🧲",
+          "title": "Salvage Chains",
+          "desc": "Pickup radius grows by 42%."
+        },
+        {
+          "icon": "🔧",
+          "title": "Combat Engineer",
+          "desc": "Manual repairs restore 18 more integrity."
+        },
+        {
+          "icon": "🧱",
+          "title": "Layered Plating",
+          "desc": "Reduce incoming damage by 8%."
+        },
+        {
+          "icon": "🪙",
+          "title": "Salvage Rush",
+          "desc": "Gain 55 coins and increase future coin value by 10%."
+        },
+        {
+          "icon": "⛏",
+          "title": "Plow Momentum",
+          "desc": "Ram cooldown is reduced by 28%, while Road Fury combo grace lasts longer and momentum decays slower."
+        },
+        {
+          "icon": "🎖",
+          "title": "Fire Control Officer",
+          "desc": "Every weapon gains 12% range and 12% damage.",
+          "rare": true
+        },
+        {
+          "icon": "⚡",
+          "title": "Overdrive Feed",
+          "desc": "Moving above half speed grants 16% faster firing.",
+          "rare": true
+        },
+        {
+          "icon": "🎯",
+          "title": "Targeting Computer",
+          "desc": "All equipped weapons gain 18% targeting range."
+        },
+        {
+          "icon": "♨",
+          "title": "Emergency Nanoweld",
+          "desc": "Slowly regenerate integrity while below 35% health.",
+          "rare": true
+        },
+        {
+          "icon": "⚙",
+          "title": "Twin Feed Mechanism",
+          "desc": "Every weapon has a 16% chance to fire a second reduced-damage shot.",
+          "rare": true
+        },
+        {
+          "icon": "⏱",
+          "title": "Pressure Recovery",
+          "desc": "Nitro cooldown recovers 24% faster."
+        },
+        {
+          "icon": "🧯",
+          "title": "Fire Suppression",
+          "desc": "Reduce damage taken while integrity is below 30%."
+        },
+        {
+          "id": "expandedWeaponRack",
+          "icon": "📦",
+          "title": "Expanded Weapon Rack",
+          "desc": "Increase crawler weapon capacity by one, up to six guns. The sixth slot requires LV 4.",
+          "rare": true
+        }
+      ]
+    },
+    "carriers": {
+      "CRAWLER_CARRIER_ID": "crawler",
+      "MAX_WALKER_TRAILERS": 2,
+      "WALKER_TRAILER_DEFINITION": {
+        "type": "walkerTrailer",
+        "name": "Walker Trailer",
+        "code": "WTR",
+        "cost": 90,
+        "weight": 8,
+        "fuelPenalty": 0.12,
+        "slotCount": 3,
+        "description": "Adds three stable module mounts. Its walking frame adds weight and raises fuel use by 12%."
+      },
+      "WALKER_TRAILER_SLOT_COUNT": 3,
+      "WALKER_TRAILER_TYPE": "walkerTrailer"
+    },
+    "coreUpgrades": {
+      "BASE_FUEL_BURN_PER_SECOND": 0.45,
+      "BASE_FUEL_CAPACITY": 100,
+      "CORE_UPGRADE_DEFINITIONS": {
+        "motor": {
+          "id": "motor",
+          "code": "MTR",
+          "title": "Motor",
+          "description": "Raises top speed and acceleration."
+        },
+        "armor": {
+          "id": "armor",
+          "code": "ARM",
+          "title": "Armor",
+          "description": "Raises maximum integrity and damage resistance, but adds weight."
+        },
+        "fuel": {
+          "id": "fuel",
+          "code": "FUEL",
+          "title": "Fuel system",
+          "description": "Raises tank capacity and reduces fuel consumption."
+        }
+      },
+      "CORE_UPGRADE_IDS": [
+        "motor",
+        "armor",
+        "fuel"
+      ],
+      "CORE_UPGRADE_MAX_LEVEL": 5,
+      "EMPTY_FUEL_SPEED_MULTIPLIER": 0.35,
+      "FUEL_PICKUP_AMOUNT": 28,
+      "FUEL_STATION_RADIUS": 11,
+      "FUEL_STATION_REFILL_PER_SECOND": 24
+    },
+    "buildRules": {
+      "MODULE_BUILD_PROFILES": {
+        "assaultRifle": {
+          "families": [
+            "ballistic"
+          ],
+          "tags": [
+            "rapid"
+          ]
+        },
+        "akTurret": {
+          "families": [
+            "ballistic"
+          ],
+          "tags": [
+            "rapid"
+          ]
+        },
+        "bazooka": {
+          "families": [
+            "explosive"
+          ],
+          "tags": [
+            "launcher"
+          ]
+        },
+        "grenadeLauncher": {
+          "families": [
+            "explosive"
+          ],
+          "tags": [
+            "grenade"
+          ]
+        },
+        "minigun": {
+          "families": [
+            "ballistic"
+          ],
+          "tags": [
+            "rapid"
+          ]
+        },
+        "railgun": {
+          "families": [
+            "kinetic"
+          ],
+          "tags": [
+            "heavy",
+            "relay-compatible"
+          ]
+        },
+        "missileRack": {
+          "families": [
+            "explosive"
+          ],
+          "tags": [
+            "heavy",
+            "relay-compatible"
+          ]
+        },
+        "workshop": {
+          "families": [
+            "support"
+          ],
+          "tags": [
+            "repair"
+          ]
+        },
+        "armor": {
+          "families": [
+            "defense"
+          ],
+          "tags": [
+            "armor"
+          ]
+        },
+        "treasury": {
+          "families": [
+            "support"
+          ],
+          "tags": [
+            "salvage"
+          ]
+        },
+        "bumper": {
+          "families": [
+            "impact"
+          ],
+          "tags": [
+            "ram"
+          ]
+        },
+        "radar": {
+          "families": [
+            "support"
+          ],
+          "tags": [
+            "radar"
+          ]
+        },
+        "counterDroneJammer": {
+          "families": [
+            "support"
+          ],
+          "tags": [
+            "counter-drone",
+            "jammer"
+          ]
+        }
+      },
+      "PROTOCOL_DEFINITIONS": {
+        "breachCrew": {
+          "id": "breachCrew",
+          "name": "Breach Crew",
+          "icon": "BR",
+          "description": "A charged ram breaches one ordinary PvE vehicle or structure for 6s. Its next explosive hit deals 35% more damage.",
+          "requirements": [
+            {
+              "label": "Assault Ram",
+              "types": [
+                "bumper"
+              ],
+              "families": [],
+              "tags": []
+            },
+            {
+              "label": "Explosive weapon",
+              "types": [],
+              "families": [
+                "explosive"
+              ],
+              "tags": []
+            }
+          ]
+        },
+        "targetRelay": {
+          "id": "targetRelay",
+          "name": "Target Relay",
+          "icon": "TR",
+          "description": "Focusing a local target marks it for 8s. The next railgun or missile-rack hit consumes the mark for 40% bonus PvE pierce damage.",
+          "requirements": [
+            {
+              "label": "Radar Array",
+              "types": [
+                "radar"
+              ],
+              "families": [],
+              "tags": []
+            },
+            {
+              "label": "Railgun or Missile Rack",
+              "types": [],
+              "families": [],
+              "tags": [
+                "relay-compatible"
+              ]
+            }
+          ]
+        },
+        "salvageLoop": {
+          "id": "salvageLoop",
+          "name": "Salvage Loop",
+          "icon": "SL",
+          "description": "Offline PvE only. Collected salvage charges a 20-point reserve. At full charge, missing integrity triggers a 30-point repair pulse instead of the locker value bonus.",
+          "offlineOnly": true,
+          "requirements": [
+            {
+              "label": "Field Repair Bay",
+              "types": [
+                "workshop"
+              ],
+              "families": [],
+              "tags": []
+            },
+            {
+              "label": "Logistics Locker",
+              "types": [
+                "treasury"
+              ],
+              "families": [],
+              "tags": []
+            }
+          ]
+        },
+        "suppressionCycle": {
+          "id": "suppressionCycle",
+          "name": "Suppression Cycle",
+          "icon": "SC",
+          "description": "Rapid ballistic hits build up to 5 suppression for 2.5s. A grenade consumes it to interrupt ordinary PvE targets for up to 0.65s.",
+          "requirements": [
+            {
+              "label": "Rapid ballistic weapon",
+              "types": [],
+              "families": [
+                "ballistic"
+              ],
+              "tags": [
+                "rapid"
+              ]
+            },
+            {
+              "label": "Grenade Launcher",
+              "types": [
+                "grenadeLauncher"
+              ],
+              "families": [],
+              "tags": []
+            }
+          ]
+        },
+        "combinedFeed": {
+          "id": "combinedFeed",
+          "name": "Combined Feed",
+          "icon": "CF",
+          "description": "Alternating ballistic and explosive PvE hits within 4s primes one bonus local-PvE shot. The opportunity expires after 3s and never changes PvP cadence.",
+          "requirements": [
+            {
+              "label": "Ballistic weapon",
+              "types": [],
+              "families": [
+                "ballistic"
+              ],
+              "tags": []
+            },
+            {
+              "label": "Explosive weapon",
+              "types": [],
+              "families": [
+                "explosive"
+              ],
+              "tags": []
+            }
+          ]
+        },
+        "stormConductor": {
+          "id": "stormConductor",
+          "name": "Storm Conductor",
+          "icon": "ST",
+          "description": "A railgun hit on a wet local PvE target chains once to the nearest valid wet NPC within 14m for 45% damage.",
+          "requirements": [
+            {
+              "label": "Radar Array",
+              "types": [
+                "radar"
+              ],
+              "families": [],
+              "tags": []
+            },
+            {
+              "label": "Railgun",
+              "types": [
+                "railgun"
+              ],
+              "families": [],
+              "tags": []
+            }
+          ]
+        }
+      }
+    },
+    "roadFury": {
+      "ROAD_FURY_CHARGED_RAM_GAIN": 0.18,
+      "ROAD_FURY_COMBO_THRESHOLDS": [
+        {
+          "minimumCount": 1,
+          "multiplier": 1
+        },
+        {
+          "minimumCount": 3,
+          "multiplier": 1.5
+        },
+        {
+          "minimumCount": 6,
+          "multiplier": 2
+        },
+        {
+          "minimumCount": 10,
+          "multiplier": 3
+        }
+      ],
+      "ROAD_FURY_DRIFT_DISTANCE": 7,
+      "ROAD_FURY_DRIFT_GAIN": 0.035,
+      "ROAD_FURY_GRACE_SECONDS": 3,
+      "ROAD_FURY_MIN_DRIFT_SLIP_ANGLE": 0.18,
+      "ROAD_FURY_MIN_DRIFT_SPEED": 4.5,
+      "ROAD_FURY_NEAR_MISS_GAIN": 0.08,
+      "ROAD_FURY_RAM_GAIN": 0.12,
+      "ROAD_FURY_ROADKILL_GAIN": 0.1
+    },
+    "contracts": {
+      "CONTRACT_CATALOG": {
+        "break-the-line": {
+          "id": "break-the-line",
+          "title": "Break the Line",
+          "description": "Destroy 3 raider foundries across any runs.",
+          "target": 3,
+          "scope": "lifetime",
+          "rewardSidegradeId": "fragmentation-shells"
+        },
+        "answer-the-call": {
+          "id": "answer-the-call",
+          "title": "Answer the Call",
+          "description": "Complete 1 settlement distress activity.",
+          "target": 1,
+          "scope": "lifetime",
+          "rewardSidegradeId": "concussion-rounds"
+        },
+        "mixed-battery": {
+          "id": "mixed-battery",
+          "title": "Mixed Battery",
+          "description": "Fire weapons from 2 projectile families in one run.",
+          "target": 2,
+          "scope": "run",
+          "rewardSidegradeId": "penetrator-sabots"
+        },
+        "powder-dry": {
+          "id": "powder-dry",
+          "title": "Keep the Powder Dry",
+          "description": "Finish a run lasting at least 3 minutes without firing a rocket-family weapon.",
+          "target": 1,
+          "scope": "run",
+          "rewardSidegradeId": "tracking-rockets"
+        },
+        "bad-weather-work": {
+          "id": "bad-weather-work",
+          "title": "Bad Weather Work",
+          "description": "Complete 1 world activity during rain or a storm.",
+          "target": 1,
+          "scope": "lifetime",
+          "rewardSidegradeId": "fragmentation-shells"
+        },
+        "combined-arms": {
+          "id": "combined-arms",
+          "title": "Combined Arms",
+          "description": "Win a run with an M4 Turret and Bazooka Pod installed.",
+          "target": 1,
+          "scope": "run",
+          "rewardSidegradeId": "tracking-rockets"
+        }
+      },
+      "CONTRACT_IDS": [
+        "break-the-line",
+        "answer-the-call",
+        "mixed-battery",
+        "powder-dry",
+        "bad-weather-work",
+        "combined-arms"
+      ],
+      "MAX_SELECTED_CONTRACTS": 3
+    },
+    "sidegrades": {
+      "APPROVED_MULTIPLAYER_SIDEGRADE_IDS": [
+        "fragmentation-shells",
+        "penetrator-sabots",
+        "concussion-rounds",
+        "tracking-rockets"
+      ],
+      "SIDEGRADE_CATALOG": {
+        "fragmentation-shells": {
+          "id": "fragmentation-shells",
+          "bucket": "grenadeLauncher",
+          "name": "Fragmentation Shells",
+          "tradeoff": "+30% PvE blast radius; -18% PvE targeting range.",
+          "pve": {
+            "rangeMultiplier": 0.82,
+            "splashMultiplier": 1.3
+          }
+        },
+        "penetrator-sabots": {
+          "id": "penetrator-sabots",
+          "bucket": "railgun",
+          "name": "Penetrator Sabots",
+          "tradeoff": "Pierces 1 additional PvE target; -20% PvE damage per target.",
+          "pve": {
+            "damageMultiplier": 0.8,
+            "pierce": 1
+          }
+        },
+        "concussion-rounds": {
+          "id": "concussion-rounds",
+          "bucket": "assaultRifle",
+          "name": "Concussion Rounds",
+          "tradeoff": "Slows PvE targets by 25% for 1.5s; -18% PvE damage.",
+          "pve": {
+            "damageMultiplier": 0.82,
+            "slowMultiplier": 0.75,
+            "slowSeconds": 1.5
+          }
+        },
+        "tracking-rockets": {
+          "id": "tracking-rockets",
+          "bucket": "missileRack",
+          "name": "Tracking Rockets",
+          "tradeoff": "+20% PvE targeting range; -15% PvE damage.",
+          "pve": {
+            "rangeMultiplier": 1.2,
+            "damageMultiplier": 0.85
+          }
+        }
+      },
+      "SIDEGRADE_IDS": [
+        "fragmentation-shells",
+        "penetrator-sabots",
+        "concussion-rounds",
+        "tracking-rockets"
+      ]
+    },
+    "spawning": {
+      "DRONE_DEFINITIONS": {
+        "shooter": {
+          "health": 48,
+          "speed": 4.5,
+          "damage": 7,
+          "pressureCost": 3,
+          "radius": 0.95,
+          "attack": "shoot",
+          "preferredRange": 24,
+          "maximumRange": 46,
+          "fireInterval": 0.78,
+          "detonationRange": 0,
+          "flightHeight": 4.8
+        },
+        "kamikaze": {
+          "health": 38,
+          "speed": 6.4,
+          "damage": 38,
+          "pressureCost": 3,
+          "radius": 1.05,
+          "attack": "detonate",
+          "preferredRange": 0,
+          "maximumRange": 52,
+          "fireInterval": 0,
+          "detonationRange": 4.2,
+          "flightHeight": 3.6
+        }
+      },
+      "MAX_ACTIVE_DRONES": 12,
+      "MAX_ACTIVE_RAIDER_VEHICLES": 10,
+      "MOTORCYCLE_BASE_SPEED": {
+        "minimum": 5.2,
+        "maximum": 6.5
+      },
+      "MOTORCYCLE_SPEED_MULTIPLIER": 1.5,
+      "SOLDIER_STATS": {
+        "rifleman": {
+          "health": 12,
+          "speed": 2.25,
+          "damage": 5,
+          "pressureCost": 1,
+          "incomingDamageMultiplier": 1,
+          "armorClass": null
+        },
+        "ak": {
+          "health": 16,
+          "speed": 2.7,
+          "damage": 6,
+          "pressureCost": 1.5,
+          "incomingDamageMultiplier": 1,
+          "armorClass": null
+        },
+        "bazooka": {
+          "health": 24,
+          "speed": 1.75,
+          "damage": 24,
+          "pressureCost": 2.5,
+          "incomingDamageMultiplier": 1,
+          "armorClass": null
+        },
+        "bomber": {
+          "health": 72,
+          "speed": 3.85,
+          "damage": 46,
+          "pressureCost": 3,
+          "incomingDamageMultiplier": 0.72,
+          "armorClass": "juggernaut"
+        }
+      },
+      "SPAWN_ARENA_PADDING": 40
+    },
+    "director": {
+      "CRAWLER_ENGAGEMENT_RADIUS": 120,
+      "CRAWLER_PRESSURE_RESERVE": 12,
+      "DIRECTOR_RETRY_SECONDS": 3,
+      "FOUNDRY_ENGAGEMENT_RADIUS": 78,
+      "FOUNDRY_PRESSURE_CAPACITY": 1.5,
+      "LEVIATHAN_PRESSURE_RESERVE": 30,
+      "MAX_ACTIVE_MOBILE_HOSTILES": 96,
+      "MAX_DIRECTOR_PLACEMENT_ATTEMPTS": 3,
+      "PRESSURE_PHASE_SECONDS": {
+        "minimum": 20,
+        "maximum": 28
+      },
+      "RECOVERY_PHASE_SECONDS": {
+        "minimum": 8,
+        "maximum": 12
+      }
+    },
+    "priorityVehicles": {
+      "JAMMER_FIELD_RADIUS": 48,
+      "JAMMER_RANGE_MULTIPLIER": 0.55,
+      "MAX_ACTIVE_PRIORITY_PER_KIND": 1,
+      "PRIORITY_TARGET_PRIORITY": 2,
+      "PRIORITY_VEHICLE_DEFINITIONS": {
+        "jammerTruck": {
+          "kind": "jammerTruck",
+          "name": "Jammer Truck",
+          "unlock": 2,
+          "weight": 1.8,
+          "cooldown": 18,
+          "pressureCost": 7,
+          "health": 150,
+          "speed": 3.25,
+          "damage": 10,
+          "preferredRange": 29,
+          "maximumRange": 43,
+          "radius": 2.45
+        },
+        "repairCrawler": {
+          "kind": "repairCrawler",
+          "name": "Repair Crawler",
+          "unlock": 3,
+          "weight": 1.35,
+          "cooldown": 22,
+          "pressureCost": 8,
+          "health": 185,
+          "speed": 2.75,
+          "damage": 0,
+          "preferredRange": 31,
+          "maximumRange": 0,
+          "supportRange": 64,
+          "radius": 2.65
+        },
+        "minelayer": {
+          "kind": "minelayer",
+          "name": "Minelayer",
+          "unlock": 3,
+          "weight": 1.55,
+          "cooldown": 20,
+          "pressureCost": 7,
+          "health": 165,
+          "speed": 3.45,
+          "damage": 9,
+          "preferredRange": 27,
+          "maximumRange": 40,
+          "radius": 2.5
+        }
+      },
+      "REPAIR_MAX_TICK_SECONDS": 0.25,
+      "REPAIR_RANGE": 36,
+      "REPAIR_RATE_PER_SECOND": 12,
+      "REPAIR_RECHECK_SECONDS": 0.25,
+      "REPAIR_SUPPORT_SENSOR_RANGE": 64
+    },
+    "garrison": {
+      "GARRISON_FOOTPRINT_RADIUS": 4.43,
+      "GARRISON_FOUNDATION_RADIUS": 4.15
+    },
+    "leviathan": {
+      "LEVIATHAN_COMPONENT_TUNING": {
+        "missilePod": {
+          "name": "Missile Pod",
+          "phase": "weapons",
+          "health": 220,
+          "radius": 1.35
+        },
+        "gunPod": {
+          "name": "Gun Pod",
+          "phase": "weapons",
+          "health": 190,
+          "radius": 1.15
+        },
+        "leftDrive": {
+          "name": "Left Drive",
+          "phase": "drives",
+          "health": 250,
+          "radius": 1.45
+        },
+        "rightDrive": {
+          "name": "Right Drive",
+          "phase": "drives",
+          "health": 250,
+          "radius": 1.45
+        },
+        "core": {
+          "name": "Leviathan Core",
+          "phase": "core",
+          "health": 360,
+          "radius": 1.55
+        }
+      },
+      "LEVIATHAN_CORE_AIMED_ROCKETS": 5,
+      "LEVIATHAN_CORE_ATTACK_COOLDOWN": 6.5,
+      "LEVIATHAN_CORE_RADIAL_ROCKETS": 8,
+      "LEVIATHAN_CORE_ROCKETS_PER_VOLLEY": 13,
+      "LEVIATHAN_CORE_TELEGRAPH_SECONDS": 0.9,
+      "LEVIATHAN_PHASES": {
+        "WEAPONS": "weapons",
+        "DRIVES": "drives",
+        "CORE": "core"
+      }
+    },
+    "counterDroneJammer": {
+      "COUNTER_DRONE_JAMMER_FIRE_CADENCE_MULTIPLIER": 0.55,
+      "COUNTER_DRONE_JAMMER_MODULE_TYPE": "counterDroneJammer",
+      "COUNTER_DRONE_JAMMER_MOVEMENT_MULTIPLIER": 0.55,
+      "COUNTER_DRONE_JAMMER_RADIUS": 32
+    },
+    "jammerRocket": {
+      "JAMMER_ROCKET_TUNING": {
+        "prematureDetonationChance": 0.28,
+        "minimumDetonationAge": 0.08,
+        "maximumDetonationAge": 0.9,
+        "minimumTravelFraction": 0.35,
+        "maximumTravelFraction": 0.78,
+        "minimumDeflectionRadians": 0.035,
+        "maximumDeflectionRadians": 0.11,
+        "minimumWobbleAmplitude": 0.34,
+        "maximumWobbleAmplitude": 0.62,
+        "minimumWobbleAngularSpeed": 11,
+        "maximumWobbleAngularSpeed": 18
+      }
+    },
+    "mineHacking": {
+      "MINE_HACK_DECAY_MULTIPLIER": 2,
+      "MINE_HACK_RADIUS": 4.5,
+      "MINE_HACK_SECONDS": 3
+    },
+    "hazards": {
+      "MAX_ACTIVE_MINES": 36,
+      "MAX_MINES_PER_OWNER": 6,
+      "MINE_ARM_SECONDS": 0.9,
+      "MINE_DAMAGE": 30,
+      "MINE_DROP_INTERVAL_SECONDS": 4,
+      "MINE_LIFETIME_SECONDS": 25,
+      "MINE_TRIGGER_RADIUS": 2.35
+    },
+    "tornado": {
+      "TORNADO_CAMERA_DUST_RADIUS": 11,
+      "TORNADO_DANGER_RADIUS": 3.6,
+      "TORNADO_FADE_IN_SECONDS": 2.4,
+      "TORNADO_FADE_OUT_SECONDS": 3.2,
+      "TORNADO_INFLUENCE_RADIUS": 17
+    },
+    "combatSynergies": {
+      "BREACH_DAMAGE_MULTIPLIER": 1.35,
+      "BREACH_DURATION_SECONDS": 6,
+      "COMBINED_FEED_OPPORTUNITY_SECONDS": 3,
+      "COMBINED_FEED_WINDOW_SECONDS": 4,
+      "RELAY_DAMAGE_MULTIPLIER": 1.4,
+      "RELAY_MARK_DURATION_SECONDS": 8,
+      "SALVAGE_CHARGE_CAP": 20,
+      "SALVAGE_REPAIR_AMOUNT": 30,
+      "SUPPRESSION_CAP": 5,
+      "SUPPRESSION_DURATION_SECONDS": 2.5
+    },
+    "encounterEffects": {
+      "FOUNDRY_CADENCE_MULTIPLIER": 1.2,
+      "FOUNDRY_CONTROL_SECTOR_RADIUS": 90,
+      "FOUNDRY_MOVEMENT_MULTIPLIER": 1.2,
+      "FOUNDRY_OVERCLOCK_EFFECT": {
+        "active": true,
+        "movementMultiplier": 1.2,
+        "cadenceMultiplier": 1.2,
+        "strength": 0.3999999999999999,
+        "priority": 0
+      },
+      "FOUNDRY_PRESSURE_CAPACITY": 1.5,
+      "JAMMER_FIELD_RADIUS": 48,
+      "JAMMER_RANGE_MULTIPLIER": 0.55,
+      "NO_ENCOUNTER_EFFECT": {
+        "active": false,
+        "movementMultiplier": 1,
+        "cadenceMultiplier": 1
+      }
+    },
+    "spawnTelegraphs": {
+      "CRAWLER_SOURCE_ANCHOR_TOLERANCE": 6,
+      "CRAWLER_TELEGRAPH_SECONDS": 3,
+      "LEVIATHAN_TELEGRAPH_SECONDS": 5,
+      "NORMAL_TELEGRAPH_SECONDS": {
+        "minimum": 1.5,
+        "maximum": 2
+      },
+      "SOURCE_GATE_CONTACT_DISTANCE": 3.85,
+      "SOURCE_GATE_FRAME_MOVEMENT_MARGIN": 1.4,
+      "SOURCE_GATE_SAFETY_DISTANCE": 5.25,
+      "SPAWN_INTRUSION_GRACE_SECONDS": 1.25,
+      "TELEGRAPH_COMMIT_MARGIN_SECONDS": 0.1
+    },
+    "worldActivities": {
+      "WORLD_ACTIVITY_LIMITS": {
+        "major": 1,
+        "minor": 2,
+        "history": 16
+      },
+      "WORLD_ACTIVITY_TUNING": {
+        "firstMajorSeconds": {
+          "minimum": 9,
+          "maximum": 14
+        },
+        "firstMinorSeconds": {
+          "minimum": 5,
+          "maximum": 9
+        },
+        "majorGapSeconds": {
+          "minimum": 24,
+          "maximum": 34
+        },
+        "minorGapSeconds": {
+          "minimum": 20,
+          "maximum": 28
+        },
+        "recoverySeconds": 10,
+        "announceSeconds": 2.5,
+        "convoyDurationSeconds": 95,
+        "distressDurationSeconds": 62,
+        "dispatchDurationSeconds": 60,
+        "minorDurationSeconds": 82,
+        "playerSafetyDistance": 92,
+        "convoyVehicles": 2,
+        "convoyPressure": 6,
+        "distressRaiders": 3,
+        "convoyReward": 18,
+        "distressReward": 14,
+        "dispatchReward": 10,
+        "scavengerReward": 8
+      }
+    },
+    "extraction": {
+      "EXTRACTION_RULES": {
+        "requiredCredits": 2,
+        "activationRadius": 22,
+        "zoneRadius": 12,
+        "hostileRadius": 28,
+        "secureSeconds": 30,
+        "leaveGraceSeconds": 2,
+        "maximumActivationSpeed": 1.5
+      }
+    },
+    "weather": {
+      "GAMEPLAY_WEATHER_RULES": {
+        "clear": {
+          "wet": false,
+          "mud": false,
+          "localPveRangeMultiplier": 1,
+          "radarPveRangeMultiplier": 1,
+          "npcAcquisitionMultiplier": 1
+        },
+        "sunny": {
+          "wet": false,
+          "mud": false,
+          "localPveRangeMultiplier": 1,
+          "radarPveRangeMultiplier": 1,
+          "npcAcquisitionMultiplier": 1
+        },
+        "foggy": {
+          "wet": false,
+          "mud": false,
+          "localPveRangeMultiplier": 0.68,
+          "radarPveRangeMultiplier": 0.84,
+          "npcAcquisitionMultiplier": 0.72
+        },
+        "rainy": {
+          "wet": true,
+          "mud": true,
+          "localPveRangeMultiplier": 1,
+          "radarPveRangeMultiplier": 1,
+          "npcAcquisitionMultiplier": 1
+        },
+        "storm": {
+          "wet": true,
+          "mud": true,
+          "localPveRangeMultiplier": 1,
+          "radarPveRangeMultiplier": 1,
+          "npcAcquisitionMultiplier": 1
+        }
+      },
+      "LIGHTNING_DAMAGE_RADIUS": 6,
+      "LIGHTNING_PLAYER_TARGET_CHANCE": 0.025,
+      "LIGHTNING_STRIKE_MAX_DELAY_MS": 90000,
+      "LIGHTNING_STRIKE_MIN_DELAY_MS": 45000,
+      "LIGHTNING_TARGET_CHANCE": 0.08,
+      "MAX_MUD_ZONES": 10,
+      "MAX_WEATHER_EPOCH_AGE_MS": 316224000000,
+      "MUD_MOVEMENT_MULTIPLIER": 0.62,
+      "MUD_TURN_MULTIPLIER": 0.55,
+      "MUD_ZONE_DURATION_SECONDS": 14,
+      "MUD_ZONE_RADIUS": 5,
+      "STORM_CONDUCTOR_DAMAGE_MULTIPLIER": 0.45,
+      "STORM_CONDUCTOR_RANGE": 14,
+      "WEATHER_PHASE_MAX_MS": 180000,
+      "WEATHER_PHASE_MIN_MS": 120000,
+      "WET_RETENTION_SECONDS": 6
+    },
+    "waves": {
+      "FINAL_WAVE": 6,
+      "WAVE_AREA_FRACTIONS": [
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1
+      ],
+      "WAVE_CLEAR_GRACE_SECONDS": 1,
+      "WAVE_INTERMISSION_MS": 5000,
+      "WAVE_INTERMISSION_SECONDS": 5,
+      "WAVE_SPAWN_INTERVAL_SECONDS": 0.45
+    },
+    "worldBoundary": {
+      "OUTER_SIMULATION_RADIUS": 1648,
+      "PLAYABLE_WORLD_RADIUS": 1248,
+      "WORLD_BOUNDARY_GRACE_SECONDS": 15
+    },
+    "worldLayout": {
+      "MONUMENT_TYPES": [
+        "watchtower",
+        "pumpjack",
+        "rock-spire",
+        "dead-grove",
+        "scrap-yard",
+        "water-tower",
+        "recycling-factory",
+        "cargo-crane",
+        "refinery",
+        "satellite-array"
+      ]
+    },
+    "worldCollision": {},
+    "config": {
+      "ARENA_RADIUS": 1248,
+      "MAX_EFFECTS": 185,
+      "MAX_PICKUPS": 72,
+      "MAX_PROJECTILES": 140,
+      "MAX_SOLDIERS": 84,
+      "OUTER_WORLD_RADIUS": 1648,
+      "TAU": 6.283185307179586,
+      "TRACK_CAPACITY": 1800,
+      "WORLD_SIZE": 3008,
+      "ZONE_MIN_RADIUS": 882.4692629208114,
+      "ZONE_START_RADIUS": 882.4692629208114,
+      "defaultWsHost": "localhost",
+      "defaultWsProtocol": "ws",
+      "isTouch": false
+    }
+  }
+}

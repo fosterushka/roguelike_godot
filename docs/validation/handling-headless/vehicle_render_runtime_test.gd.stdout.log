@@ -1,0 +1,6 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ENGINE_INTERPOLATION_ENABLED false
+RUNTIME 60 fps frames=119 interior=116 between_physics=2 backward=0
+RUNTIME 144 fps frames=288 interior=277 between_physics=168 backward=0
+Vehicle render runtime: 7 checks, 0 failures

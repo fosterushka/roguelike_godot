@@ -1,0 +1,1100 @@
+{
+  "source": "src/client/audio/sound-system.ts",
+  "sha256": "1f9b1e1f9ae8df293fb5b65d95d7df38823bd8801d7d189e394755bdc1f5762d",
+  "master": 0.72,
+  "sfx": 0.86,
+  "recipes": {
+    "hit": [
+      {
+        "kind": "tone",
+        "frequency": 105,
+        "duration": 0.09,
+        "type": "square",
+        "gain": 0.017,
+        "slide": -66,
+        "delay": 0,
+        "filter": 720
+      },
+      {
+        "kind": "noise",
+        "duration": 0.055,
+        "gain": 0.018,
+        "frequency": 1500,
+        "delay": 0,
+        "type": "bandpass"
+      }
+    ],
+    "crush": [
+      {
+        "kind": "tone",
+        "frequency": 84,
+        "duration": 0.14,
+        "type": "square",
+        "gain": 0.025,
+        "slide": -52,
+        "delay": 0,
+        "filter": 500
+      },
+      {
+        "kind": "tone",
+        "frequency": 176,
+        "duration": 0.06,
+        "type": "triangle",
+        "gain": 0.01,
+        "slide": -92,
+        "delay": 0.015,
+        "filter": 900
+      },
+      {
+        "kind": "noise",
+        "duration": 0.11,
+        "gain": 0.026,
+        "frequency": 780,
+        "delay": 0,
+        "type": "lowpass"
+      }
+    ],
+    "bumper": [
+      {
+        "kind": "tone",
+        "frequency": 61,
+        "duration": 0.26,
+        "type": "sawtooth",
+        "gain": 0.048,
+        "slide": -28,
+        "delay": 0,
+        "filter": 340
+      },
+      {
+        "kind": "tone",
+        "frequency": 250,
+        "duration": 0.08,
+        "type": "square",
+        "gain": 0.014,
+        "slide": -165,
+        "delay": 0.01,
+        "filter": 1500
+      },
+      {
+        "kind": "noise",
+        "duration": 0.16,
+        "gain": 0.037,
+        "frequency": 950,
+        "delay": 0,
+        "type": "lowpass"
+      }
+    ],
+    "pickup": [
+      {
+        "kind": "tone",
+        "frequency": 660,
+        "duration": 0.09,
+        "type": "sine",
+        "gain": 0.022,
+        "slide": 210,
+        "delay": 0,
+        "filter": 3500
+      },
+      {
+        "kind": "tone",
+        "frequency": 980,
+        "duration": 0.12,
+        "type": "triangle",
+        "gain": 0.014,
+        "slide": 120,
+        "delay": 0.045,
+        "filter": 4200
+      }
+    ],
+    "explosion": [
+      {
+        "kind": "tone",
+        "frequency": 70,
+        "duration": 0.48,
+        "type": "sawtooth",
+        "gain": 0.055,
+        "slide": -42,
+        "delay": 0,
+        "filter": 280
+      },
+      {
+        "kind": "tone",
+        "frequency": 124,
+        "duration": 0.19,
+        "type": "triangle",
+        "gain": 0.018,
+        "slide": -90,
+        "delay": 0.018,
+        "filter": 820
+      },
+      {
+        "kind": "noise",
+        "duration": 0.42,
+        "gain": 0.068,
+        "frequency": 540,
+        "delay": 0,
+        "type": "lowpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 0.15,
+        "gain": 0.025,
+        "frequency": 2400,
+        "delay": 0.015,
+        "type": "bandpass"
+      }
+    ],
+    "horn": [
+      {
+        "kind": "tone",
+        "frequency": 150,
+        "duration": 0.38,
+        "type": "sawtooth",
+        "gain": 0.028,
+        "slide": 24,
+        "delay": 0,
+        "filter": 1200
+      },
+      {
+        "kind": "tone",
+        "frequency": 202,
+        "duration": 0.42,
+        "type": "square",
+        "gain": 0.012,
+        "slide": -16,
+        "delay": 0.07,
+        "filter": 1400
+      }
+    ],
+    "contractProgress": [
+      {
+        "kind": "tone",
+        "frequency": 520,
+        "duration": 0.09,
+        "type": "triangle",
+        "gain": 0.012,
+        "slide": 90,
+        "delay": 0,
+        "filter": 2600
+      }
+    ],
+    "contractComplete": [
+      {
+        "kind": "tone",
+        "frequency": 380,
+        "duration": 0.14,
+        "type": "triangle",
+        "gain": 0.02,
+        "slide": 160,
+        "delay": 0,
+        "filter": 2800
+      },
+      {
+        "kind": "tone",
+        "frequency": 690,
+        "duration": 0.2,
+        "type": "sine",
+        "gain": 0.018,
+        "slide": 150,
+        "delay": 0.12,
+        "filter": 3900
+      }
+    ],
+    "repairPulse": [
+      {
+        "kind": "tone",
+        "frequency": 430,
+        "duration": 0.12,
+        "type": "sine",
+        "gain": 0.013,
+        "slide": 170,
+        "delay": 0,
+        "filter": 2600
+      }
+    ],
+    "mineDrop": [
+      {
+        "kind": "tone",
+        "frequency": 96,
+        "duration": 0.1,
+        "type": "square",
+        "gain": 0.012,
+        "slide": -28,
+        "delay": 0,
+        "filter": 520
+      }
+    ],
+    "mineTrigger": [
+      {
+        "kind": "tone",
+        "frequency": 64,
+        "duration": 0.3,
+        "type": "sawtooth",
+        "gain": 0.038,
+        "slide": -24,
+        "delay": 0,
+        "filter": 300
+      },
+      {
+        "kind": "noise",
+        "duration": 0.24,
+        "gain": 0.045,
+        "frequency": 650,
+        "delay": 0,
+        "type": "lowpass"
+      }
+    ],
+    "evolve": [
+      {
+        "kind": "tone",
+        "frequency": 175,
+        "duration": 0.21,
+        "type": "triangle",
+        "gain": 0.032,
+        "slide": 275,
+        "delay": 0,
+        "filter": 2200
+      },
+      {
+        "kind": "tone",
+        "frequency": 415,
+        "duration": 0.3,
+        "type": "sine",
+        "gain": 0.034,
+        "slide": 420,
+        "delay": 0.12,
+        "filter": 3400
+      },
+      {
+        "kind": "tone",
+        "frequency": 750,
+        "duration": 0.26,
+        "type": "triangle",
+        "gain": 0.02,
+        "slide": 190,
+        "delay": 0.27,
+        "filter": 4400
+      }
+    ],
+    "module": [
+      {
+        "kind": "tone",
+        "frequency": 255,
+        "duration": 0.13,
+        "type": "square",
+        "gain": 0.022,
+        "slide": 95,
+        "delay": 0,
+        "filter": 1800
+      },
+      {
+        "kind": "tone",
+        "frequency": 510,
+        "duration": 0.18,
+        "type": "triangle",
+        "gain": 0.02,
+        "slide": 185,
+        "delay": 0.07,
+        "filter": 3000
+      }
+    ],
+    "nitro": [
+      {
+        "kind": "noise",
+        "duration": 0.38,
+        "gain": 0.024,
+        "frequency": 800,
+        "delay": 0,
+        "type": "bandpass"
+      },
+      {
+        "kind": "tone",
+        "frequency": 80,
+        "duration": 0.45,
+        "type": "sawtooth",
+        "gain": 0.026,
+        "slide": 160,
+        "delay": 0,
+        "filter": 900
+      },
+      {
+        "kind": "tone",
+        "frequency": 185,
+        "duration": 0.31,
+        "type": "triangle",
+        "gain": 0.016,
+        "slide": 290,
+        "delay": 0.07,
+        "filter": 2400
+      }
+    ],
+    "lowHp": [
+      {
+        "kind": "tone",
+        "frequency": 52,
+        "duration": 0.22,
+        "type": "sawtooth",
+        "gain": 0.012,
+        "slide": -8,
+        "delay": 0,
+        "filter": 420
+      }
+    ],
+    "level": [
+      {
+        "kind": "tone",
+        "frequency": 415,
+        "duration": 0.18,
+        "type": "triangle",
+        "gain": 0.036,
+        "slide": 330,
+        "delay": 0,
+        "filter": 2800
+      },
+      {
+        "kind": "tone",
+        "frequency": 710,
+        "duration": 0.25,
+        "type": "sine",
+        "gain": 0.032,
+        "slide": 190,
+        "delay": 0.11,
+        "filter": 4100
+      }
+    ],
+    "shot_bullet": [
+      {
+        "kind": "tone",
+        "frequency": 540,
+        "duration": 0.065,
+        "type": "triangle",
+        "gain": 0.014,
+        "slide": -220,
+        "delay": 0,
+        "filter": 2600
+      },
+      {
+        "kind": "noise",
+        "duration": 0.04,
+        "gain": 0.009,
+        "frequency": 3100,
+        "delay": 0,
+        "type": "bandpass"
+      }
+    ],
+    "shot_grenade": [
+      {
+        "kind": "tone",
+        "frequency": 116,
+        "duration": 0.24,
+        "type": "sawtooth",
+        "gain": 0.042,
+        "slide": -66,
+        "delay": 0,
+        "filter": 460
+      },
+      {
+        "kind": "noise",
+        "duration": 0.16,
+        "gain": 0.035,
+        "frequency": 520,
+        "delay": 0.02,
+        "type": "lowpass"
+      }
+    ],
+    "shot_sabot": [
+      {
+        "kind": "tone",
+        "frequency": 185,
+        "duration": 0.13,
+        "type": "square",
+        "gain": 0.03,
+        "slide": -105,
+        "delay": 0,
+        "filter": 1800
+      },
+      {
+        "kind": "noise",
+        "duration": 0.065,
+        "gain": 0.018,
+        "frequency": 2200,
+        "delay": 0,
+        "type": "bandpass"
+      }
+    ],
+    "shot_rocket": [
+      {
+        "kind": "tone",
+        "frequency": 118,
+        "duration": 0.26,
+        "type": "sawtooth",
+        "gain": 0.035,
+        "slide": 155,
+        "delay": 0,
+        "filter": 900
+      },
+      {
+        "kind": "noise",
+        "duration": 0.18,
+        "gain": 0.026,
+        "frequency": 1500,
+        "delay": 0.03,
+        "type": "bandpass"
+      }
+    ],
+    "enemyShot_bullet": [
+      {
+        "kind": "tone",
+        "frequency": 240,
+        "duration": 0.12,
+        "type": "square",
+        "gain": 0.012,
+        "slide": -125,
+        "delay": 0,
+        "filter": 1300
+      },
+      {
+        "kind": "noise",
+        "duration": 0.06,
+        "gain": 0.008,
+        "frequency": 1800,
+        "delay": 0,
+        "type": "bandpass"
+      }
+    ],
+    "enemyShot_grenade": [
+      {
+        "kind": "tone",
+        "frequency": 86,
+        "duration": 0.3,
+        "type": "sawtooth",
+        "gain": 0.038,
+        "slide": -42,
+        "delay": 0,
+        "filter": 400
+      },
+      {
+        "kind": "noise",
+        "duration": 0.2,
+        "gain": 0.026,
+        "frequency": 600,
+        "delay": 0.025,
+        "type": "lowpass"
+      }
+    ],
+    "enemyShot_sabot": [
+      {
+        "kind": "tone",
+        "frequency": 138,
+        "duration": 0.16,
+        "type": "square",
+        "gain": 0.022,
+        "slide": -72,
+        "delay": 0,
+        "filter": 1300
+      },
+      {
+        "kind": "noise",
+        "duration": 0.08,
+        "gain": 0.012,
+        "frequency": 1600,
+        "delay": 0,
+        "type": "bandpass"
+      }
+    ],
+    "enemyShot_rocket": [
+      {
+        "kind": "tone",
+        "frequency": 86,
+        "duration": 0.3,
+        "type": "sawtooth",
+        "gain": 0.038,
+        "slide": -42,
+        "delay": 0,
+        "filter": 400
+      },
+      {
+        "kind": "noise",
+        "duration": 0.2,
+        "gain": 0.026,
+        "frequency": 600,
+        "delay": 0.025,
+        "type": "lowpass"
+      }
+    ],
+    "spawnWarning_false": [
+      {
+        "kind": "tone",
+        "frequency": 210,
+        "duration": 0.18,
+        "type": "square",
+        "gain": 0.018,
+        "slide": -72,
+        "delay": 0,
+        "filter": 1500
+      },
+      {
+        "kind": "tone",
+        "frequency": 330,
+        "duration": 0.14,
+        "type": "triangle",
+        "gain": 0.012,
+        "slide": -84,
+        "delay": 0.12,
+        "filter": 2200
+      }
+    ],
+    "spawnWarning_true": [
+      {
+        "kind": "tone",
+        "frequency": 58,
+        "duration": 0.62,
+        "type": "sawtooth",
+        "gain": 0.038,
+        "slide": -14,
+        "delay": 0,
+        "filter": 340
+      },
+      {
+        "kind": "tone",
+        "frequency": 92,
+        "duration": 0.42,
+        "type": "square",
+        "gain": 0.016,
+        "slide": -20,
+        "delay": 0.12,
+        "filter": 620
+      },
+      {
+        "kind": "noise",
+        "duration": 0.34,
+        "gain": 0.026,
+        "frequency": 430,
+        "delay": 0.03,
+        "type": "lowpass"
+      }
+    ],
+    "activityAnnouncement_false": [
+      {
+        "kind": "tone",
+        "frequency": 330,
+        "duration": 0.18,
+        "type": "square",
+        "gain": 0.018,
+        "slide": 90,
+        "delay": 0,
+        "filter": 1600
+      },
+      {
+        "kind": "tone",
+        "frequency": 520,
+        "duration": 0.16,
+        "type": "triangle",
+        "gain": 0.012,
+        "slide": 72,
+        "delay": 0.13,
+        "filter": 2400
+      }
+    ],
+    "activityAnnouncement_true": [
+      {
+        "kind": "tone",
+        "frequency": 196,
+        "duration": 0.18,
+        "type": "square",
+        "gain": 0.018,
+        "slide": -38,
+        "delay": 0,
+        "filter": 1600
+      },
+      {
+        "kind": "tone",
+        "frequency": 286,
+        "duration": 0.16,
+        "type": "triangle",
+        "gain": 0.012,
+        "slide": 72,
+        "delay": 0.13,
+        "filter": 2400
+      }
+    ],
+    "activityOutcome_false": [
+      {
+        "kind": "tone",
+        "frequency": 170,
+        "duration": 0.22,
+        "type": "square",
+        "gain": 0.02,
+        "slide": -82,
+        "delay": 0,
+        "filter": 1000
+      },
+      {
+        "kind": "tone",
+        "frequency": 92,
+        "duration": 0.3,
+        "type": "sawtooth",
+        "gain": 0.012,
+        "slide": -28,
+        "delay": 0.1,
+        "filter": 520
+      }
+    ],
+    "activityOutcome_true": [
+      {
+        "kind": "tone",
+        "frequency": 390,
+        "duration": 0.15,
+        "type": "triangle",
+        "gain": 0.022,
+        "slide": 180,
+        "delay": 0,
+        "filter": 2600
+      },
+      {
+        "kind": "tone",
+        "frequency": 620,
+        "duration": 0.2,
+        "type": "sine",
+        "gain": 0.018,
+        "slide": 130,
+        "delay": 0.11,
+        "filter": 3600
+      }
+    ],
+    "jammerStatus_false": [
+      {
+        "kind": "tone",
+        "frequency": 210,
+        "duration": 0.12,
+        "type": "triangle",
+        "gain": 0.014,
+        "slide": 125,
+        "delay": 0,
+        "filter": 1900
+      },
+      {
+        "kind": "tone",
+        "frequency": 380,
+        "duration": 0.14,
+        "type": "sine",
+        "gain": 0.01,
+        "slide": 90,
+        "delay": 0.07,
+        "filter": 2600
+      }
+    ],
+    "jammerStatus_true": [
+      {
+        "kind": "tone",
+        "frequency": 176,
+        "duration": 0.16,
+        "type": "square",
+        "gain": 0.016,
+        "slide": -72,
+        "delay": 0,
+        "filter": 1100
+      },
+      {
+        "kind": "tone",
+        "frequency": 92,
+        "duration": 0.22,
+        "type": "sawtooth",
+        "gain": 0.012,
+        "slide": -22,
+        "delay": 0.08,
+        "filter": 520
+      }
+    ],
+    "priorityWarning_priority": [
+      {
+        "kind": "tone",
+        "frequency": 92,
+        "duration": 0.32,
+        "type": "square",
+        "gain": 0.022,
+        "slide": -32,
+        "delay": 0,
+        "filter": 1050
+      },
+      {
+        "kind": "tone",
+        "frequency": 147.20000000000002,
+        "duration": 0.18,
+        "type": "triangle",
+        "gain": 0.014,
+        "slide": -45,
+        "delay": 0.14,
+        "filter": 1900
+      }
+    ],
+    "priorityWarning_jammerTruck": [
+      {
+        "kind": "tone",
+        "frequency": 118,
+        "duration": 0.32,
+        "type": "square",
+        "gain": 0.022,
+        "slide": -32,
+        "delay": 0,
+        "filter": 1050
+      },
+      {
+        "kind": "tone",
+        "frequency": 188.8,
+        "duration": 0.18,
+        "type": "triangle",
+        "gain": 0.014,
+        "slide": -45,
+        "delay": 0.14,
+        "filter": 1900
+      }
+    ],
+    "priorityWarning_repairCrawler": [
+      {
+        "kind": "tone",
+        "frequency": 168,
+        "duration": 0.32,
+        "type": "square",
+        "gain": 0.022,
+        "slide": 110,
+        "delay": 0,
+        "filter": 1050
+      },
+      {
+        "kind": "tone",
+        "frequency": 268.8,
+        "duration": 0.18,
+        "type": "triangle",
+        "gain": 0.014,
+        "slide": -45,
+        "delay": 0.14,
+        "filter": 1900
+      }
+    ],
+    "thunder_0": [
+      {
+        "kind": "noise",
+        "duration": 0.035,
+        "gain": 0.13,
+        "frequency": 4700,
+        "delay": 0,
+        "type": "highpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 0.085,
+        "gain": 0.095,
+        "frequency": 2600,
+        "delay": 0.012,
+        "type": "highpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 0.28,
+        "gain": 0.062,
+        "frequency": 1250,
+        "delay": 0.035,
+        "type": "bandpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 1.45,
+        "gain": 0.078,
+        "frequency": 390,
+        "delay": 0.065,
+        "type": "lowpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 1.131,
+        "gain": 0.034,
+        "frequency": 760,
+        "delay": 0.16,
+        "type": "bandpass"
+      },
+      {
+        "kind": "tone",
+        "frequency": 46,
+        "duration": 1.45,
+        "type": "sawtooth",
+        "gain": 0.032,
+        "slide": -18,
+        "delay": 0.07,
+        "filter": 210
+      },
+      {
+        "kind": "tone",
+        "frequency": 88,
+        "duration": 0.986,
+        "type": "square",
+        "gain": 0.019,
+        "slide": -46,
+        "delay": 0.13,
+        "filter": 480
+      },
+      {
+        "kind": "tone",
+        "frequency": 174,
+        "duration": 0.18,
+        "type": "sawtooth",
+        "gain": 0.012,
+        "slide": -96,
+        "delay": 0.018,
+        "filter": 1900
+      }
+    ],
+    "thunder_130": [
+      {
+        "kind": "noise",
+        "duration": 0.035,
+        "gain": 0.11115,
+        "frequency": 4250,
+        "delay": 0.37900874635568516,
+        "type": "highpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 0.085,
+        "gain": 0.081225,
+        "frequency": 2375,
+        "delay": 0.39100874635568517,
+        "type": "highpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 0.28,
+        "gain": 0.05301,
+        "frequency": 1145,
+        "delay": 0.4140087463556852,
+        "type": "bandpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 1.7125,
+        "gain": 0.0845,
+        "frequency": 357.5,
+        "delay": 0.44400874635568516,
+        "type": "lowpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 1.33575,
+        "gain": 0.039,
+        "frequency": 690,
+        "delay": 0.5390087463556852,
+        "type": "bandpass"
+      },
+      {
+        "kind": "tone",
+        "frequency": 46,
+        "duration": 1.7125,
+        "type": "sawtooth",
+        "gain": 0.0345,
+        "slide": -18,
+        "delay": 0.44900874635568516,
+        "filter": 210
+      },
+      {
+        "kind": "tone",
+        "frequency": 88,
+        "duration": 1.1645,
+        "type": "square",
+        "gain": 0.02075,
+        "slide": -46,
+        "delay": 0.5090087463556852,
+        "filter": 480
+      },
+      {
+        "kind": "tone",
+        "frequency": 174,
+        "duration": 0.18,
+        "type": "sawtooth",
+        "gain": 0.01026,
+        "slide": -96,
+        "delay": 0.39700874635568517,
+        "filter": 1900
+      }
+    ],
+    "thunder_260": [
+      {
+        "kind": "noise",
+        "duration": 0.035,
+        "gain": 0.0923,
+        "frequency": 3800,
+        "delay": 0.7580174927113703,
+        "type": "highpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 0.085,
+        "gain": 0.06745,
+        "frequency": 2150,
+        "delay": 0.7700174927113703,
+        "type": "highpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 0.28,
+        "gain": 0.04402,
+        "frequency": 1040,
+        "delay": 0.7930174927113703,
+        "type": "bandpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 1.975,
+        "gain": 0.091,
+        "frequency": 325,
+        "delay": 0.8230174927113703,
+        "type": "lowpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 1.5405000000000002,
+        "gain": 0.044000000000000004,
+        "frequency": 620,
+        "delay": 0.9180174927113703,
+        "type": "bandpass"
+      },
+      {
+        "kind": "tone",
+        "frequency": 46,
+        "duration": 1.975,
+        "type": "sawtooth",
+        "gain": 0.037,
+        "slide": -18,
+        "delay": 0.8280174927113704,
+        "filter": 210
+      },
+      {
+        "kind": "tone",
+        "frequency": 88,
+        "duration": 1.3430000000000002,
+        "type": "square",
+        "gain": 0.0225,
+        "slide": -46,
+        "delay": 0.8880174927113703,
+        "filter": 480
+      },
+      {
+        "kind": "tone",
+        "frequency": 174,
+        "duration": 0.18,
+        "type": "sawtooth",
+        "gain": 0.00852,
+        "slide": -96,
+        "delay": 0.7760174927113703,
+        "filter": 1900
+      }
+    ],
+    "thunder_520": [
+      {
+        "kind": "noise",
+        "duration": 0.035,
+        "gain": 0.05460000000000001,
+        "frequency": 2900,
+        "delay": 1.5160349854227406,
+        "type": "highpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 0.085,
+        "gain": 0.039900000000000005,
+        "frequency": 1700,
+        "delay": 1.5280349854227406,
+        "type": "highpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 0.28,
+        "gain": 0.02604,
+        "frequency": 830,
+        "delay": 1.5510349854227405,
+        "type": "bandpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 2.5,
+        "gain": 0.104,
+        "frequency": 260,
+        "delay": 1.5810349854227406,
+        "type": "lowpass"
+      },
+      {
+        "kind": "noise",
+        "duration": 1.9500000000000002,
+        "gain": 0.054000000000000006,
+        "frequency": 480,
+        "delay": 1.6760349854227405,
+        "type": "bandpass"
+      },
+      {
+        "kind": "tone",
+        "frequency": 46,
+        "duration": 2.5,
+        "type": "sawtooth",
+        "gain": 0.042,
+        "slide": -18,
+        "delay": 1.5860349854227407,
+        "filter": 210
+      },
+      {
+        "kind": "tone",
+        "frequency": 88,
+        "duration": 1.7000000000000002,
+        "type": "square",
+        "gain": 0.026,
+        "slide": -46,
+        "delay": 1.6460349854227405,
+        "filter": 480
+      },
+      {
+        "kind": "tone",
+        "frequency": 174,
+        "duration": 0.18,
+        "type": "sawtooth",
+        "gain": 0.00504,
+        "slide": -96,
+        "delay": 1.5340349854227406,
+        "filter": 1900
+      }
+    ],
+    "countdownGo": [
+      {
+        "kind": "tone",
+        "frequency": 320,
+        "duration": 0.16,
+        "type": "triangle",
+        "gain": 0.035,
+        "slide": 280,
+        "delay": 0,
+        "filter": 0
+      }
+    ],
+    "repairAbility": [
+      {
+        "kind": "tone",
+        "frequency": 340,
+        "duration": 0.15,
+        "type": "triangle",
+        "gain": 0.035,
+        "slide": 170,
+        "delay": 0,
+        "filter": 0
+      }
+    ],
+    "mineHack": [
+      {
+        "kind": "tone",
+        "frequency": 620,
+        "duration": 0.12,
+        "type": "square",
+        "gain": 0.025,
+        "slide": 90,
+        "delay": 0,
+        "filter": 0
+      }
+    ]
+  }
+}

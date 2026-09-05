@@ -1,0 +1,747 @@
+{
+  "models": [
+    {
+      "name": "jammerTruck",
+      "meshes": 19,
+      "bounds": [
+        2.8880000035762796,
+        5.099999990463257,
+        5.225000097751618
+      ]
+    },
+    {
+      "name": "repairCrawler",
+      "meshes": 13,
+      "bounds": [
+        7.099999904632568,
+        4.129999978542328,
+        7.099999904632568
+      ]
+    },
+    {
+      "name": "minelayer",
+      "meshes": 17,
+      "bounds": [
+        2.8880000035762796,
+        2.7749999952316284,
+        4.828511093193674
+      ]
+    },
+    {
+      "name": "mine_enemy",
+      "meshes": 8,
+      "bounds": [
+        1.7200000286102295,
+        0.5680000030994415,
+        1.9200000047683716
+      ]
+    },
+    {
+      "name": "mine_friendly",
+      "meshes": 8,
+      "bounds": [
+        1.7200000286102295,
+        0.578800003528595,
+        1.9200000047683716
+      ]
+    },
+    {
+      "name": "mine_unarmed",
+      "meshes": 8,
+      "bounds": [
+        1.7200000286102295,
+        0.5104000008106232,
+        1.9200000047683716
+      ]
+    },
+    {
+      "name": "walker_trailer",
+      "meshes": 19,
+      "bounds": [
+        4.0799999833106995,
+        2.770000004172325,
+        6.889999946951866
+      ]
+    },
+    {
+      "name": "player",
+      "meshes": 77,
+      "bounds": [
+        6.6,
+        4.870800000262261,
+        6.177380198965881
+      ]
+    },
+    {
+      "name": "evolution_2",
+      "meshes": 8,
+      "bounds": [
+        5.843200010490418,
+        0.8574814320319624,
+        3.834498344128832
+      ]
+    },
+    {
+      "name": "evolution_3",
+      "meshes": 5,
+      "bounds": [
+        1.478399953842163,
+        1.4950509507091811,
+        1.478399953842163
+      ]
+    },
+    {
+      "name": "evolution_4",
+      "meshes": 8,
+      "bounds": [
+        6.0763868241268595,
+        2.360716986147409,
+        4.10079995803833
+      ]
+    },
+    {
+      "name": "weapon_assaultRifle",
+      "meshes": 4,
+      "bounds": [
+        1.9600000381469727,
+        1.3999999922513962,
+        2.1850000071525573
+      ]
+    },
+    {
+      "name": "weapon_akTurret",
+      "meshes": 5,
+      "bounds": [
+        1.9600000381469727,
+        1.3999999922513962,
+        2.1850000071525573
+      ]
+    },
+    {
+      "name": "weapon_bazooka",
+      "meshes": 5,
+      "bounds": [
+        1.940155267715454,
+        1.244999982714653,
+        2.624999957084656
+      ]
+    },
+    {
+      "name": "weapon_missileRack",
+      "meshes": 7,
+      "bounds": [
+        1.7000000476837158,
+        1.0200000005960466,
+        2.0150000256299974
+      ]
+    },
+    {
+      "name": "weapon_grenadeLauncher",
+      "meshes": 6,
+      "bounds": [
+        1.840000033378601,
+        1.0299999907612802,
+        2.1100000166893005
+      ]
+    },
+    {
+      "name": "weapon_railgun",
+      "meshes": 5,
+      "bounds": [
+        1.940155267715454,
+        1.2000000089406968,
+        2.789999957084656
+      ]
+    },
+    {
+      "name": "weapon_minigun",
+      "meshes": 7,
+      "bounds": [
+        1.9021130800247192,
+        1.080000006556511,
+        2.494999976158142
+      ]
+    },
+    {
+      "name": "weapon_workshop",
+      "meshes": 4,
+      "bounds": [
+        1.9500000476837158,
+        2.510000019073486,
+        1.6799999475479126
+      ]
+    },
+    {
+      "name": "weapon_armor",
+      "meshes": 5,
+      "bounds": [
+        2.180000066757202,
+        1.1603283400690325,
+        0.4450716371756513
+      ]
+    },
+    {
+      "name": "weapon_treasury",
+      "meshes": 3,
+      "bounds": [
+        1.8200000524520874,
+        1.2000000476837158,
+        1.7499999940395354
+      ]
+    },
+    {
+      "name": "weapon_radar",
+      "meshes": 4,
+      "bounds": [
+        1.8260284662246704,
+        2.430000022053718,
+        1.9199999570846558
+      ]
+    },
+    {
+      "name": "weapon_bumper",
+      "meshes": 9,
+      "bounds": [
+        5.147999801635742,
+        0.7286000007390977,
+        2.989999978542328
+      ]
+    },
+    {
+      "name": "weapon_counterDroneJammer",
+      "meshes": 9,
+      "bounds": [
+        1.7599999904632568,
+        2.550622876980356,
+        1.9200000095367433
+      ]
+    },
+    {
+      "name": "bike",
+      "meshes": 34,
+      "bounds": [
+        0.8199999928474426,
+        2.1600000071525574,
+        2.9200000166893005
+      ]
+    },
+    {
+      "name": "buggy",
+      "meshes": 56,
+      "bounds": [
+        2.6499999964237215,
+        2.8816000032424927,
+        3.629999995827675
+      ]
+    },
+    {
+      "name": "drone",
+      "meshes": 16,
+      "bounds": [
+        2.559999973773956,
+        0.5885499909520149,
+        1.3899999994039536
+      ]
+    },
+    {
+      "name": "kamikaze",
+      "meshes": 15,
+      "bounds": [
+        2.8400000166893005,
+        0.7307999973744155,
+        1.5499999994039535
+      ]
+    },
+    {
+      "name": "raider",
+      "meshes": 56,
+      "bounds": [
+        6.004000072479248,
+        5.878599963760378,
+        5.064861913368899
+      ]
+    },
+    {
+      "name": "boss",
+      "meshes": 64,
+      "bounds": [
+        11.154000031471252,
+        10.210199937057496,
+        8.796865428482825
+      ]
+    },
+    {
+      "name": "garrison_1",
+      "meshes": 45,
+      "bounds": [
+        9.79400022506714,
+        9.864800036573408,
+        9.812074300818077
+      ]
+    },
+    {
+      "name": "garrison_2",
+      "meshes": 47,
+      "bounds": [
+        10.292000236511232,
+        10.366400038433074,
+        10.310993333063063
+      ]
+    },
+    {
+      "name": "garrison_3",
+      "meshes": 49,
+      "bounds": [
+        10.790000247955325,
+        10.86800004029274,
+        10.809912365308051
+      ]
+    },
+    {
+      "name": "airdrop",
+      "meshes": 24,
+      "bounds": [
+        4.990133762359619,
+        11.729999998211861,
+        4.990133762359619
+      ]
+    },
+    {
+      "name": "heal_cart",
+      "meshes": 15,
+      "bounds": [
+        4.099999904632568,
+        3.101612790822983,
+        4.099999904632568
+      ]
+    },
+    {
+      "name": "pickup_fuel",
+      "meshes": 7,
+      "bounds": [
+        0.7300000157952309,
+        1.3555808037519455,
+        1.2400000095367432
+      ]
+    },
+    {
+      "name": "pickup_salvage",
+      "meshes": 3,
+      "bounds": [
+        0.14499999582767498,
+        1.2211616039276123,
+        1.2400000095367432
+      ]
+    },
+    {
+      "name": "projectile_bullet",
+      "meshes": 1,
+      "bounds": [
+        0.09000000357627869,
+        0.2800000011920929,
+        0.09000000357627869
+      ]
+    },
+    {
+      "name": "projectile_enemy_bullet",
+      "meshes": 1,
+      "bounds": [
+        0.09000000357627869,
+        0.2800000011920929,
+        0.09000000357627869
+      ]
+    },
+    {
+      "name": "projectile_sabot",
+      "meshes": 2,
+      "bounds": [
+        0.20000000298023224,
+        1.3800000029802324,
+        0.20000000298023224
+      ]
+    },
+    {
+      "name": "projectile_enemy_sabot",
+      "meshes": 2,
+      "bounds": [
+        0.20000000298023224,
+        1.3800000029802324,
+        0.20000000298023224
+      ]
+    },
+    {
+      "name": "projectile_rocket",
+      "meshes": 4,
+      "bounds": [
+        0.55,
+        1.3800000032782553,
+        0.2800000011920929
+      ]
+    },
+    {
+      "name": "projectile_enemy_rocket",
+      "meshes": 4,
+      "bounds": [
+        0.55,
+        1.3800000032782553,
+        0.2800000011920929
+      ]
+    },
+    {
+      "name": "projectile_grenade",
+      "meshes": 2,
+      "bounds": [
+        0.5799999833106995,
+        0.5799999833106995,
+        0.5799999833106995
+      ]
+    },
+    {
+      "name": "projectile_enemy_grenade",
+      "meshes": 2,
+      "bounds": [
+        0.699999988079071,
+        0.699999988079071,
+        0.699999988079071
+      ]
+    },
+    {
+      "name": "fx_sphere",
+      "meshes": 1,
+      "bounds": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "name": "fx_chunk",
+      "meshes": 1,
+      "bounds": [
+        0.5231364965438843,
+        0.5231364965438843,
+        0.5231364965438843
+      ]
+    },
+    {
+      "name": "fx_gear",
+      "meshes": 1,
+      "bounds": [
+        0.5625108480453491,
+        0.5711885094642639,
+        0.13314791023731232
+      ]
+    },
+    {
+      "name": "fx_collapse_gear",
+      "meshes": 1,
+      "bounds": [
+        0.5916062593460083,
+        0.6007327437400818,
+        0.12363734841346741
+      ]
+    },
+    {
+      "name": "fx_masonry",
+      "meshes": 1,
+      "bounds": [
+        0.9715392589569092,
+        0.9715392589569092,
+        0.9715392589569092
+      ]
+    },
+    {
+      "name": "fx_shockwave",
+      "meshes": 1,
+      "bounds": [
+        1.399999976158142,
+        1.3923306465148926,
+        0
+      ]
+    },
+    {
+      "name": "fx_cylinder4",
+      "meshes": 1,
+      "bounds": [
+        2,
+        1,
+        2
+      ]
+    },
+    {
+      "name": "fx_cone4",
+      "meshes": 1,
+      "bounds": [
+        2,
+        1,
+        2
+      ]
+    },
+    {
+      "name": "fx_cylinder5",
+      "meshes": 1,
+      "bounds": [
+        1.9021130800247192,
+        1,
+        1.80901700258255
+      ]
+    },
+    {
+      "name": "fx_cone5",
+      "meshes": 1,
+      "bounds": [
+        1.9021130800247192,
+        1,
+        1.80901700258255
+      ]
+    },
+    {
+      "name": "fx_cylinder6",
+      "meshes": 1,
+      "bounds": [
+        1.7320507764816284,
+        1,
+        2
+      ]
+    },
+    {
+      "name": "fx_cone6",
+      "meshes": 1,
+      "bounds": [
+        1.7320507764816284,
+        1,
+        2
+      ]
+    },
+    {
+      "name": "fx_cylinder7",
+      "meshes": 1,
+      "bounds": [
+        1.9498558044433594,
+        1,
+        1.900968849658966
+      ]
+    },
+    {
+      "name": "fx_cone7",
+      "meshes": 1,
+      "bounds": [
+        1.9498558044433594,
+        1,
+        1.900968849658966
+      ]
+    },
+    {
+      "name": "fx_cylinder8",
+      "meshes": 1,
+      "bounds": [
+        2,
+        1,
+        2
+      ]
+    },
+    {
+      "name": "fx_cone8",
+      "meshes": 1,
+      "bounds": [
+        2,
+        1,
+        2
+      ]
+    },
+    {
+      "name": "fx_cylinder9",
+      "meshes": 1,
+      "bounds": [
+        1.9696154594421387,
+        1,
+        1.9396926164627075
+      ]
+    },
+    {
+      "name": "fx_cone9",
+      "meshes": 1,
+      "bounds": [
+        1.9696154594421387,
+        1,
+        1.9396926164627075
+      ]
+    },
+    {
+      "name": "wreck_bike",
+      "meshes": 3,
+      "bounds": [
+        0.7632352026564699,
+        1.3799824491486874,
+        2.691990375518799
+      ]
+    },
+    {
+      "name": "wreck_buggy",
+      "meshes": 3,
+      "bounds": [
+        2.7392895221710205,
+        2.000029891729355,
+        2.9584426879882812
+      ]
+    },
+    {
+      "name": "wreck_jammerTruck",
+      "meshes": 3,
+      "bounds": [
+        3.1335785388946533,
+        2.5580735951662064,
+        3.799999952316284
+      ]
+    },
+    {
+      "name": "wreck_repairCrawler",
+      "meshes": 3,
+      "bounds": [
+        3.1335785388946533,
+        2.2867425233125687,
+        3.799999952316284
+      ]
+    },
+    {
+      "name": "wreck_minelayer",
+      "meshes": 3,
+      "bounds": [
+        3.1335785388946533,
+        2.2867425233125687,
+        3.799999952316284
+      ]
+    },
+    {
+      "name": "rifleman",
+      "meshes": 7,
+      "bounds": [
+        1.0779831455003022,
+        1.8699999451637268,
+        0.9646181623708914
+      ]
+    },
+    {
+      "name": "ak",
+      "meshes": 7,
+      "bounds": [
+        1.083577173382885,
+        1.9699999392032623,
+        1.0106274603936787
+      ]
+    },
+    {
+      "name": "bazooka",
+      "meshes": 7,
+      "bounds": [
+        1.1525541414855331,
+        1.8799999356269836,
+        1.1807877666779105
+      ]
+    },
+    {
+      "name": "bomber",
+      "meshes": 7,
+      "bounds": [
+        1.248084828545661,
+        1.9299999475479126,
+        0.7800000011920929
+      ]
+    },
+    {
+      "name": "world_72841",
+      "meshes": 3324,
+      "bounds": [
+        3242.0486961220404,
+        14.89710172989323,
+        3257.9508667458294
+      ]
+    }
+  ],
+  "provenance": [
+    {
+      "file": "src/client/infrastructure/three/effects.ts",
+      "sha256": "be1de283a20b5f3f478cec50515b98ef0705d6b32a384bc008ef8bbe2f60eef2"
+    },
+    {
+      "file": "src/client/infrastructure/three/explosion-fireball.ts",
+      "sha256": "439c9adc32188a04da38b59367549f09a777ac8ab8f6653096f8cd44f664049c"
+    },
+    {
+      "file": "src/client/infrastructure/three/rocket-smoke-trail.ts",
+      "sha256": "73ae667503f2b550c97efa25716f413a2d1b3628f748b1df560b6b51e5cff093"
+    },
+    {
+      "file": "src/client/infrastructure/three/smoke-shader.ts",
+      "sha256": "c3848cb0f934a3137456973a8fc89a8a33116cddf983c690e8401fde0bb8a8dc"
+    },
+    {
+      "file": "src/client/infrastructure/three/vehicle-wrecks.ts",
+      "sha256": "87171c658395602ed8e700ca836c5ca5a8626b89430809efebcd06df568ad3e9"
+    },
+    {
+      "file": "src/client/infrastructure/three/particle-shader.ts",
+      "sha256": "3b22016ef3782aa5872ac04f21dc0c6d413055418a3ae1ef4c760ef874f90925"
+    },
+    {
+      "file": "src/client/infrastructure/three/battlefield-retention.ts",
+      "sha256": "451dd6273d8ad3f2e98eb62f754ec88d422a6f3beb87ce62479bab19a837d1a9"
+    },
+    {
+      "file": "src/client/infrastructure/three/weapon-aim.ts",
+      "sha256": "9186c81930ce47bfd11da94a3d0f5688d3856c9f407a7b68ec0122a641ed3b92"
+    },
+    {
+      "file": "src/client/infrastructure/three/priority-enemy-views.ts",
+      "sha256": "3fd1ae2fe02126513b680f6b36b59b1c9335f78300ae288473d0ea13ebc52375"
+    },
+    {
+      "file": "src/client/infrastructure/three/walker-trailer-view.ts",
+      "sha256": "48c11859da023c287137c3d638259aa4620a8f2081df5bf68f343179f36eaaa5"
+    },
+    {
+      "file": "src/client/infrastructure/three/player-vehicle-model.ts",
+      "sha256": "8fcbfb63ca2a47e11be434d0adddd25d595beffcc365ce390f7db2ca097193d4"
+    },
+    {
+      "file": "src/client/infrastructure/three/player-vehicle-details.ts",
+      "sha256": "d9eee0909e503b83f7f94c41167848f29d0ca9598add4168831aab6673fea604"
+    },
+    {
+      "file": "src/client/infrastructure/three/enemy-views.ts",
+      "sha256": "4135483cfe9eaea2878feb738b0bf71106a070f14455290aa7ba544d2efcc513"
+    },
+    {
+      "file": "src/client/infrastructure/three/caravan-views.ts",
+      "sha256": "43e02c762f814aab7fb35ada1265fd8230711cde29977e2929fbf681af1b5b7a"
+    },
+    {
+      "file": "src/client/infrastructure/three/soldier-pool.ts",
+      "sha256": "508d4f88829e0ec4a5198d06dc33831897d5d6e999d39a0e54440684e8a9dc26"
+    },
+    {
+      "file": "src/client/infrastructure/three/world-builder.ts",
+      "sha256": "7cdcd621da03cb9f0cca1a994d9b1e0f2c8c8895d1207efdd8298e3ef4059c97"
+    },
+    {
+      "file": "src/client/infrastructure/three/terrain-surface.ts",
+      "sha256": "07256df7bf0f6cc2bc60f8b93a841230ea5b2c3d105135bccfd8dd0159d52bf3"
+    },
+    {
+      "file": "src/client/infrastructure/three/road-network.ts",
+      "sha256": "c271b9a9df9c082b0b62feb925da7902084076d439735e8d320c1bb1a826783d"
+    },
+    {
+      "file": "src/client/infrastructure/three/battlefield-scars.ts",
+      "sha256": "a8f389fb47c123ae3edaff736ba5ac53f253c24f4f796db0625e17a603aa7138"
+    },
+    {
+      "file": "src/client/infrastructure/three/counter-drone-jammer-view.ts",
+      "sha256": "df8d8d21c800a094dde48f4f27d02a59a0cfec80d61244093eecf272fc32ee5e"
+    },
+    {
+      "file": "src/client/infrastructure/three/scene.ts",
+      "sha256": "8a2a243df90c4d17340e096f7816be584ad57f5ac4e9500ab256630e18dabea3"
+    }
+  ]
+}
