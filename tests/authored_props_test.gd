@@ -19,6 +19,12 @@ func _run() -> void:
 		authored.setup(context, natural)
 		authored.callv(fixture.name, fixture.args)
 		var label := "%s seed=%d" % [fixture.name, fixture.seed]
+		if fixture.name == "critter":
+			compare(context.random.state, fixture.state, label + " retired figure preserves RNG")
+			compare(context.groups.size(), 0, label + " no human geometry")
+			compare(context.ambient_critters.size(), 0, label + " no human ambient entity")
+			compare(context.props.size(), 0, label + " no replacement prop")
+			continue
 		compare(context.random.state, fixture.state, label + " RNG")
 		compare(context.props.size(), fixture.props.size(), label + " prop count")
 		for index in mini(context.props.size(), fixture.props.size()):

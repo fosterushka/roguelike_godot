@@ -3,8 +3,10 @@ const Terrain = preload("res://modules/caravan/terrain_surface.gd")
 
 const Dimensions = preload("res://modules/caravan/player_dimensions.gd")
 const Waves = preload("res://modules/combat/wave_rules.gd")
+const EnemyFactory = preload("res://modules/combat/enemy_factory.gd")
 const Enemies = preload("res://modules/combat/enemy_catalog.gd")
 const Leviathan = preload("res://modules/combat/leviathan_rules.gd")
+const Jammer = preload("res://modules/combat/jammer_rules.gd")
 const Shots = preload("res://modules/combat/projectile_rules.gd")
 const Protocols = preload("res://modules/combat/protocol_rules.gd")
 const Sidegrades = preload("res://modules/combat/sidegrade_rules.gd")
@@ -30,7 +32,9 @@ var weapons: Array[Dictionary] = []
 var player: Dictionary = {}
 var wave := 1
 var status := "idle"
+var jammer := Jammer.new()
 var weather_type := "clear"
+var weather_fog_strength := -1.0
 var world_collision_query: Callable
 var enemy_motion_query: Callable
 var enemy_steering_query: Callable
@@ -60,6 +64,8 @@ func _init() -> void:
 	reset_run()
 
 func reset_run(seed_value: int = 72841) -> void:
+	weather_type = "clear"
+	weather_fog_strength = -1.0
 	generation += 1
 	protocols.reset()
 	road_fury.reset()
@@ -91,6 +97,7 @@ func reset_run(seed_value: int = 72841) -> void:
 		"regen_rate": 0.0, "double_shot_chance": 0.0, "overdrive_feed": false,
 		"counter_drone_jammer": false, "active_protocols": [], "selected_sidegrades": {}, "treasury_count": 0,
 		"visual_scale": 0.88, "radius": 3.5, "low_hp_sfx_remaining": 0.0, "heading": 0.0, "yaw_velocity": 0.0, "slip_angle": 0.0, "momentum": 0.0, "interact": false}
+	jammer.reset(player, seed_value)
 	install_weapon("assaultRifle")
 
 func install_weapon(type: String) -> bool:
@@ -136,6 +143,7 @@ func step(delta: float) -> void:
 		return
 	_update_pickups(delta)
 	hazards.step(self, delta)
+	jammer.step(player, enemies, 0.0)
 	enemies = enemies.filter(func(enemy: Dictionary) -> bool: return not enemy.dead)
 	if status == "combat" and spawn_queue.is_empty() and _wave_remaining() == 0 and _wave_age >= 1.0:
 		projectiles.clear()
@@ -151,8 +159,9 @@ func spawn_enemy(kind: String, position: Vector3, options: Dictionary = {}) -> D
 		return {}
 	if not Spawning.capacity(enemies, kind, Enemies.DEFINITIONS):
 		return {}
-	var enemy := Enemies.create(kind, _id(), position, random)
-	enemy.merge(options, true)
+	var enemy := EnemyFactory.create(kind, _id(), position, random, options)
+	if enemy.is_empty():
+		return {}
 	enemy.wave = wave
 	if enemy.get("boss", false):
 		Leviathan.setup(enemy, self)
@@ -194,7 +203,7 @@ func _update_enemies(delta: float) -> void:
 		EnemyAI.attack(self, enemy, delta, cadence, distance, jammed)
 
 func _update_weapons(delta: float) -> void:
-	player.jammed = Priority.jammed(player, enemies)
+	jammer.step(player, enemies, delta)
 	for weapon: Dictionary in weapons:
 		weapon.cooldown -= delta * player.fire_rate * (1.16 if player.overdrive_feed and absf(player.speed) > 4.0 else 1.0)
 		if weapon.cooldown > 0.0:
@@ -202,7 +211,7 @@ func _update_weapons(delta: float) -> void:
 		var tuning := Sidegrades.tuning(player, weapon)
 		tuning.weapon_mount = weapon.get("mount", {"carrierId": "crawler", "slot": 0})
 		var origin: Vector3 = weapon_origin_query.call(weapon) if weapon_origin_query.is_valid() else player.position + Vector3.UP * 2.8
-		var target := resolve_target(float(tuning.range) * player.range_mult * (0.55 if player.jammed else 1.0) * ((0.84 if player.get("radar_range", 0.0) > 0.0 else 0.68) if weather_type == "foggy" else 1.0), origin)
+		var target := resolve_target(float(tuning.range) * player.range_mult * (0.55 if player.jammed else 1.0) * weather_range_multiplier(player.get("radar_range", 0.0) > 0.0), origin)
 		if target.is_empty():
 			continue
 		var aim := _target_aim(target) + Vector3(target.get("shove_velocity", Vector3.ZERO)) * 0.18
@@ -270,6 +279,8 @@ func fire_projectile(kind: String, team: String, origin: Vector3, aim: Vector3, 
 		projectiles.pop_front()
 	if kind == "rocket" and team == "player":
 		aim = Rockets.aim(origin, aim, player, random.randf())
+	if team == "player":
+		aim = jammer.aim(origin, aim, player, _next_id)
 	var shot := Shots.create(_id(), kind, team, origin, aim, damage, target)
 	shot.merge(options, true)
 	shot.hit_targets = []
@@ -553,6 +564,7 @@ func drain_events() -> Array[Dictionary]:
 	return result
 
 func _finish(won: bool, reason: String = "") -> void:
+	jammer.reset(player, jammer.seed_value)
 	if status in ["dead", "complete", "extracted"]:
 		return
 	status = "extracted" if reason == "extracted" else "complete" if won else "dead"
@@ -609,3 +621,7 @@ func _emit(kind: String, data: Dictionary) -> void:
 	events.append(data)
 	if events.size() > 512:
 		events.pop_front()
+
+func weather_range_multiplier(radar: bool = false, npc: bool = false) -> float:
+	var strength := weather_fog_strength if weather_fog_strength >= 0 else (1.0 if weather_type == "foggy" else 0.0)
+	return preload("res://modules/world/weather_rules.gd").visibility_multiplier(strength, radar, npc)

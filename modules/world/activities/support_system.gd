@@ -90,7 +90,7 @@ func _update_airdrops(delta: float) -> void:
 					player.unlocked_weapons = []
 				blueprint = locked[random.integer(0, locked.size() - 1)]
 				player.unlocked_weapons.append(blueprint)
-			events.append({"kind": "airdrop_claimed", "id": drop.id, "position": drop.position, "salvage": salvage, "xp": xp, "fuel": world.vehicle.fuel - previous_fuel, "blueprint": blueprint, "blueprint_name": str(world.combat.model._catalog.get(blueprint, {}).get("name", blueprint))})
+			events.append({"kind": "airdrop_claimed", "id": drop.id, "position": drop.position, "target_position": world.vehicle.global_position, "yaw": drop.yaw, "salvage": salvage, "xp": xp, "fuel": world.vehicle.fuel - previous_fuel, "blueprint": blueprint, "blueprint_name": str(world.combat.model._catalog.get(blueprint, {}).get("name", blueprint))})
 		drop.dead = drop.dead or drop.life <= 0.0
 	airdrops = airdrops.filter(func(drop: Dictionary) -> bool: return not drop.dead)
 
@@ -115,7 +115,7 @@ func _update_healers(delta: float) -> void:
 				cart.claimed = true
 				cart.dead = true
 				healer_timer = random.between(34, 46)
-				events.append({"kind": "healer_claimed", "id": cart.id, "position": cart.position, "amount": amount})
+				events.append({"kind": "healer_claimed", "id": cart.id, "position": cart.position, "target_position": world.vehicle.global_position, "yaw": cart.yaw, "amount": amount})
 		if cart.life <= 0:
 			cart.dead = true
 			healer_timer = minf(healer_timer, 8)

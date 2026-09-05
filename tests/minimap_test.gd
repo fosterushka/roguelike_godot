@@ -67,6 +67,18 @@ func _run() -> void:
 	data.enemies[0].stagger_remaining = 1.0
 	radar.update_state(data, camera)
 	_check(not radar.jammed and is_equal_approx(radar.effective_range, 260 * 0.84), "Staggered jammer stops interference")
+	data.enemies[0].stagger_remaining = 0.0
+	for disabled: Dictionary in [{"dead": true}, {"hp": 0.0}, {"allegiance": "friendly"}, {"counts_as_hostile": false}]:
+		var original: Dictionary = data.enemies[0].duplicate()
+		data.enemies[0].merge(disabled, true)
+		radar.update_state(data, camera)
+		_check(not radar.jammed, "Radar ignores inactive/nonhostile jammer consistently with driving")
+		data.enemies[0] = original
+	data.enemies[0].stagger_remaining = 1.0
+	radar.update_state(data, camera)
+	radar.update_world({"weather": {"type": "sunny", "fog_strength": 0.5}})
+	var indicator_range := preload("res://presentation/ui/enemy_detection.gd").range_for(data, radar.world_state)
+	_check(is_equal_approx(indicator_range, radar.effective_range) and is_equal_approx(indicator_range, 239.2), "Enemy indicators share radar's fading fog range")
 	_check(Geometry.distance_squared(Vector3(3, 100, 4), Vector3.ZERO) == 25, "Airborne radar contacts use XZ distance")
 	var bounds := Rect2(0, 0, 10, 10)
 	var line := Geometry.clip_line(Vector2(-5, 5), Vector2(15, 5), bounds)

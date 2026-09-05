@@ -58,7 +58,7 @@ static func damage(model, parent: Dictionary, component: Dictionary, amount: flo
 
 static func step(model, enemy: Dictionary, delta: float, distance: float) -> void:
 	sync(enemy)
-	var acquired: bool = distance < 64.0 * (0.72 if model.weather_type == "foggy" else 1.0)
+	var acquired: bool = distance < 64.0 * (model.weather_range_multiplier(false, true))
 	for component: Dictionary in enemy.components:
 		if not component.exposed or component.dead:
 			continue

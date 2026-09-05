@@ -86,17 +86,10 @@ func windmill(x: float, z: float, angle: float = 0) -> void:
 	ctx.ambient_animators.append({"type": "windmill", "object": blades, "speed": rng.between(0.2, 0.42)})
 	ctx.register_prop("windmill", x, z, 1, {"groups": [group]}, {"salvage": 4})
 
-func critter(x: float, z: float) -> void:
-	var group := _group(x, z, 0, 0.95)
-	_box(group, [0.52, 1.12, 0.42], "stoneDark", Vector3(0, 1.1, 0))
-	_shape(group, "sphere", [0.18], "skin", Vector3(0, 1.65, 0.05))
-	_box(group, [0.24, 0.08, 0.24], "iron", Vector3(0, 1.86, 0.05))
-	for sx in [-1, 1]:
-		for sz in [-1, 1]:
-			_box(group, [0.08, 0.62, 0.08], "woodDark", Vector3(sx * 0.16, 0.38, sz * 0.12))
-	_box(group, [0.22, 0.32, 0.2], "clothBlue", Vector3(-0.24, 1.08, 0))
-	_finish(group)
-	_ambient("figure", group, x, z, 0.12, 0.24)
+func critter(_x: float, _z: float) -> void:
+	# Retired decorative humans retain their four draws so existing seeds keep prop placement.
+	for _draw in 4:
+		rng.next()
 
 func grazer(x: float, z: float) -> void:
 	var group := _group(x, z)

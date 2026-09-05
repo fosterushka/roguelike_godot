@@ -79,6 +79,7 @@ func _run() -> void:
 	_check(hud._gameplay.is_visible_in_tree(), "Closing menus restores gameplay controls")
 	hud.set_loading(true)
 	_check(not hud._gameplay.is_visible_in_tree(), "Loading blocks gameplay controls")
+	_enemy_name_checks(hud)
 	hud.queue_free()
 	await process_frame
 	DirAccess.remove_absolute(Locale.settings_path)
@@ -112,3 +113,19 @@ func _check(condition: bool, description: String) -> void:
 	if not condition:
 		failures += 1
 		push_error(description)
+
+func _enemy_name_checks(hud: CanvasLayer) -> void:
+	var cases := {
+		"bike": ["RAIDER BIKE", "МОТОЦИКЛ РЕЙДЕРОВ"],
+		"buggy": ["RAIDER BUGGY", "БАГГИ РЕЙДЕРОВ"],
+		"keep": ["RAIDER CRAWLER", "КРАУЛЕР РЕЙДЕРОВ"],
+		"garrison_1": ["RAIDER FOUNDRY I", "ЗАВОД РЕЙДЕРОВ I"],
+		"garrison_2": ["RAIDER FOUNDRY II", "ЗАВОД РЕЙДЕРОВ II"],
+		"garrison_3": ["RAIDER FOUNDRY III", "ЗАВОД РЕЙДЕРОВ III"],
+	}
+	for language in ["en", "ru"]:
+		hud.set_language(language)
+		for kind: String in cases:
+			hud.update_run({"player": {}, "focus_id": 42, "enemies": [{"id": 42, "kind": kind, "hp": 75, "max_hp": 100, "position": Vector3.ZERO}]}, null, 0)
+			var expected: String = cases[kind][0 if language == "en" else 1]
+			_check(hud._target_label.visible and hud._target_label.text == expected + "  75/100\n", "Focused %s renders a readable %s name and retains its health" % [kind, language])

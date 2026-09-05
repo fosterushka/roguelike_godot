@@ -22,7 +22,7 @@ func _run() -> void:
 	var panel = game.hud.armory
 	await process_frame
 	await process_frame
-	_check(panel.cards.get_child_count() == 14 and panel.cards.columns >= 2, "Armory exposes all modules and trailer as a tile grid")
+	_check(panel.cards.get_child_count() == panel._catalog.modules.size() + 1 and panel.cards.columns >= 2, "Armory exposes all modules and trailer as a tile grid")
 	_check(panel.preview.size.x >= 380 and panel.preview.size.y >= 240, "Vehicle inspection receives a large viewport")
 	var tile: Control = panel._tile_panels.bazooka
 	_check(tile.size.y < 150 and tile.size.x < 360, "Uninstalled module is a compact tile instead of a description row")

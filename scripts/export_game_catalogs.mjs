@@ -55,13 +55,13 @@ const sources = {};
 for (const [key, path] of Object.entries(paths)) sources[key] = { path, sha256: createHash('sha256').update(await readFile(resolve(sourceRoot, path))).digest('hex') };
 const catalog = {
   _meta: { schemaVersion: 1, scope: 'singleplayer-offline', origin: 'original TypeScript exports evaluated through esbuild; no tuning invented', sources, omittedFunctions, warning: 'Data equality does not imply Godot behavior or visual parity. Function effects must be ported and tested.' },
-  modules: constants.catalog.moduleDefinitions,
+  modules: { ...constants.catalog.moduleDefinitions },
   moduleSlots: constants.catalog.moduleSlots,
   levelUpgrades: constants.catalog.upgradeDefinitions,
   coreUpgrades: constants.coreUpgrades.CORE_UPGRADE_DEFINITIONS,
   carriers: constants.carriers,
   protocols: constants.buildRules.PROTOCOL_DEFINITIONS,
-  moduleBuildProfiles: constants.buildRules.MODULE_BUILD_PROFILES,
+  moduleBuildProfiles: { ...constants.buildRules.MODULE_BUILD_PROFILES },
   soldiers: constants.spawning.SOLDIER_STATS,
   drones: constants.spawning.DRONE_DEFINITIONS,
   priorityVehicles: constants.priorityVehicles.PRIORITY_VEHICLE_DEFINITIONS,
@@ -70,6 +70,11 @@ const catalog = {
   waves: Array.from({ length: namespaces.waves.FINAL_WAVE }, (_, index) => ({ wave: index + 1, composition: namespaces.waves.waveComposition(index + 1), areaFraction: namespaces.waves.waveAreaFraction(index + 1), radius: namespaces.waves.waveRadius(index + 1), enemyCount: namespaces.waves.waveEnemyCount(index + 1), minimumClearSeconds: namespaces.waves.waveMinimumClearSeconds(index + 1), infantryKinds: namespaces.spawning.getInfantryKindsForWave(index + 1, 4), unlockGuidance: namespaces.director.getWaveUnlockGuidance(index + 1) })),
   constants,
 };
+const additions = JSON.parse(await readFile(new URL('./godot_module_additions.json', import.meta.url), 'utf8'));
+Object.assign(catalog.modules, additions.modules);
+Object.assign(catalog.moduleBuildProfiles, additions.moduleBuildProfiles);
+catalog._meta.origin = 'original TypeScript exports with explicit Godot module additions';
+catalog._meta.nativeAdditions = { source: 'scripts/godot_module_additions.json', modules: Object.keys(additions.modules) };
 await mkdir(resolve(destination, 'data'), { recursive: true });
 await writeFile(resolve(destination, 'data/game_catalogs.json'), JSON.stringify(catalog, null, 2) + '\n');
 console.log(JSON.stringify({ file: resolve(destination, 'data/game_catalogs.json'), modules: Object.keys(catalog.modules).length, levelUpgrades: catalog.levelUpgrades.length, protocols: Object.keys(catalog.protocols).length, contracts: Object.keys(catalog.contracts).length, sourceModules: Object.keys(sources).length, omittedFunctions: omittedFunctions.length }));

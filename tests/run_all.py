@@ -19,7 +19,7 @@ TESTS = [
     'integration_test.gd', 'composed_world_seed_test.gd', 'full_run_test.gd',
     'combat_soak_test.gd', 'combat_presentation_test.gd', 'source_fx_test.gd', 'world_presentation_test.gd', 'run_clock_test.gd', 'session_flow_test.gd',
     'presentation_details_test.gd', 'loading_test.gd', 'minimap_test.gd', 'ui_menu_regression_test.gd', 'ui_language_flow_test.gd',
-    'hud_layout_test.gd', 'ground_effect_depth_test.gd', 'countdown_ui_test.gd', 'reward_radar_mount_test.gd', 'armory_tiles_test.gd', 'ground_surface_test.gd', 'wheel_vehicle_test.gd', 'radar_progression_test.gd', 'radar_armory_test.gd', 'vehicle_response_test.gd', 'vehicle_render_runtime_test.gd', 'tire_trails_test.gd',
+    'hud_layout_test.gd', 'ground_effect_depth_test.gd', 'countdown_ui_test.gd', 'reward_radar_mount_test.gd', 'armory_tiles_test.gd', 'ground_surface_test.gd', 'wheel_vehicle_test.gd', 'radar_progression_test.gd', 'radar_armory_test.gd', 'vehicle_response_test.gd', 'vehicle_render_runtime_test.gd', 'tire_trails_test.gd', 'road_speed_test.gd', 'enemy_factory_test.gd', 'weather_transition_test.gd', 'support_feedback_test.gd', 'support_wave_test.gd', 'jammer_gameplay_test.gd', 'jammer_feedback_test.gd', 'mine_hacking_module_test.gd', 'village_destruction_test.gd', 'village_decoration_test.gd',
 ]
 ERROR = re.compile(r'(?m)^\s*(?:SCRIPT ERROR:|ERROR:|WARNING:.*(?:leaked|not freed)|.*(?:Assertion failed|ObjectDB instances leaked))')
 SUCCESS = re.compile(r'(?i)(?:\b0 failures\b|\bVISUAL_SMOKE_OK\b)')

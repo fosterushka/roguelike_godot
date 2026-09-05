@@ -7,6 +7,8 @@ const DISPLAY_NAMES := {
 	"rifleman": "Rifleman", "ak": "AK gunner", "bazooka": "Bazooka soldier", "bomber": "Bomber",
 	"shooter": "Shooter drone", "kamikaze": "Kamikaze drone", "jammerTruck": "Jammer truck",
 	"repairCrawler": "Repair crawler", "minelayer": "Minelayer", "leviathan": "Leviathan",
+	"bike": "Raider bike", "buggy": "Raider buggy", "keep": "Raider crawler",
+	"garrison_1": "Raider foundry I", "garrison_2": "Raider foundry II", "garrison_3": "Raider foundry III",
 }
 
 static var language := "en"

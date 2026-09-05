@@ -1,5 +1,6 @@
 extends RefCounted
 
+const HEIGHTS := {"building": 3.2, "monument": 12.0, "well": 2.5, "stall": 2.5, "streetlight": 3.8, "signal": 3.6, "windmill": 7.3, "ruin": 3.0, "wreck": 2.2, "tree": 7.0, "deadTree": 6.0, "boulder": 3.0}
 const Grid = preload("res://modules/world/spatial_grid.gd")
 var grid := Grid.new()
 var records: Dictionary = {}
@@ -20,11 +21,13 @@ func setup(layout: Dictionary) -> void:
 		record.position = Vector3(source.position.x, 0, source.position.z)
 		record.max_hp = float(source.hp)
 		record.destroyed = false
-		record.solid = str(source.kind) in ["building", "monument", "well", "windmill", "ruin", "wreck"]
-		record.height = 8.0 if str(source.kind) in ["building", "monument", "windmill"] else 5.0 if str(source.kind) in ["tree", "deadTree"] else 1.6
+		record.solid = bool(source.get("solid", str(source.kind) in ["building", "monument", "well", "windmill", "ruin", "wreck"]))
+		record.height = float(source.get("height", HEIGHTS.get(str(source.kind), 1.6)))
 		records[str(record.id)] = record
 		grid.insert(record)
 	for source: Dictionary in layout.rockObstacles:
+		if records.has(str(source.id)):
+			continue
 		var record := {"id": str(source.id), "kind": "rock", "position": Vector3(source.x, 0, source.z), "radius": float(source.radius), "height": 6.0, "hp": INF, "max_hp": INF, "salvage": 0, "destroyed": false, "solid": true}
 		records[str(record.id)] = record
 		grid.insert(record)
@@ -58,7 +61,7 @@ func ram(point: Vector3, speed: float, ramming: bool, delta: float, visual_scale
 	var radius := 3.4 * visual_scale / 0.88
 	var destroyed := 0
 	for prop: Dictionary in grid.nearby(point, radius + 2.0):
-		if prop.destroyed or prop.kind in ["rock", "building"] or Grid.distance_xz(prop.position, point) > radius + prop.radius:
+		if prop.destroyed or prop.kind == "rock" or prop.solid or Grid.distance_xz(prop.position, point) > radius + prop.radius:
 			continue
 		prop.hp -= absf(speed) * (16.0 if ramming else 7.5)
 		if prop.hp <= 0.0 and destroy(prop, absf(speed) / 7.0):
@@ -66,6 +69,13 @@ func ram(point: Vector3, speed: float, ramming: bool, delta: float, visual_scale
 	if destroyed > 0:
 		ram_cooldown = 0.12
 	return {"destroyed": destroyed, "retention": 1.0 if destroyed == 0 else 0.97 if ramming else maxf(0.84, 0.9 - maxf(0, destroyed - 1) * 0.02)}
+
+func impact(id: String, speed: float, ramming: bool) -> bool:
+	var prop: Dictionary = records.get(id, {})
+	if prop.is_empty() or prop.destroyed or prop.kind == "rock" or absf(speed) < 3.2:
+		return false
+	prop.hp -= absf(speed) * (16.0 if ramming else 7.5)
+	return prop.hp <= 0.0 and destroy(prop, absf(speed) / 7.0)
 
 func first_segment(start: Vector3, end: Vector3, radius: float = 0.0, solid_only: bool = false) -> Dictionary:
 	var result: Dictionary = {}

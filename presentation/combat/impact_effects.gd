@@ -30,6 +30,8 @@ var tracks: Node3D
 var player_view: Node3D
 var wrecks: Node3D
 var player_destruction: Node3D
+var support_pickup: Node3D
+var jammer_field: Node3D
 var random = VisualRandom.new()
 var _warmup := false
 var _scorch_bag: Array = []
@@ -55,6 +57,10 @@ func _ready() -> void:
 	add_child(wrecks)
 	player_destruction = PlayerDestruction.new()
 	add_child(player_destruction)
+	support_pickup = preload("res://presentation/combat/fx/support_pickup.gd").new()
+	add_child(support_pickup)
+	jammer_field = preload("res://presentation/combat/fx/jammer_field.gd").new()
+	add_child(jammer_field)
 	_prepare_warmup()
 
 func _pool(count: int, parts: int, shader: Shader = null, fire: bool = false) -> Node3D:
@@ -146,16 +152,13 @@ func on_world_event(event: Dictionary) -> void:
 		spawn_dust(point, 8, 1.2, Color("b89a73"))
 		spawn_shockwave(point, 0.72, Color("ffd15f"))
 	elif event.get("kind") == "airdrop_claimed":
-		var point: Vector3 = event.get("position", Vector3.ZERO)
-		spawn_shockwave(point, 1.1, Color("ffd15f"))
-		point.y = 0.5
-		spawn_crash_debris(point, 0.55, "wood")
+		support_pickup.spawn(event, player_view)
 	elif event.get("kind") in ["healing_burst", "healer_claimed"]:
 		var point: Vector3 = event.get("position", Vector3.ZERO)
 		point.y = 0.6
 		spawn_healing_burst(point)
 		if event.get("kind") == "healer_claimed":
-			screen_impact.emit(0.18)
+			support_pickup.spawn(event, player_view)
 	elif event.get("kind") == "prop_destroyed":
 		var kind := str(event.get("prop_kind", "wood"))
 		var large: bool = event.get("large", kind in ["building", "monument"])
@@ -266,6 +269,8 @@ func spawn_healing_burst(point: Vector3) -> void:
 		transient.set_part(effect, 0, "sphere", Vector3.ONE * size, color)
 
 func sync_state(state: Dictionary, delta: float) -> void:
+	jammer_field.player_view = player_view
+	jammer_field.sync_state(state)
 	listener_position = state.get("player", {}).get("position", listener_position)
 	var shots: Array = state.get("projectiles", [])
 	rockets.sync_projectiles(shots, delta)
@@ -322,6 +327,8 @@ func advance_cinematic(delta: float) -> void:
 	wrecks.advance(delta)
 	player_destruction.advance(delta)
 	hulls.advance(delta)
+	support_pickup.advance(delta)
+	jammer_field.advance(delta)
 
 func _apply_fireball(entry: Dictionary) -> void:
 	var state := MathRules.fireball(entry.life)
@@ -367,6 +374,8 @@ func reset_effects() -> void:
 	wrecks.reset()
 	tracks.reset()
 	player_destruction.reset()
+	support_pickup.reset()
+	jammer_field.reset()
 	hulls.reset()
 	random = VisualRandom.new()
 	_scorch_bag.clear()
@@ -405,6 +414,8 @@ func _prepare_warmup() -> void:
 
 func set_warmup_visible(enabled: bool) -> void:
 	_warmup = enabled
+	support_pickup.set_warmup(enabled, listener_position + Vector3.UP)
+	jammer_field.set_warmup(enabled, listener_position + Vector3.UP * 2)
 	tracks.set_warmup(enabled, listener_position + Vector3.UP)
 	wrecks.set_warmup(enabled)
 	player_destruction.set_warmup(enabled)

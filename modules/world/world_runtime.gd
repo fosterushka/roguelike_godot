@@ -51,6 +51,7 @@ func setup(world_arena: Node3D, combat_runtime: Node3D, player_vehicle: Characte
 	arena = world_arena
 	combat = combat_runtime
 	vehicle = player_vehicle
+	vehicle.obstacle_impact_query = handle_vehicle_impact
 	props.setup(arena.world_layout)
 	rock_steering.setup(arena.world_layout.rockObstacles)
 	for property in combat.model.get_property_list():
@@ -82,6 +83,7 @@ func reset_run(seed_value: int = 72841) -> void:
 	_seed = seed_value
 	for id in props.reset():
 		arena.set_prop_destroyed(id, false)
+	_refresh_rock_navigation()
 	ambient.reset(seed_value)
 	wind.reset(ambient.random)
 	for village: Dictionary in arena.world_layout.villages:
@@ -165,9 +167,18 @@ func step(delta: float) -> void:
 func _sync_weather_model() -> void:
 	if is_instance_valid(combat) and _model_properties.has("weather_type"):
 		combat.model.weather_type = str(weather.phase.get("type", "clear"))
+		if _model_properties.has("weather_fog_strength"):
+			combat.model.weather_fog_strength = weather.visual_mix().y
 
 func damage_props(point: Vector3, radius: float, amount: float) -> int:
 	var destroyed := props.damage_at(point, radius, amount)
+	_flush_prop_events()
+	return destroyed
+
+func handle_vehicle_impact(collider: Object, approach_speed: float) -> bool:
+	if not running or not is_instance_valid(collider) or not collider.has_meta("destructible_prop_id"):
+		return false
+	var destroyed := props.impact(str(collider.get_meta("destructible_prop_id")), approach_speed, float(combat.model.player.get("ram_timer", 0.0)) > 0.0)
 	_flush_prop_events()
 	return destroyed
 
@@ -191,11 +202,18 @@ func is_spawn_clear(point: Vector3, radius: float = 2.0) -> bool:
 	return props.is_clear(point, radius)
 
 func _flush_prop_events() -> void:
+	var rebuild_navigation := false
 	for event in props.drain_events():
+		rebuild_navigation = rebuild_navigation or bool(props.records.get(str(event.id), {}).get("rock_obstacle", false))
 		arena.set_prop_destroyed(str(event.id), true)
 		if int(event.salvage) > 0:
 			combat.model.spawn_pickup(event.position, int(event.salvage))
 		world_event.emit(event)
+	if rebuild_navigation:
+		_refresh_rock_navigation()
+
+func _refresh_rock_navigation() -> void:
+	rock_steering.setup(arena.world_layout.rockObstacles.filter(func(rock: Dictionary) -> bool: return not props.records.get(str(rock.id), {}).get("destroyed", false)))
 
 func _on_combat_event(event: Dictionary) -> void:
 	if str(event.get("kind", "")) == "explosion":
@@ -284,7 +302,7 @@ func _update_tornado(delta: float) -> void:
 			enemy.yaw += effect.strength * delta * 2.8
 
 func get_state() -> Dictionary:
-	return {"weather": {"type": str(weather.phase.get("type", "clear")), "phase": int(weather.phase.get("index", 0)), "remaining": maxf(0.0, float(weather.phase.get("ends_at", 0)) - weather.elapsed), "traction": weather.traction},
+	return {"weather": {"type": str(weather.phase.get("type", "clear")), "phase": int(weather.phase.get("index", 0)), "remaining": maxf(0.0, float(weather.phase.get("ends_at", 0)) - weather.elapsed), "traction": weather.traction, "fog_strength": weather.visual_mix().y, "phase_data": weather.phase.duplicate(), "elapsed": weather.elapsed},
 		"boundary": {"outside": outside, "remaining": outside_remaining, "radius": PLAYABLE_RADIUS},
 		"station": station.duplicate(), "mud_zones": weather.mud_zones.duplicate(true),
 		"tornado": {"position": tornado.position, "intensity": tornado.intensity, "age": tornado.age, "camera_dust": camera_dust},

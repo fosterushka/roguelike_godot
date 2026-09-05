@@ -6,6 +6,7 @@ const STEP := HALF_SIZE * 2.0 / CELLS
 static var heights := PackedFloat32Array()
 
 static func configure(layout: Dictionary, roads: Array = []) -> void:
+	preload("res://modules/world/road_surface.gd").configure(roads if not roads.is_empty() else layout.get("roads", []))
 	heights.resize((CELLS + 1) * (CELLS + 1))
 	for row in CELLS + 1:
 		var z := row * STEP - HALF_SIZE

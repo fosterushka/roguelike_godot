@@ -118,7 +118,7 @@ static func attack(model, enemy: Dictionary, delta: float, cadence: float, dista
 	elif enemy.type == "keep" and distance < enemy.radius + 3.5:
 		model.damage_player(delta * cadence * 16.0)
 	enemy.cooldown -= delta * cadence
-	var range_mult := 0.72 if model.weather_type == "foggy" else 1.0
+	var range_mult: float = model.weather_range_multiplier(false, true)
 	if enemy.cooldown > 0.0 or enemy.damage <= 0.0 or distance >= enemy.range * range_mult:
 		return
 	if enemy.type == "garrison" and enemy.position.length() >= model.Waves.radius(model.wave):

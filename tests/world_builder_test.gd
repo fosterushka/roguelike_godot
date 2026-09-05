@@ -14,9 +14,10 @@ func _run() -> void:
 	var fixtures: Array = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/world_builder.json"))
 	for fixture: Dictionary in fixtures:
 		var context: RefCounted = Generator.generate(int(fixture.seed), authored_script.new())
-		compare(context.props.size(), fixture.props.size(), "world prop count seed=" + str(fixture.seed))
-		for index in mini(context.props.size(), fixture.props.size()):
-			var actual: Dictionary = context.props[index]
+		var legacy_props: Array = context.props.filter(func(prop: Dictionary) -> bool: return not prop.get("rock_obstacle", false))
+		compare(legacy_props.size(), fixture.props.size(), "world prop count seed=" + str(fixture.seed))
+		for index in mini(legacy_props.size(), fixture.props.size()):
+			var actual: Dictionary = legacy_props[index]
 			var expected: Dictionary = fixture.props[index]
 			for key in ["id", "kind", "radius", "hp", "salvage"]:
 				compare(actual[key], expected[key], "seed %d prop %d %s" % [fixture.seed, index, key])

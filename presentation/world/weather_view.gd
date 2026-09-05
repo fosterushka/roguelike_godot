@@ -1,15 +1,16 @@
 extends Node3D
 
+const Rules = preload("res://modules/world/weather_rules.gd")
 const Ground = preload("res://presentation/world/ground_surface_view.gd")
 const MUD_TEXTURES := [preload("res://assets/textures/weather/mud-patch-a.png"), preload("res://assets/textures/weather/mud-rut-b.png"), preload("res://assets/textures/weather/mud-splash-c.png")]
 const PRESETS := {
 	"clear": {"fog": "9da58f", "background": "94a08d", "density": 0.0036, "sun": 3.25, "rim": 0.58, "exposure": 1.04},
 	"sunny": {"fog": "9da58f", "background": "94a08d", "density": 0.0036, "sun": 3.25, "rim": 0.58, "exposure": 1.04},
-	"foggy": {"fog": "8f9792", "background": "8d9590", "density": 0.0069, "sun": 2.15, "rim": 0.38, "exposure": 0.96},
+	"foggy": {"fog": "8f9792", "background": "8d9590", "density": 0.0135, "sun": 2.15, "rim": 0.38, "exposure": 0.96},
 	"rainy": {"fog": "7d8787", "background": "7c8685", "density": 0.0054, "sun": 1.95, "rim": 0.34, "exposure": 0.96},
 	"storm": {"fog": "6f7777", "background": "727a79", "density": 0.0059, "sun": 1.7, "rim": 0.3, "exposure": 0.88}}
 var externally_driven := false
-var _transition: Dictionary = {}
+var _visual_elapsed := 0.0
 var _weather_type := ""
 var _rim: DirectionalLight3D
 var _wind_debris: MultiMeshInstance3D
@@ -66,10 +67,10 @@ func apply_state(state: Dictionary) -> void:
 	preload("res://presentation/world/track_surface.gd").mud_zones = state.get("mud_zones", [])
 	if not _warmup:
 		_tornado_view.apply_state(state.tornado)
-	var type := str(state.weather.type)
-	_rain.set_weather(type)
-	if type != _weather_type:
-		_begin_transition(type)
+	_visual_elapsed = float(state.weather.get("elapsed", state.get("elapsed", 0)))
+	_weather_type = str(state.weather.type)
+	if not _warmup:
+		_apply_weather_mix()
 	for index in _mud.size():
 		_mud[index].visible = index < state.mud_zones.size()
 		if _mud[index].visible:
@@ -83,14 +84,35 @@ func apply_state(state: Dictionary) -> void:
 				Ground.conform_quad(visual, Ground.MUD_OFFSET)
 			visual.transparency = 1.0 - clampf((float(zone.expires_at) - float(state.elapsed)) / 3.0, 0.0, 1.0)
 
-func _begin_transition(type: String) -> void:
-	_weather_type = type
+func _apply_weather_mix() -> void:
+	var phase: Dictionary = _state.weather.get("phase_data", {"type": _weather_type})
+	var mix := Rules.mix_for_phase(phase, _visual_elapsed)
+	_rain.set_mix(mix)
 	if _environment == null or _sun == null:
 		return
-	_transition = {"elapsed": 0.0, "from_fog": _environment.fog_light_color,
-		"from_background": _environment.background_color, "from_density": sqrt(_environment.fog_density / 65.0),
-		"from_sun": _sun.light_energy * PI, "from_rim": _rim.light_energy * PI if _rim != null else 0.52,
-		"from_exposure": _environment.tonemap_exposure}
+	var fog_color := Color(0, 0, 0, 0)
+	var background := Color(0, 0, 0, 0)
+	var density := 0.0
+	var sun := 0.0
+	var rim := 0.0
+	var exposure := 0.0
+	for index in Rules.TYPES.size():
+		var preset: Dictionary = PRESETS[Rules.TYPES[index]]
+		var weight := mix[index]
+		fog_color += Color(str(preset.fog)).srgb_to_linear() * weight
+		background += Color(str(preset.background)).srgb_to_linear() * weight
+		density += float(preset.density) * weight
+		sun += float(preset.sun) * weight
+		rim += float(preset.rim) * weight
+		exposure += float(preset.exposure) * weight
+	# FogExp2 -> exponential native fog, calibrated at the 65-unit camera distance.
+	_environment.fog_density = density * density * 65.0
+	_environment.fog_light_color = fog_color.linear_to_srgb()
+	_environment.background_color = background.linear_to_srgb()
+	_environment.tonemap_exposure = exposure
+	_sun.light_energy = sun / PI
+	if _rim != null:
+		_rim.light_energy = rim / PI
 
 func _process(delta: float) -> void:
 	if not externally_driven:
@@ -99,22 +121,9 @@ func _process(delta: float) -> void:
 func advance_visual(delta: float) -> void:
 	if _warmup or _state.is_empty() or not is_instance_valid(_vehicle):
 		return
-	if not _transition.is_empty():
-		var preset: Dictionary = PRESETS.get(_weather_type, PRESETS.clear)
-		_transition.elapsed = minf(12, float(_transition.elapsed) + delta)
-		var linear := float(_transition.elapsed) / 12.0
-		var blend := linear * linear * (3 - 2 * linear)
-		# FogExp2 -> exponential native fog calibrated at the source camera's 65-unit distance.
-		var density := lerpf(float(_transition.from_density), float(preset.density), blend)
-		_environment.fog_density = density * density * 65.0
-		_environment.fog_light_color = Color(_transition.from_fog).srgb_to_linear().lerp(Color(str(preset.fog)).srgb_to_linear(), blend).linear_to_srgb()
-		_environment.background_color = Color(_transition.from_background).srgb_to_linear().lerp(Color(str(preset.background)).srgb_to_linear(), blend).linear_to_srgb()
-		_environment.tonemap_exposure = lerpf(float(_transition.from_exposure), float(preset.exposure), blend)
-		_sun.light_energy = lerpf(float(_transition.from_sun), float(preset.sun), blend) / PI
-		if _rim != null:
-			_rim.light_energy = lerpf(float(_transition.from_rim), float(preset.rim), blend) / PI
-		if linear >= 1:
-			_transition.clear()
+	if not externally_driven:
+		_visual_elapsed += maxf(0, delta)
+		_apply_weather_mix()
 	var wind: Dictionary = _state.get("wind", {})
 	_rain.advance(delta, _vehicle.global_position, _vehicle.velocity, wind.get("direction", Vector3.RIGHT), float(wind.get("strength", 0)))
 
@@ -136,7 +145,7 @@ func reset_run(seed_value: int = -1) -> void:
 	_flash = 0.0
 	_rain.clear()
 	_weather_type = ""
-	_transition.clear()
+	_visual_elapsed = 0.0
 	for visual in _mud:
 		visual.visible = false
 		visual.set_meta("zone_id", -1)

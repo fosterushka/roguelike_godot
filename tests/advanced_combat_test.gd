@@ -201,6 +201,7 @@ func _test_fury() -> void:
 
 func _test_mines() -> void:
 	var model = fresh()
+	model.player.modules = [{"type": "mineHacker"}]
 	var owner := target(model, Vector3(0, 0, 10))
 	var mine: Dictionary = model.hazards.drop(model, owner)
 	check(not mine.is_empty(), "mine created")
@@ -219,9 +220,9 @@ func _test_mines() -> void:
 	close(mine.hack_progress, 2.0, "mine hold progress")
 	model.player.interact = false
 	model.hazards.step(model, 0.5)
-	close(mine.hack_progress, 1.0, "mine hack decay2x")
+	close(mine.hack_progress, 0.0, "mine release resets continuous hold")
 	model.player.interact = true
-	for index in range(20):
+	for index in range(30):
 		model.hazards.step(model, 0.1)
 	check(mine.allegiance == "friendly", "mine switches allegiance after3s")
 	owner.position = mine.position

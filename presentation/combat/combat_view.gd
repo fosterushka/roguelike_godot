@@ -6,7 +6,8 @@ const SourceModel = preload("res://presentation/combat/source_model.gd")
 const EnemyAnimation = preload("res://presentation/combat/enemy_animation.gd")
 const MineViews = preload("res://presentation/combat/mine_views.gd")
 const Effects = preload("res://presentation/combat/impact_effects.gd")
-const ENEMY_MODELS := ["rifleman", "ak", "bazooka", "bomber", "bike", "buggy", "drone", "kamikaze", "raider", "boss", "garrison_1", "garrison_2", "garrison_3", "jammerTruck", "repairCrawler", "minelayer"]
+const EnemyCatalog = preload("res://modules/combat/enemy_catalog.gd")
+static var ENEMY_MODELS: Array[String] = EnemyCatalog.model_ids()
 const PROJECTILE_MODELS := ["projectile_bullet", "projectile_sabot", "projectile_rocket", "projectile_grenade", "projectile_enemy_bullet", "projectile_enemy_sabot", "projectile_enemy_rocket", "projectile_enemy_grenade"]
 var _pools: Dictionary = {}
 var _active_counts: Dictionary = {}
@@ -67,7 +68,7 @@ func apply_state(data: Dictionary) -> void:
 		_animation.clear()
 		_projectile_age.clear()
 		_soldier_free.clear()
-		for soldier_kind in ["rifleman", "ak", "bazooka", "bomber"]:
+		for soldier_kind in EnemyCatalog.model_ids("soldier"):
 			_soldier_free[soldier_kind] = range(83, -1, -1)
 		_last_elapsed = 0.0
 		if is_instance_valid(_effects):
@@ -158,6 +159,8 @@ func _place(model_name: String, point: Vector3, yaw: float, counts: Dictionary, 
 
 
 func _enemy_model(enemy: Dictionary) -> String:
+	if not str(enemy.get("model", "")).is_empty():
+		return str(enemy.model)
 	var kind := str(enemy.get("kind", enemy.get("type", "rifleman")))
 	if bool(enemy.get("boss", false)) or kind == "leviathan":
 		return "boss"

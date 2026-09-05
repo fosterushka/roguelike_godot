@@ -31,9 +31,14 @@ func _run() -> void:
 		check(game.run_seed == seed_value and int(game.arena.world_layout.seed) == seed_value, "Gameplay arena uses selected native seed")
 		check(game.combat.model.random.seed == seed_value and game.world._seed == seed_value and game.world.weather.seed_value == seed_value, "Combat and weather share world seed")
 		check(game.world.activities._villages.keys() == game.world.activities._village_props.keys(), "Activities bind only replacement villages")
-		check(game.world.props.records.size() == game.arena.world_layout.props.size() + game.arena.world_layout.rockObstacles.size(), "All generated props and rock colliders bind together")
+		var expected_ids := {}
+		for prop: Dictionary in game.arena.world_layout.props:
+			expected_ids[str(prop.id)] = true
+		for rock: Dictionary in game.arena.world_layout.rockObstacles:
+			expected_ids[str(rock.id)] = true
+		check(game.world.props.records.size() == expected_ids.size(), "Generated props and destructible rock colliders bind once per ID")
 		check(game.world.get_child_count() == child_count and not is_instance_id_valid(previous_world), "Old world freed and runtime children remain bounded")
-		check(game.world.ambient.critters.size() > 0 and game.world.ambient.animators.size() > 0, "Generated villagers/grazers and machinery are live descriptors")
+		check(game.world.ambient.critters.size() > 0 and game.world.ambient.animators.size() > 0, "Generated grazers and machinery are live descriptors")
 		check(game.vehicle.position == Vector3.ZERO and game.world.is_spawn_clear(Vector3.ZERO, 2.7), "Source start road clears player spawn")
 		check(game.combat.model.elapsed == 0 and game.world.weather.elapsed >= 2.65 and game.vehicle.fuel == game.vehicle.max_fuel, "Generation/warmup/countdown consume no gameplay or fuel; intro weather advances raw")
 		check(game.hud.radar.layout.seed == seed_value, "Radar roads and villages use replacement world")
@@ -42,7 +47,7 @@ func _run() -> void:
 		game._toggle_pause()
 		var point: Vector3 = game.world.ambient.critters[0].group.position
 		await process_frame
-		check(game.world.ambient.critters[0].group.position == point, "Pause freezes ambient figures")
+		check(game.world.ambient.critters[0].group.position == point, "Pause freezes ambient grazers")
 		var prop: Dictionary = game.world.props.records[game.arena.world_layout.props[0].id]
 		game.world.damage_props(prop.position, 0.1, 9999)
 		check(prop.destroyed, "Actual generated prop responds to combat damage")

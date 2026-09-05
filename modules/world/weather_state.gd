@@ -29,13 +29,12 @@ func reset(seed: int) -> void:
 func step(delta: float) -> void:
 	elapsed += maxf(0.0, delta)
 	if phase.is_empty() or elapsed >= float(phase.ends_at):
-		traction_from = traction
-		transition_elapsed = 0.0
 		phase = Rules.phase_at(seed_value, elapsed)
+		traction_from = float(Rules.TRACTION.get(str(phase.get("previous_type", "sunny")), 1.0))
 		strike_index = 0
 		next_strike = phase.starts_at + Rules.lightning_sample(seed_value, phase.index, 0).delay
 		events.append({"kind": "weather_changed", "type": phase.type})
-	transition_elapsed = minf(12.0, transition_elapsed + maxf(0.0, delta))
+	transition_elapsed = clampf(elapsed - float(phase.get("starts_at", 0)), 0, 12.0)
 	var linear := transition_elapsed / 12.0
 	var blend := linear * linear * (3.0 - 2.0 * linear)
 	traction = lerpf(traction_from, float(Rules.TRACTION.get(str(phase.type), 1.0)), blend)
@@ -56,6 +55,9 @@ func create_mud(point: Vector3) -> bool:
 	mud_zones.append({"id": next_mud_id, "position": point, "radius": Rules.MUD_RADIUS, "expires_at": elapsed + Rules.MUD_DURATION})
 	next_mud_id += 1
 	return true
+
+func visual_mix() -> Vector4:
+	return Rules.mix_for_phase(phase, elapsed)
 
 func surface_at(point: Vector3, airborne: bool = false) -> Dictionary:
 	var muddy := false

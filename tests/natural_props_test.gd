@@ -25,9 +25,10 @@ func _initialize() -> void:
 		rocks.create(fixture.formation)
 		compare(context.rock_obstacles, fixture.rockObstacles, "source formation collision")
 		compare(context.random.state, fixture.state, "natural exact RNG state")
-		compare(context.props.size(), fixture.props.size(), "prop count")
-		for index in mini(context.props.size(), fixture.props.size()):
-			var actual: Dictionary = context.props[index]
+		var legacy_props: Array = context.props.filter(func(prop: Dictionary) -> bool: return not prop.get("rock_obstacle", false))
+		compare(legacy_props.size(), fixture.props.size(), "original prop count")
+		for index in mini(legacy_props.size(), fixture.props.size()):
+			var actual: Dictionary = legacy_props[index]
 			var expected: Dictionary = fixture.props[index]
 			for key in ["id", "kind", "radius", "hp", "salvage"]:
 				compare(actual[key], expected[key], "prop %d %s" % [index, key])

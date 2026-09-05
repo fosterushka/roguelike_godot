@@ -2,7 +2,7 @@
   "_meta": {
     "schemaVersion": 1,
     "scope": "singleplayer-offline",
-    "origin": "original TypeScript exports evaluated through esbuild; no tuning invented",
+    "origin": "original TypeScript exports with explicit Godot module additions",
     "sources": {
       "catalog": {
         "path": "src/client/contexts/caravan/catalog.ts",
@@ -334,7 +334,13 @@
       "worldCollision.createWorldCollisionManifest",
       "worldCollision.runtimeWorldPropId"
     ],
-    "warning": "Data equality does not imply Godot behavior or visual parity. Function effects must be ported and tested."
+    "warning": "Data equality does not imply Godot behavior or visual parity. Function effects must be ported and tested.",
+    "nativeAdditions": {
+      "source": "scripts/godot_module_additions.json",
+      "modules": [
+        "mineHacker"
+      ]
+    }
   },
   "modules": {
     "assaultRifle": {
@@ -445,7 +451,7 @@
     },
     "radar": {
       "name": "Radar Array",
-      "icon": "◉",
+      "icon": "\u25c9",
       "weight": 2,
       "cost": 55,
       "range": 40,
@@ -464,6 +470,17 @@
       "range": 32,
       "desc": "Within 32m, enemy drones move and fire at 55% rate; kamikaze drones cannot detonate.",
       "passive": "counterDroneJammer",
+      "unique": true,
+      "purchasable": true
+    },
+    "mineHacker": {
+      "name": "Mine Hacking Kit",
+      "icon": "HACK",
+      "weight": 2,
+      "cost": 60,
+      "range": 4.5,
+      "desc": "Hold E near an armed mine for 3 uninterrupted seconds to convert it. Hacked mines only trigger on enemies.",
+      "passive": "mineHacker",
       "unique": true,
       "purchasable": true
     }
@@ -532,95 +549,95 @@
   ],
   "levelUpgrades": [
     {
-      "icon": "🛞",
+      "icon": "\ud83d\udede",
       "title": "High-Flow Turbo",
       "desc": "Top speed and acceleration increase by 14%.",
       "category": "mobility"
     },
     {
-      "icon": "⚙",
+      "icon": "\u2699",
       "title": "Racing Transmission",
       "desc": "Top speed and acceleration increase by 10%.",
       "category": "mobility"
     },
     {
-      "icon": "⏱",
+      "icon": "\u23f1",
       "title": "Nitro Calibration",
       "desc": "Gain 8% speed and recover nitro 18% faster.",
       "category": "mobility"
     },
     {
-      "icon": "❤️",
+      "icon": "\u2764\ufe0f",
       "title": "Reinforced Core",
       "desc": "+70 maximum integrity and restore 70 integrity."
     },
     {
-      "icon": "🧲",
+      "icon": "\ud83e\uddf2",
       "title": "Salvage Chains",
       "desc": "Pickup radius grows by 42%."
     },
     {
-      "icon": "🔧",
+      "icon": "\ud83d\udd27",
       "title": "Combat Engineer",
       "desc": "Manual repairs restore 18 more integrity."
     },
     {
-      "icon": "🧱",
+      "icon": "\ud83e\uddf1",
       "title": "Layered Plating",
       "desc": "Reduce incoming damage by 8%."
     },
     {
-      "icon": "🪙",
+      "icon": "\ud83e\ude99",
       "title": "Salvage Rush",
       "desc": "Gain 55 coins and increase future coin value by 10%."
     },
     {
-      "icon": "⛏",
+      "icon": "\u26cf",
       "title": "Plow Momentum",
       "desc": "Ram cooldown is reduced by 28%, while Road Fury combo grace lasts longer and momentum decays slower."
     },
     {
-      "icon": "🎖",
+      "icon": "\ud83c\udf96",
       "title": "Fire Control Officer",
       "desc": "Every weapon gains 12% range and 12% damage.",
       "rare": true
     },
     {
-      "icon": "⚡",
+      "icon": "\u26a1",
       "title": "Overdrive Feed",
       "desc": "Moving above half speed grants 16% faster firing.",
       "rare": true
     },
     {
-      "icon": "🎯",
+      "icon": "\ud83c\udfaf",
       "title": "Targeting Computer",
       "desc": "All equipped weapons gain 18% targeting range."
     },
     {
-      "icon": "♨",
+      "icon": "\u2668",
       "title": "Emergency Nanoweld",
       "desc": "Slowly regenerate integrity while below 35% health.",
       "rare": true
     },
     {
-      "icon": "⚙",
+      "icon": "\u2699",
       "title": "Twin Feed Mechanism",
       "desc": "Every weapon has a 16% chance to fire a second reduced-damage shot.",
       "rare": true
     },
     {
-      "icon": "⏱",
+      "icon": "\u23f1",
       "title": "Pressure Recovery",
       "desc": "Nitro cooldown recovers 24% faster."
     },
     {
-      "icon": "🧯",
+      "icon": "\ud83e\uddef",
       "title": "Fire Suppression",
       "desc": "Reduce damage taken while integrity is below 30%."
     },
     {
       "id": "expandedWeaponRack",
-      "icon": "📦",
+      "icon": "\ud83d\udce6",
       "title": "Expanded Weapon Rack",
       "desc": "Increase crawler weapon capacity by one, up to six guns. The sixth slot requires LV 4.",
       "rare": true
@@ -917,6 +934,14 @@
       "tags": [
         "counter-drone",
         "jammer"
+      ]
+    },
+    "mineHacker": {
+      "families": [
+        "support"
+      ],
+      "tags": [
+        "mine-hacking"
       ]
     }
   },
@@ -1500,7 +1525,7 @@
         },
         "radar": {
           "name": "Radar Array",
-          "icon": "◉",
+          "icon": "\u25c9",
           "weight": 2,
           "cost": 55,
           "range": 40,
@@ -1587,95 +1612,95 @@
       ],
       "upgradeDefinitions": [
         {
-          "icon": "🛞",
+          "icon": "\ud83d\udede",
           "title": "High-Flow Turbo",
           "desc": "Top speed and acceleration increase by 14%.",
           "category": "mobility"
         },
         {
-          "icon": "⚙",
+          "icon": "\u2699",
           "title": "Racing Transmission",
           "desc": "Top speed and acceleration increase by 10%.",
           "category": "mobility"
         },
         {
-          "icon": "⏱",
+          "icon": "\u23f1",
           "title": "Nitro Calibration",
           "desc": "Gain 8% speed and recover nitro 18% faster.",
           "category": "mobility"
         },
         {
-          "icon": "❤️",
+          "icon": "\u2764\ufe0f",
           "title": "Reinforced Core",
           "desc": "+70 maximum integrity and restore 70 integrity."
         },
         {
-          "icon": "🧲",
+          "icon": "\ud83e\uddf2",
           "title": "Salvage Chains",
           "desc": "Pickup radius grows by 42%."
         },
         {
-          "icon": "🔧",
+          "icon": "\ud83d\udd27",
           "title": "Combat Engineer",
           "desc": "Manual repairs restore 18 more integrity."
         },
         {
-          "icon": "🧱",
+          "icon": "\ud83e\uddf1",
           "title": "Layered Plating",
           "desc": "Reduce incoming damage by 8%."
         },
         {
-          "icon": "🪙",
+          "icon": "\ud83e\ude99",
           "title": "Salvage Rush",
           "desc": "Gain 55 coins and increase future coin value by 10%."
         },
         {
-          "icon": "⛏",
+          "icon": "\u26cf",
           "title": "Plow Momentum",
           "desc": "Ram cooldown is reduced by 28%, while Road Fury combo grace lasts longer and momentum decays slower."
         },
         {
-          "icon": "🎖",
+          "icon": "\ud83c\udf96",
           "title": "Fire Control Officer",
           "desc": "Every weapon gains 12% range and 12% damage.",
           "rare": true
         },
         {
-          "icon": "⚡",
+          "icon": "\u26a1",
           "title": "Overdrive Feed",
           "desc": "Moving above half speed grants 16% faster firing.",
           "rare": true
         },
         {
-          "icon": "🎯",
+          "icon": "\ud83c\udfaf",
           "title": "Targeting Computer",
           "desc": "All equipped weapons gain 18% targeting range."
         },
         {
-          "icon": "♨",
+          "icon": "\u2668",
           "title": "Emergency Nanoweld",
           "desc": "Slowly regenerate integrity while below 35% health.",
           "rare": true
         },
         {
-          "icon": "⚙",
+          "icon": "\u2699",
           "title": "Twin Feed Mechanism",
           "desc": "Every weapon has a 16% chance to fire a second reduced-damage shot.",
           "rare": true
         },
         {
-          "icon": "⏱",
+          "icon": "\u23f1",
           "title": "Pressure Recovery",
           "desc": "Nitro cooldown recovers 24% faster."
         },
         {
-          "icon": "🧯",
+          "icon": "\ud83e\uddef",
           "title": "Fire Suppression",
           "desc": "Reduce damage taken while integrity is below 30%."
         },
         {
           "id": "expandedWeaponRack",
-          "icon": "📦",
+          "icon": "\ud83d\udce6",
           "title": "Expanded Weapon Rack",
           "desc": "Increase crawler weapon capacity by one, up to six guns. The sixth slot requires LV 4.",
           "rare": true

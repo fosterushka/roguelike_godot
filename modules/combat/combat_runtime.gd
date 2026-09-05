@@ -23,6 +23,7 @@ func reset_run(seed_value: int = 72841) -> void:
 	model.reset_run(seed_value)
 	if is_instance_valid(vehicle):
 		vehicle.max_health = model.player.max_hp
+		vehicle.player_stats = model.player
 		vehicle.reset_vehicle()
 		vehicle.set_driving_enabled(true)
 		_sync_vehicle_to_model()
@@ -30,6 +31,9 @@ func reset_run(seed_value: int = 72841) -> void:
 
 func set_running(enabled: bool) -> void:
 	model.running = enabled and model.status not in ["dead", "complete", "extracted"]
+	if not model.running:
+		model.jammer.reset(model.player, model.jammer.seed_value)
+		model.hazards.cancel_hack()
 	if is_instance_valid(vehicle):
 		vehicle.set_driving_enabled(model.running)
 	_publish()
@@ -120,6 +124,7 @@ func _sync_vehicle_to_model() -> void:
 func _sync_model_to_vehicle() -> void:
 	if not is_instance_valid(vehicle):
 		return
+	vehicle.player_stats = model.player
 	vehicle.global_position = model.player.position
 	vehicle.motion.x = model.player.position.x
 	vehicle.motion.z = model.player.position.z

@@ -20,6 +20,9 @@ func create(site: Dictionary) -> int:
 	var yaw: float = -site.rotation
 	var collisions := Collision.rock_segments(context.layout.seed, site)
 	for index in count:
+		var first_instances := {}
+		for pool: String in ["cliffFaces", "cliffStrata", "rockInstances", "stoneInstances"]:
+			first_instances[pool] = context.instances[pool].size()
 		var progress := float(index) / (count - 1) - 0.5
 		var collision: Dictionary = collisions[index]
 		var x: float = collision.x
@@ -45,4 +48,9 @@ func create(site: Dictionary) -> int:
 			var offset := radius * random.between(0.5, 0.82)
 			var shard_scale := cap_scale * random.between(0.16, 0.32)
 			context.append("rockInstances" if shard % 2 == 0 else "stoneInstances", Vector3(x + cos(angle) * offset, shard_scale * 0.34, z + sin(angle) * offset), Vector3(random.between(-0.35, 0.35), random.between(0, TAU), random.between(-0.35, 0.35)), Vector3(shard_scale * 1.3, shard_scale * random.between(0.62, 1.15), shard_scale))
+		var parts: Array = []
+		for pool: String in first_instances:
+			for instance in range(int(first_instances[pool]), context.instances[pool].size()):
+				parts.append({"pool": pool, "instance": instance, "transform": context.instances[pool][instance]})
+		context.register_prop("boulder", x, z, 1.0, {"parts": parts}, {"id": str(collision.id), "radius": radius, "height": height + radius, "hp": 180.0 + radius * 35.0, "solid": true, "rock_obstacle": true, "salvage": 2, "large": true, "debrisKind": "stone"})
 	return count

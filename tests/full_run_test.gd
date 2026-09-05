@@ -63,6 +63,8 @@ func _run() -> void:
 			game.hud.menu_action_requested.emit("choose", rows[0].id)
 		ticks += 1
 	check(model.status == "complete" and waves.keys() == [1, 2, 3, 4, 5, 6], "Real spawn queues and intermissions complete all six waves")
+	for kind: String in ["jammerTruck", "repairCrawler", "minelayer"]:
+		check(events.any(func(event: Dictionary) -> bool: return event.kind == "spawn" and event.get("enemy_kind", "") == kind), "Real composed run spawns newly enabled " + kind)
 	check(events.filter(func(event: Dictionary) -> bool: return event.kind == "boss_component_destroyed").size() == 5, "Leviathan victory requires destroying all five targetable components")
 	check(game.screen_state == "result" and paused and not game.vehicle._driving_enabled, "Victory event displays real result screen and freezes drive")
 	check(events.filter(func(event: Dictionary) -> bool: return event.kind == "result").size() == 1, "Victory emits exactly one result")

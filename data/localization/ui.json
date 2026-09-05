@@ -302,5 +302,17 @@
   "Обнаруживает ближайших врагов. Улучшения дальности: 40 / 90 / 160 / 260 м.": "Detects nearby enemies. Upgrade coverage: 40 / 90 / 160 / 260 m.",
   "Мощность: %d%%": "Power: %d%%",
   "MK %d · ДАЛЬНОСТЬ %d м": "MK %d · RANGE %d m",
-  "МАКС. УРОВЕНЬ": "MAX LEVEL"
+  "МАКС. УРОВЕНЬ": "MAX LEVEL",
+  "Мотоцикл рейдеров": "Raider bike",
+  "Багги рейдеров": "Raider buggy",
+  "Краулер рейдеров": "Raider crawler",
+  "Завод рейдеров I": "Raider foundry I",
+  "Завод рейдеров II": "Raider foundry II",
+  "Завод рейдеров III": "Raider foundry III",
+  "Комплект взлома мин": "Mine Hacking Kit",
+  "Удерживайте E возле вооружённой мины 3 секунды без перерыва. Взломанные мины срабатывают только на врагов.": "Hold E near an armed mine for 3 uninterrupted seconds to convert it. Hacked mines only trigger on enemies.",
+  "НУЖЕН МОДУЛЬ ВЗЛОМА МИН": "MINE HACKING KIT REQUIRED",
+  "[E] УДЕРЖИВАЙТЕ · ВЗЛОМ %.1f/3 с": "[E] HOLD · HACK %.1f/3 s",
+  "СИГНАЛ ПОДАВЛЕН": "SIGNAL JAMMED",
+  "УПРАВЛЕНИЕ ИНВЕРТИРОВАНО": "CONTROLS REVERSED"
 }

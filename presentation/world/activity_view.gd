@@ -13,6 +13,7 @@ var _warmup := false
 var _visual_elapsed := 0.0
 var _since_state := 0.0
 var _flare_light: OmniLight3D
+var _flare_smoke: Node3D
 
 func _ready() -> void:
 	_healers = SourceModel.create_pool("heal_cart", 3)
@@ -21,6 +22,9 @@ func _ready() -> void:
 	add_child(_airdrop.root)
 	_prepare_opacity(_healers)
 	_prepare_opacity(_airdrop)
+	_prepare_flare_colors()
+	_flare_smoke = preload("res://presentation/world/airdrop_flare_smoke.gd").new()
+	add_child(_flare_smoke)
 	_flare_light = OmniLight3D.new()
 	_flare_light.light_color = Color("ff4a24")
 	_flare_light.omni_range = 24
@@ -77,6 +81,7 @@ func apply_state(state: Dictionary) -> void:
 	if drops.is_empty():
 		SourceModel.hide_pool_instance(_airdrop, 0)
 		_flare_light.visible = false
+		_flare_smoke.apply_drop({}, _visual_elapsed)
 	else:
 		_place_airdrop(drops[0])
 	var extraction: Dictionary = state.get("extraction", {})
@@ -125,6 +130,7 @@ func _material(color: Color) -> StandardMaterial3D:
 
 func set_warmup_visible(enabled: bool) -> void:
 	_warmup = enabled
+	_flare_smoke.set_warmup(enabled)
 	if enabled:
 		SourceModel.set_pool_instance(_healers, 0, Transform3D.IDENTITY)
 		SourceModel.set_pool_instance(_airdrop, 0, Transform3D(Basis.IDENTITY, Vector3(0, -10, 0)))
@@ -172,6 +178,8 @@ func _place_airdrop(drop: Dictionary) -> void:
 	var transform := Transform3D(Basis(Vector3.UP, float(drop.get("yaw", 0))), _grounded(drop.position) + Vector3.UP * (float(drop.height) - 12.0))
 	SourceModel.set_pool_instance(_airdrop, 0, transform, {"binding_overrides": overrides})
 	_opacity(_airdrop, 0, {"airdrop_aura": 0.2 + sin(time * 3.4) * 0.08, "airdrop_flareGlow": 0.24 + pulse * 0.22, "airdrop_signalBeam": 0.08 + pulse * 0.09})
+	_flare_smoke.apply_drop(drop, time)
+	_tint_flare(Color("60de8b") if landed else Color("ef563e"))
 	_flare_light.visible = landed
 	_flare_light.position = _grounded(drop.position) + Basis(Vector3.UP, float(drop.get("yaw", 0))) * Vector3(0.62, 3.62, 0.58)
 	_flare_light.light_energy = 3.6 + pulse * 2.8
@@ -207,3 +215,23 @@ static func _grounded(point: Vector3) -> Vector3:
 static func healer_transform(cart: Dictionary, age: float, since_state: float = 0.0) -> Transform3D:
 	var phase := float(cart.get("phase", age * 3.0)) + since_state * 3.0
 	return Transform3D(Basis(Vector3.UP, float(cart.get("yaw", 0))), _grounded(cart.position) + Vector3.UP * sin(phase) * 0.045)
+
+func _prepare_flare_colors() -> void:
+	for index in _airdrop.batches.size():
+		var batch: Dictionary = _airdrop.batches[index]
+		for binding: Dictionary in batch.bindings:
+			if binding.role not in ["airdrop_flareCore", "airdrop_flareGlow", "airdrop_signalBeam"]:
+				continue
+			var visual: MultiMeshInstance3D = _airdrop.root.get_child(index)
+			if visual.material_override == null:
+				visual.material_override = batch.mesh.mesh.surface_get_material(0).duplicate()
+			batch.flare_material = visual.material_override
+
+func _tint_flare(color: Color) -> void:
+	_flare_light.light_color = color
+	for batch: Dictionary in _airdrop.batches:
+		if batch.has("flare_material"):
+			var material: StandardMaterial3D = batch.flare_material
+			material.albedo_color = Color(color, material.albedo_color.a)
+			if material.emission_enabled:
+				material.emission = color

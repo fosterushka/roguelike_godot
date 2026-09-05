@@ -47,7 +47,4 @@ static func heal(model, enemy: Dictionary, target: Dictionary, delta: float) -> 
 		model._emit("repair_pulse", {"id": enemy.id, "position": enemy.position, "target_position": target.position})
 
 static func jammed(player: Dictionary, enemies: Array[Dictionary]) -> bool:
-	for enemy: Dictionary in enemies:
-		if enemy.kind == "jammerTruck" and not enemy.dead and enemy.get("stagger_remaining", 0.0) <= 0.0 and enemy.position.distance_squared_to(player.position) <= 48.0 * 48.0:
-			return true
-	return false
+	return not preload("res://modules/combat/jammer_rules.gd").source(player, enemies).is_empty()

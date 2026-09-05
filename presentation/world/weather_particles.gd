@@ -47,11 +47,22 @@ static func seeded_unit(index: int, salt: int) -> float:
 func set_weather(type: String) -> void:
 	targets = Vector3(0.72 if type == "rainy" else (1.0 if type == "storm" else 0.0), 1.0 if type == "storm" else 0.0, 1.0 if type == "foggy" else 0.0)
 
+# The world view supplies the shared fade; legacy set_weather retains source behavior.
+func set_mix(mix: Vector4) -> void:
+	targets = Vector3(mix.z * 0.72 + mix.w, mix.w, mix.y)
+	rain = targets.x
+	storm = targets.y
+	fog = targets.z
+
 func flash_lightning() -> void:
 	lightning_life = 0.28
 
 func advance(delta: float, anchor: Vector3, velocity: Vector3, direction: Vector3, strength: float) -> void:
-	if warmup or (rain <= 0.003 and fog <= 0.003 and targets == Vector3.ZERO and lightning_life <= 0):
+	if warmup:
+		return
+	if rain <= 0.003 and fog <= 0.003 and targets == Vector3.ZERO and lightning_life <= 0:
+		for layer in layers:
+			layer.visible = false
 		return
 	var safe_delta := maxf(0, delta)
 	elapsed += safe_delta

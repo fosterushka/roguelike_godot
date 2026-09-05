@@ -20,6 +20,7 @@ func _ready() -> void:
 	_create_lighting()
 	source_world = SourceModel.instantiate("world_72841")
 	add_child(source_world)
+	preload("res://presentation/world/world_decor_filter.gd").hide_reference_figures(source_world)
 	world_layout = JSON.parse_string(FileAccess.get_file_as_string("res://data/visual_models/world_layout.json"))
 	_roads = RoadView.new()
 	_roads.name = "OriginalSoftEdgeRoads"
@@ -33,12 +34,16 @@ func _ready() -> void:
 	_bind_layout_collisions()
 
 func _bind_layout_collisions() -> void:
-	for obstacle in world_layout.rockObstacles:
-		_add_collision(Vector3(obstacle.x, 0, obstacle.z), float(obstacle.radius), 5.0)
-	for prop in world_layout.props:
+	for prop: Dictionary in world_layout.props:
 		_prop_records[str(prop.id)] = prop
-		if str(prop.kind) in ["building", "monument", "well", "windmill", "ruin", "wreck"]:
-			_prop_colliders[str(prop.id)] = _add_collision(Vector3(prop.position.x, 0, prop.position.z), float(prop.radius), 3.0)
+	for obstacle in world_layout.rockObstacles:
+		if not _prop_records.has(str(obstacle.id)):
+			_add_collision(Vector3(obstacle.x, 0, obstacle.z), float(obstacle.radius), 5.0)
+	for prop: Dictionary in world_layout.props:
+		if bool(prop.get("solid", str(prop.kind) in ["building", "monument", "well", "windmill", "ruin", "wreck"])):
+			var collider := _add_collision(Vector3(prop.position.x, 0, prop.position.z), float(prop.radius), float(prop.get("height", 3.0)))
+			collider.set_meta("destructible_prop_id", str(prop.id))
+			_prop_colliders[str(prop.id)] = collider
 
 
 func _create_ground() -> void:

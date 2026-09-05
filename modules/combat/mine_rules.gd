@@ -1,5 +1,9 @@
 extends RefCounted
 
+const HACK_SECONDS := 3.0
+const HACK_RANGE := 4.5
+const HACK_MODULE := "mineHacker"
+
 var mines: Array[Dictionary] = []
 var hack_status: Dictionary = {}
 var _previous_player := Vector3.ZERO
@@ -7,9 +11,15 @@ var _has_previous := false
 
 func reset() -> void:
 	mines.clear()
-	hack_status = {"available": false, "active": false, "progress": 0.0, "mine_id": -1}
+	hack_status = {"available": false, "requires_module": false, "active": false, "progress": 0.0, "mine_id": -1}
 	_previous_player = Vector3.ZERO
 	_has_previous = false
+
+func cancel_hack() -> void:
+	for mine: Dictionary in mines:
+		if mine.get("allegiance", "enemy") != "friendly":
+			mine.hack_progress = 0.0
+	hack_status = {"available": false, "requires_module": false, "active": false, "progress": 0.0, "mine_id": -1}
 
 func drop(model, owner: Dictionary) -> Dictionary:
 	if not model.running or owner.is_empty() or owner.dead or mines.size() >= 36:
@@ -36,7 +46,8 @@ func step(model, delta: float) -> void:
 		_previous_player = player.position
 		_has_previous = true
 	var candidate: Dictionary = {}
-	var nearest := 4.5 * 4.5
+	var nearest := HACK_RANGE * HACK_RANGE
+	var equipped: bool = player.get("modules", []).any(func(module: Dictionary) -> bool: return module.get("type", "") == HACK_MODULE)
 	for mine: Dictionary in mines:
 		mine.life = maxf(0.0, mine.life - delta)
 		mine.arm_remaining = maxf(0.0, mine.arm_remaining - delta)
@@ -48,28 +59,29 @@ func step(model, delta: float) -> void:
 		if distance <= nearest:
 			nearest = distance
 			candidate = mine
-	hack_status = {"available": not candidate.is_empty(), "active": false, "progress": 0.0, "mine_id": -1}
+	hack_status = {"available": equipped and not candidate.is_empty(), "requires_module": not equipped and not candidate.is_empty(), "active": false, "progress": 0.0, "mine_id": candidate.get("id", -1)}
 	for mine: Dictionary in mines:
 		if mine.dead:
 			continue
 		if mine.allegiance != "friendly":
-			var hacking: bool = mine == candidate and player.get("interact", false)
-			mine.hack_progress = clampf(mine.hack_progress + delta * (1.0 if hacking else -2.0), 0.0, 3.0)
-			if mine.hack_progress >= 3.0 - 0.000001:
+			var hacking: bool = equipped and mine == candidate and player.get("interact", false)
+			mine.hack_progress = minf(HACK_SECONDS, mine.hack_progress + delta) if hacking else 0.0
+			if mine.hack_progress >= HACK_SECONDS - 0.000001:
 				mine.allegiance = "friendly"
+				hack_status = {"available": false, "requires_module": false, "active": false, "progress": 1.0, "mine_id": mine.id}
 				model._emit("mine_hacked", {"id": mine.id, "position": mine.position})
-			elif mine == candidate:
-				hack_status = {"available": true, "active": hacking, "progress": mine.hack_progress / 3.0, "mine_id": mine.id}
+			elif mine == candidate and equipped:
+				hack_status = {"available": true, "active": hacking, "progress": mine.hack_progress / HACK_SECONDS, "mine_id": mine.id}
 		if not mine.armed:
 			continue
 		if mine.allegiance == "friendly":
 			for enemy: Dictionary in model.enemies:
-				if not enemy.dead and mine.position.distance_squared_to(enemy.position) <= mine.radius * mine.radius:
+				if _hostile(enemy) and mine.position.distance_squared_to(enemy.position) <= mine.radius * mine.radius:
 					mine.dead = true
 					break
 			if mine.dead:
 				for enemy: Dictionary in model.enemies:
-					if not enemy.dead and mine.position.distance_squared_to(enemy.position) <= mine.radius * mine.radius:
+					if _hostile(enemy) and mine.position.distance_squared_to(enemy.position) <= mine.radius * mine.radius:
 						model.damage_enemy(enemy.id, mine.damage)
 		else:
 			if model.Shots.hits(_previous_player * Vector3(1, 0, 1), player.position * Vector3(1, 0, 1), mine.position, mine.radius):
@@ -80,3 +92,6 @@ func step(model, delta: float) -> void:
 			model._emit("mine_explosion", {"id": mine.id, "position": mine.position, "radius": mine.radius})
 	_previous_player = player.position
 	mines = mines.filter(func(mine: Dictionary) -> bool: return not mine.dead)
+
+static func _hostile(enemy: Dictionary) -> bool:
+	return not enemy.get("dead", false) and enemy.get("allegiance", "enemy") == "enemy" and enemy.get("counts_as_hostile", true)

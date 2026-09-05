@@ -20,7 +20,7 @@ func run() -> void:
 	var model = Model.new()
 	check(model.weapons.size() == 1, "source starter M4 is installed")
 	check(Waves.queue_for(1).size() == 9, "wave one has eight riflemen and one bike")
-	check(Waves.queue_for(6).size() == 43, "final wave composition is source accurate")
+	check(Waves.queue_for(6).size() == 46, "final wave includes source combatants and three support vehicles")
 	check(model.player.fuel == 100.0 and model.player.pickup_radius == 6.2, "source fuel and pickup values")
 	check(model.weapons[0].def.damage == 9 and model.weapons[0].def.cooldown == 0.3 and model.weapons[0].def.range == 32, "source M4 damage cadence and range")
 	model.step(0.1)

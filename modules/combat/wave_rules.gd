@@ -3,6 +3,7 @@ extends RefCounted
 const FINAL_WAVE := 6
 const INTERMISSION_SECONDS := 5.0
 const SPAWN_INTERVAL := 0.45
+const SUPPORT_UNLOCKS := {"jammerTruck": 2, "repairCrawler": 3, "minelayer": 3}
 const PLAYABLE_RADIUS := 1248.0
 
 static func radius(wave: int) -> float:
@@ -17,6 +18,11 @@ static func queue_for(wave: int) -> Array[String]:
 	for kind: String in counts:
 		for _index in int(counts[kind]):
 			result.append(kind)
+	var support_index := 4
+	for kind: String in SUPPORT_UNLOCKS:
+		if wave >= int(SUPPORT_UNLOCKS[kind]):
+			result.insert(mini(support_index, result.size()), kind)
+			support_index += 4
 	for index in mini(5, 1 + floori(wave / 2.0)):
 		result.append("buggy" if wave >= 2 and index % 2 == 1 else "bike")
 	if wave == FINAL_WAVE:

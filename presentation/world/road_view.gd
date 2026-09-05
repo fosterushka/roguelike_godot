@@ -4,7 +4,6 @@ const ROAD_TEXTURE = preload("res://assets/textures/world/dirt-road-v2.png")
 var roads: Array = []
 
 func setup(definitions: Array) -> void:
-	preload("res://presentation/world/track_surface.gd").configure_roads(definitions)
 	roads = definitions
 	for child in get_children():
 		child.free()

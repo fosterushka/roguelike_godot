@@ -3,27 +3,11 @@ extends RefCounted
 enum Kind { SAND, SOIL, ROAD, WET_MUD, SCORCH }
 const PALETTE := [Color("b29a65"), Color("89704e"), Color("aa9270"), Color("9c8060"), Color("a19a88")]
 const OPACITY := [0.34, 0.38, 0.29, 0.46, 0.42]
-const CELL := 32.0
-static var _roads: Dictionary = {}
+const RoadSurface = preload("res://modules/world/road_surface.gd")
 static var mud_zones: Array = []
 
 static func configure_roads(roads: Array) -> void:
-	_roads.clear()
-	for road: Dictionary in roads:
-		var points: Array = road.get("points", [])
-		var radius := float(road.get("width", 9.0)) * 0.5
-		for index in range(1, points.size()):
-			var first := Vector2(points[index - 1].x, points[index - 1].z)
-			var last := Vector2(points[index].x, points[index].z)
-			var low := Vector2i(floori((minf(first.x, last.x) - radius) / CELL), floori((minf(first.y, last.y) - radius) / CELL))
-			var high := Vector2i(floori((maxf(first.x, last.x) + radius) / CELL), floori((maxf(first.y, last.y) + radius) / CELL))
-			var segment := {"first": first, "last": last, "radius_squared": radius * radius}
-			for row in range(low.y, high.y + 1):
-				for column in range(low.x, high.x + 1):
-					var cell := Vector2i(column, row)
-					if not _roads.has(cell):
-						_roads[cell] = []
-					_roads[cell].append(segment)
+	RoadSurface.configure(roads)
 
 static func kind_at(point: Vector3, wet: bool, scorch_entries: Array = []) -> int:
 	for entry: Dictionary in scorch_entries:
@@ -36,13 +20,9 @@ static func kind_at(point: Vector3, wet: bool, scorch_entries: Array = []) -> in
 		var position: Vector3 = zone.position
 		if Vector2(point.x - position.x, point.z - position.z).length_squared() < pow(float(zone.get("radius", 5.0)), 2.0):
 			return Kind.WET_MUD
+	if RoadSurface.contains(point):
+		return Kind.ROAD
 	var p := Vector2(point.x, point.z)
-	var key := Vector2i(floori(p.x / CELL), floori(p.y / CELL))
-	for road: Dictionary in _roads.get(key, []):
-		var along: Vector2 = road.last - road.first
-		var fraction := clampf((p - road.first).dot(along) / maxf(0.00001, along.length_squared()), 0, 1)
-		if p.distance_squared_to(road.first + along * fraction) <= road.radius_squared:
-			return Kind.ROAD
 	var soil := soil_amount(p)
 	return Kind.WET_MUD if wet and soil > 0.3 else Kind.SOIL if soil > 0.45 else Kind.SAND
 

@@ -1,6 +1,7 @@
 extends RefCounted
 
 const TYPES := ["sunny", "foggy", "rainy", "storm"]
+const TRANSITION_SECONDS := 24.0
 const PHASE_MIN_MS := 120000
 const PHASE_MAX_MS := 180000
 const WET_RETENTION := 6.0
@@ -28,14 +29,16 @@ static func unit(seed: int, phase: int, salt: int) -> float:
 static func phase_at(seed: int, elapsed_seconds: float) -> Dictionary:
 	var index := 0
 	var type_index := floori(unit(seed, 0, 0x51f15e) * 4.0)
+	var previous_type: String = TYPES[type_index]
 	var start := 0
 	var elapsed := floori(elapsed_seconds * 1000.0)
 	while true:
 		var duration := roundi(PHASE_MIN_MS + unit(seed, index, 0x2c9277) * (PHASE_MAX_MS - PHASE_MIN_MS))
 		if elapsed < start + duration:
-			return {"index": index, "type": TYPES[type_index], "starts_at": float(start) / 1000.0, "ends_at": float(start + duration) / 1000.0, "duration": float(duration) / 1000.0}
+			return {"index": index, "type": TYPES[type_index], "previous_type": previous_type, "starts_at": float(start) / 1000.0, "ends_at": float(start + duration) / 1000.0, "duration": float(duration) / 1000.0}
 		start += duration
 		index += 1
+		previous_type = TYPES[type_index]
 		type_index = (type_index + 1 + floori(unit(seed, index, 0x77a31d) * 3.0)) % 4
 	return {}
 
@@ -54,3 +57,20 @@ static func wet(type: String) -> bool:
 
 static func range_multiplier(type: String, radar: bool = false, npc: bool = false) -> float:
 	return 1.0 if type != "foggy" else 0.72 if npc else 0.84 if radar else 0.68
+
+# Every phase is longer than the fade, so the previous phase is fully settled.
+# Absolute phase time keeps this identical across simulation/render step sizes.
+static func mix_for_phase(phase: Dictionary, elapsed: float) -> Vector4:
+	var current := str(phase.get("type", "sunny"))
+	var previous := str(phase.get("previous_type", current))
+	var t := clampf((elapsed - float(phase.get("starts_at", 0))) / TRANSITION_SECONDS, 0, 1)
+	var blend := t * t * t * (t * (t * 6.0 - 15.0) + 10.0)
+	return type_mix(previous).lerp(type_mix(current), blend)
+
+static func type_mix(type: String) -> Vector4:
+	var result := Vector4.ZERO
+	result[maxi(0, TYPES.find(type))] = 1.0
+	return result
+
+static func visibility_multiplier(fog_strength: float, radar: bool = false, npc: bool = false) -> float:
+	return lerpf(1.0, 0.72 if npc else 0.84 if radar else 0.68, clampf(fog_strength, 0, 1))

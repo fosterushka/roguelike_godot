@@ -64,6 +64,7 @@ var _world_banner_text: Label
 var _banner_remaining := 0.0
 var reward_notice: PanelContainer
 var _status_label: Label
+var jammer_overlay: Control
 
 
 func _ready() -> void:
@@ -83,6 +84,8 @@ func _ready() -> void:
 	_gameplay.add_child(markers)
 	_build_telemetry(_gameplay)
 	_build_controls(_gameplay)
+	jammer_overlay = preload("res://presentation/ui/jammer_overlay.gd").new()
+	_gameplay.add_child(jammer_overlay)
 	_build_run_info(_gameplay)
 	touch_controls = TouchControls.new()
 	_gameplay.add_child(touch_controls)
@@ -100,7 +103,7 @@ func _ready() -> void:
 	_build_world_banner(_gameplay)
 	reward_notice = preload("res://presentation/ui/reward_notice.gd").new()
 	_gameplay.add_child(reward_notice)
-	markers.occluders.assign([_stats_panel, _hotbar, radar, _run_label, _objective_label, _target_label, _hack_label, _status_label, _world_banner, reward_notice])
+	markers.occluders.assign([_stats_panel, _hotbar, radar, _run_label, _objective_label, _target_label, _hack_label, _status_label, _world_banner, reward_notice, jammer_overlay])
 	_build_pause(screen)
 	_build_loading(screen)
 	_sync_gameplay_visibility()
@@ -398,9 +401,10 @@ func _build_run_info(screen: Control) -> void:
 		label.add_theme_stylebox_override("normal", backing)
 
 func update_run(data: Dictionary, camera: Camera3D, selected: int) -> void:
+	jammer_overlay.update_state(data)
 	markers.update_state(data, camera)
 	var hack: Dictionary = data.get("hack_status", {})
-	_hack_label.text = Locale.text("[E] ВЗЛОМ МИНЫ · %d%%") % roundi(float(hack.get("progress", 0.0)) * 100.0) if hack.get("available", false) else ""
+	_hack_label.text = Locale.text("НУЖЕН МОДУЛЬ ВЗЛОМА МИН") if hack.get("requires_module", false) else Locale.text("[E] УДЕРЖИВАЙТЕ · ВЗЛОМ %.1f/3 с") % (float(hack.get("progress", 0.0)) * 3.0) if hack.get("available", false) else ""
 	var seconds := int(data.get("elapsed", 0))
 	_run_label.text = Locale.text("ВОЛНА %d/%d · ВРАГИ %d") % [data.get("wave", 1), data.get("final_wave", 6), data.get("remaining", 0)]
 	_coins_label.text = Locale.text("ЛОМ %d") % data.get("scrap", 0)
@@ -526,6 +530,7 @@ func set_language(value: String) -> void:
 	_language_button.text = "LANGUAGE: ENGLISH" if Locale.language == "en" else "ЯЗЫК: РУССКИЙ"
 	run_menu.refresh_language()
 	reward_notice.refresh_language()
+	jammer_overlay.refresh_language()
 	update_telemetry(_last_telemetry)
 	if armory.visible:
 		armory.display(armory._shop, armory._player)

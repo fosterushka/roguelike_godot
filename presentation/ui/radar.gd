@@ -60,13 +60,11 @@ func update_state(data: Dictionary, camera: Camera3D) -> void:
 	var player: Dictionary = data.get("player", {})
 	var radar_range := float(player.get("radar_range", 0.0))
 	visible = not player.is_empty()
-	jammed = false
-	for enemy: Dictionary in data.get("enemies", []):
-		if float(player.get("hp", 0)) > 0.0 and enemy.get("kind", "") == "jammerTruck" and enemy.get("allegiance", "enemy") != "friendly" and not enemy.get("dead", false) and float(enemy.get("stagger_remaining", 0.0)) <= 0.0 and Geometry.distance_squared(enemy.position, player.get("position", Vector3.ZERO)) <= 48.0 * 48.0:
-			jammed = true
+	jammed = preload("res://presentation/ui/enemy_detection.gd").is_jammed(data)
 	var interference := 0.55 if jammed else 1.0
-	if world_state.get("weather", {}).get("type", "") == "foggy":
-		interference *= 0.84 if radar_range > 0.0 else 0.68
+	var weather: Dictionary = world_state.get("weather", {})
+	var fog_strength := float(weather.get("fog_strength", 1.0 if weather.get("type", "") == "foggy" else 0.0))
+	interference *= preload("res://modules/world/weather_rules.gd").visibility_multiplier(fog_strength, radar_range > 0.0)
 	effective_range = maxf(BASE_RANGE, radar_range) * interference
 	display_range = maxf(BASE_RANGE * 2.0, radar_range) * ZOOMS[zoom_index]
 	if is_instance_valid(view_camera):

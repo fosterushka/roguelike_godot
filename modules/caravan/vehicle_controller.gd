@@ -3,15 +3,18 @@ extends CharacterBody3D
 signal telemetry_changed(data: Dictionary)
 signal physics_pose_advanced(delta: float)
 
+const Jammer = preload("res://modules/combat/jammer_rules.gd")
 const Pose = preload("res://modules/caravan/vehicle_pose.gd")
 const Dimensions = preload("res://modules/caravan/player_dimensions.gd")
 const MotionState = preload("res://modules/caravan/vehicle_motion_state.gd")
 const Motion = preload("res://modules/caravan/vehicle_motion.gd")
 const Suspension = preload("res://modules/caravan/wheel_suspension.gd")
+const RoadSurface = preload("res://modules/world/road_surface.gd")
 const Fuel = preload("res://modules/caravan/vehicle_fuel.gd")
 
 var wheel_angle := 0.0
 var suspension := Suspension.create()
+var obstacle_impact_query: Callable
 var clock_delta: Callable
 var player_stats: Dictionary = {}
 var surface_effects: Dictionary = {"traction": 1.0, "movement": 1.0, "turn": 1.0}
@@ -61,15 +64,19 @@ func _physics_process(delta: float) -> void:
 	tuning.wheeled = true
 	tuning.wheelbase = 4.7 * float(player_stats.get("visual_scale", Dimensions.BASE_SCALE))
 	tuning.acceleration *= clampf(1.0 - float(suspension.slope) * signf(motion.speed) * 1.6, 0.65, 1.25)
-	tuning.maximum_speed *= float(surface_effects.get("movement", 1.0))
+	tuning.maximum_speed *= float(surface_effects.get("movement", 1.0)) * RoadSurface.speed_multiplier_at(global_position)
 	tuning.acceleration *= float(surface_effects.get("movement", 1.0))
 	controls.steer *= float(surface_effects.get("turn", 1.0))
+	controls = Jammer.controls(controls, player_stats)
 	Motion.step(motion, controls, tuning, delta)
 	var previous_position := position
 	var requested := Vector3(motion.x - position.x, 0.0, motion.z - position.z)
 	var collision: KinematicCollision3D = move_and_collide(requested)
 	if collision:
-		motion.speed *= 0.22
+		var breached: bool = obstacle_impact_query.is_valid() and bool(obstacle_impact_query.call(collision.get_collider(), motion.speed))
+		motion.speed *= (0.97 if bool(tuning.get("ram", false)) else 0.86) if breached else 0.22
+		if breached and move_and_collide(collision.get_remainder()) != null:
+			motion.speed *= 0.22
 	motion.x = position.x
 	motion.z = position.z
 	rotation.y = motion.heading
@@ -82,6 +89,7 @@ func _physics_process(delta: float) -> void:
 	physics_pose_advanced.emit(delta)
 
 func reset_vehicle() -> void:
+	Jammer.clear_player(player_stats)
 	position = _spawn_position
 	rotation.y = _spawn_heading
 	motion = MotionState.new()
