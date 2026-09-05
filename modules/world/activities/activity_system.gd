@@ -102,7 +102,7 @@ func announce(type: String, options: Dictionary) -> Dictionary:
 		"position": options.position, "marker_position": options.position, "route": options.get("route", []), "source_id": options.get("source_id", ""),
 		"announced_at": elapsed, "starts_at": elapsed + (1.5 if type == "scavengerRoute" else Rules.ANNOUNCE), "expires_at": elapsed + Rules.DURATIONS[type],
 		"completed_at": -1.0, "route_progress": 0.0, "route_ratio": 0.0, "participant_ids": [], "deployment_anchors": [],
-		"reward_claimed": false, "reward": Rules.REWARDS[type], "telegraph_until": -1.0, "intrusion_until": -1.0, "yaw": 0.0}
+		"reward_claimed": false, "reward": Rules.REWARDS[type], "reward_label": Rules.REWARD_LABELS[type], "telegraph_until": -1.0, "intrusion_until": -1.0, "yaw": 0.0}
 	next_sequence += 1
 	records.append(record)
 	events.append({"kind": "activity_announced", "id": record.id, "activity_type": type, "position": record.position, "objective": record.objective})
@@ -304,14 +304,38 @@ func finish(record: Dictionary, outcome: String, reason: String = "") -> bool:
 		world.combat.model.player.activity_credits = credits
 		world.combat.model.player.coins += int(record.reward)
 		world.combat.model.player.xp += maxi(1, roundi(float(record.reward) * 0.6))
-		world.combat.model.events.append({"kind": "activity_completed", "id": "%d:%s" % [world.combat.model.generation, record.id], "generation": world.combat.model.generation, "activity_type": record.type, "weather": world.weather.phase.type})
+		record.reward_info = _apply_route_reward(str(record.type))
+		world.combat.model.events.append({"kind": "activity_completed", "id": "%d:%s" % [world.combat.model.generation, record.id], "generation": world.combat.model.generation, "activity_type": record.type, "weather": world.weather.phase.type, "position": record.position, "loot_source": Rules.LOOT_SOURCES[record.type], "loot_count": 2 if record.type == "raiderSupplyConvoy" else 1, "reward_info": record.reward_info})
 	for id in record.participant_ids:
 		var enemy: Dictionary = participants.get(id, {})
 		if not enemy.is_empty():
 			enemy.dead = true
 		participants.erase(id)
-	events.append({"kind": "activity_finished", "id": record.id, "activity_type": record.type, "outcome": outcome, "reason": reason, "reward": record.reward if outcome == "completed" else 0})
+	events.append({"kind": "activity_finished", "id": record.id, "activity_type": record.type, "outcome": outcome, "reason": reason, "reward": record.reward if outcome == "completed" else 0, "reward_info": record.get("reward_info", {})})
 	return true
+
+func _apply_route_reward(type: String) -> Dictionary:
+	var player: Dictionary = world.combat.model.player
+	var reward := {"repair": 0.0, "fuel": 0.0, "blueprint": "", "reward_label": Rules.REWARD_LABELS[type]}
+	if type == "settlementDistress":
+		reward.repair = minf(world.vehicle.max_health - world.vehicle.health, world.vehicle.max_health * 0.35)
+		world.vehicle.health += reward.repair
+		player.hp = world.vehicle.health
+	elif type == "scavengerRoute":
+		reward.fuel = minf(world.vehicle.max_fuel - world.vehicle.fuel, 25.0)
+		world.vehicle.fuel += reward.fuel
+		player.fuel = world.vehicle.fuel
+	elif type == "raiderSupplyConvoy":
+		var unlocked: Array = player.get("unlocked_weapons", [])
+		var candidates: Array[String] = []
+		for weapon: String in world.combat.model._catalog:
+			if world.combat.model._catalog[weapon].has("projectile") and not unlocked.has(weapon):
+				candidates.append(weapon)
+		if not candidates.is_empty():
+			reward.blueprint = candidates[random.integer(0, candidates.size() - 1)]
+			unlocked.append(reward.blueprint)
+			player.unlocked_weapons = unlocked
+	return reward
 
 func village_eligible(id: String) -> bool:
 	if not _villages.has(id):

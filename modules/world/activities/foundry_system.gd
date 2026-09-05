@@ -43,6 +43,11 @@ func step(delta: float) -> void:
 	if not spawned:
 		_spawn_network()
 	for foundry in foundries:
+		if foundry.enemy.dead and not foundry.get("reward_claimed", false):
+			foundry.reward_claimed = true
+			activities.credits += 1
+			world.combat.model.player.activity_credits = activities.credits
+			world.combat.model._emit("activity_completed", {"id": "%d:foundry-%d" % [world.combat.model.generation, foundry.enemy.id], "activity_type": "foundryDestroyed", "weather": world.weather.phase.type, "position": foundry.enemy.position, "loot_source": "foundry", "loot_count": 1, "reward_info": {"reward_label": "Rare upgrade cargo"}})
 		foundry.solid.destroyed = foundry.enemy.dead
 		colliders[foundry.index].collision_layer = 0 if foundry.enemy.dead else 1
 		foundry.cooldown = maxf(0.0, foundry.cooldown - delta)
@@ -147,5 +152,5 @@ func get_state() -> Array:
 	var result: Array = []
 	for foundry in foundries:
 		if not foundry.enemy.dead:
-			result.append({"id": foundry.enemy.id, "position": foundry.enemy.position, "tier": foundry.enemy.tier, "hp": foundry.enemy.hp, "max_hp": foundry.enemy.max_hp})
+			result.append({"id": foundry.enemy.id, "position": foundry.enemy.position, "tier": foundry.enemy.tier, "hp": foundry.enemy.hp, "max_hp": foundry.enemy.max_hp, "reward_label": "Rare upgrade cargo"})
 	return result

@@ -101,6 +101,15 @@ func edge_candidates() -> Array[Dictionary]:
 		if activity.get("state", "") not in ["announced", "active"] or not activity.has("position") or not _offscreen(activity.position):
 			continue
 		candidates.append(_candidate("activity:" + str(activity.get("id", "")), activity.position, str(activity.get("type", "ЦЕЛЬ")), Color("69e0b2"), 4))
+	var nearest_loot: Dictionary = {}
+	for crate: Dictionary in world_state.get("raid_loot", []):
+		if not _offscreen(crate.position):
+			continue
+		var candidate := _candidate("raid_loot", crate.position, "ДОБЫЧА" if Locale.language == "ru" else "LOOT", Color("e8be65"), 3)
+		if nearest_loot.is_empty() or candidate.distance < nearest_loot.distance:
+			nearest_loot = candidate
+	if not nearest_loot.is_empty():
+		candidates.append(nearest_loot)
 	for key in ["heal_carts", "airdrops"]:
 		var nearest: Dictionary = {}
 		for support: Dictionary in world_state.get("support", {}).get(key, []):

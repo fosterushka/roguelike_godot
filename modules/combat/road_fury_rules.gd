@@ -1,6 +1,11 @@
 extends RefCounted
 const Dimensions = preload("res://modules/caravan/player_dimensions.gd")
 
+const OVERDRIVE_DURATION := 5.0
+const OVERDRIVE_COOLDOWN := 8.0
+var overdrive_remaining := 0.0
+var overdrive_cooldown := 0.0
+
 var momentum := 0.0
 var combo := 0
 var multiplier := 1.0
@@ -8,6 +13,8 @@ var grace := 0.0
 var drift_distance := 0.0
 
 func reset() -> void:
+	overdrive_remaining = 0.0
+	overdrive_cooldown = 0.0
 	momentum = 0.0
 	combo = 0
 	multiplier = 1.0
@@ -15,7 +22,7 @@ func reset() -> void:
 	drift_distance = 0.0
 
 func record(gain: float) -> void:
-	if gain <= 0.0:
+	if gain <= 0.0 or overdrive_cooldown > 0.0:
 		return
 	combo = combo + 1 if grace > 0.0 else 1
 	multiplier = 3.0 if combo >= 10 else 2.0 if combo >= 6 else 1.5 if combo >= 3 else 1.0
@@ -30,7 +37,10 @@ func decay(delta: float, rate: float) -> void:
 		multiplier = 1.0
 		momentum = maxf(0.0, momentum - decay_time * rate)
 
-func step(player: Dictionary, delta: float) -> void:
+func step(player: Dictionary, delta: float) -> bool:
+	overdrive_remaining = maxf(0.0, overdrive_remaining - delta)
+	overdrive_cooldown = maxf(0.0, overdrive_cooldown - delta)
+	var started := _start_overdrive(player)
 	var speed := absf(float(player.speed))
 	var rate := 0.025 if speed > 3.0 else 0.075
 	var retention: float = maxf(0.0, player.get("momentum_decay_mult", 1.0))
@@ -57,9 +67,26 @@ func step(player: Dictionary, delta: float) -> void:
 				event_count += 1
 		if remaining > 0.0:
 			decay(remaining * retention, rate)
+	started = _start_overdrive(player) or started
 	player.momentum = momentum
 	player.road_fury_combo = combo
 	player.road_fury_multiplier = multiplier
+	player.road_fury_overdrive = overdrive_remaining
+	player.road_fury_cooldown = maxf(0.0, overdrive_cooldown - overdrive_remaining)
+	return started
+
+func _start_overdrive(player: Dictionary) -> bool:
+	if momentum < 1.0 or overdrive_cooldown > 0.0:
+		return false
+	overdrive_remaining = OVERDRIVE_DURATION
+	overdrive_cooldown = OVERDRIVE_DURATION + OVERDRIVE_COOLDOWN
+	momentum = 0.0
+	combo = 0
+	multiplier = 1.0
+	grace = 0.0
+	player.ram_timer = maxf(float(player.get("ram_timer", 0.0)), OVERDRIVE_DURATION)
+	player.nitro_cooldown = 0.0
+	return true
 
 func collide(model, enemy: Dictionary, distance: float, delta: float) -> void:
 	var player: Dictionary = model.player

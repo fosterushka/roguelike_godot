@@ -1,5 +1,6 @@
 extends RefCounted
 
+const PaintedMaterials = preload("res://presentation/style/painted_materials.gd")
 const SourceAnimation = preload("res://presentation/combat/source_animation.gd")
 
 static var _templates: Dictionary = {}
@@ -74,6 +75,7 @@ static func _prepare(model_name: String) -> void:
 		var mesh := ArrayMesh.new()
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 		var material_data: Dictionary = part.material.duplicate()
+		material_data.painted_outline = not model_name.begins_with("world_") and not model_name.begins_with("fx_") and not model_name.begins_with("projectile_")
 		material_data.receive_shadow = bool(part.get("receive_shadow", true))
 		mesh.surface_set_material(0, _material(material_data))
 		var m: Array = part.matrix
@@ -130,6 +132,7 @@ static func _material(data: Dictionary) -> StandardMaterial3D:
 		material.emission_enabled = true
 		material.emission = material.albedo_color
 		material.emission_energy_multiplier = 0.8
+	PaintedMaterials.apply(material, data)
 	_materials[key] = material
 	return material
 

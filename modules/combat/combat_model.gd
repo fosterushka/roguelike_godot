@@ -92,6 +92,7 @@ func reset_run(seed_value: int = 72841) -> void:
 		"damage_mult": 1.0, "range_mult": 1.0, "fire_rate": 1.0, "armor": 0.0,
 		"emergency_armor": 0.0, "pickup_radius": 6.2, "coin_mult": 1.0,
 		"repair_power": 30.0, "repair_cooldown": 0.0, "ram_cooldown": 0.0,
+		"road_fury_overdrive": 0.0, "road_fury_cooldown": 0.0,
 		"ram_timer": 0.0, "has_bumper": false, "ram_cd_mult": 1.0,
 		"nitro_timer": 0.0, "nitro_cooldown": 0.0, "nitro_recovery": 1.0,
 		"regen_rate": 0.0, "double_shot_chance": 0.0, "overdrive_feed": false,
@@ -112,7 +113,8 @@ func step(delta: float) -> void:
 	delta = minf(delta, 0.1)
 	elapsed += delta
 	_tick_abilities(delta)
-	road_fury.step(player, delta)
+	if road_fury.step(player, delta):
+		_emit("overdrive_started", {"position": player.position, "duration": Fury.OVERDRIVE_DURATION})
 	if status == "intermission":
 		intermission = maxf(0.0, intermission - delta)
 		if intermission == 0.0:
@@ -205,7 +207,7 @@ func _update_enemies(delta: float) -> void:
 func _update_weapons(delta: float) -> void:
 	jammer.step(player, enemies, delta)
 	for weapon: Dictionary in weapons:
-		weapon.cooldown -= delta * player.fire_rate * (1.16 if player.overdrive_feed and absf(player.speed) > 4.0 else 1.0)
+		weapon.cooldown -= delta * player.fire_rate * (1.45 if road_fury.overdrive_remaining > 0.0 else 1.0) * (1.16 if player.overdrive_feed and absf(player.speed) > 4.0 else 1.0)
 		if weapon.cooldown > 0.0:
 			continue
 		var tuning := Sidegrades.tuning(player, weapon)
@@ -509,7 +511,7 @@ func activate_ability(slot: int) -> bool:
 			if player.nitro_cooldown > 0.0:
 				return false
 			player.nitro_timer = 1.85
-			player.nitro_cooldown = 10.0
+			player.nitro_cooldown = 0.0 if road_fury.overdrive_remaining > 0.0 else 10.0
 		2:
 			if player.repair_cooldown > 0.0 or player.coins < 15 or player.hp >= player.max_hp:
 				return false
@@ -519,7 +521,7 @@ func activate_ability(slot: int) -> bool:
 		1:
 			if not player.has_bumper or player.ram_cooldown > 0.0:
 				return false
-			player.ram_timer = 0.9
+			player.ram_timer = maxf(player.ram_timer, 0.9)
 			player.ram_cooldown = 8.0 * player.ram_cd_mult
 		_:
 			return false

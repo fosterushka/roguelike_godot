@@ -61,6 +61,7 @@
     "res://presentation/combat/fx/rocket_smoke.gdshader",
     "res://presentation/combat/fx/smoke.gdshader",
     "res://presentation/combat/fx/tire_tread.gdshader",
+    "res://presentation/style/ink_outline.gdshader",
     "res://presentation/ui/countdown_blur.gdshader",
     "res://presentation/world/hemisphere_sky.gdshader",
     "res://presentation/world/road.gdshader",

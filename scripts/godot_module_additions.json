@@ -1,0 +1,25 @@
+{
+  "modules": {
+    "mineHacker": {
+      "name": "Mine Hacking Kit",
+      "icon": "HACK",
+      "weight": 2,
+      "cost": 60,
+      "range": 4.5,
+      "desc": "Hold E near an armed mine for 3 uninterrupted seconds to convert it. Hacked mines only trigger on enemies.",
+      "passive": "mineHacker",
+      "unique": true,
+      "purchasable": true
+    }
+  },
+  "moduleBuildProfiles": {
+    "mineHacker": {
+      "families": [
+        "support"
+      ],
+      "tags": [
+        "mine-hacking"
+      ]
+    }
+  }
+}

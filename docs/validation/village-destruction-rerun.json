@@ -1,0 +1,12 @@
+{
+  "mode": "headless automated; no GPU rendering, listening or balance-playthrough claim",
+  "project": "/private/tmp/iron-godot-finish-9siuihzq",
+  "results": [
+    {
+      "test": "natural_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35
+    }
+  ]
+}

@@ -13,6 +13,7 @@ const KEYS := {
 	"ability_three": [KEY_3],
 	"activate_ability": [KEY_SPACE],
 	"armory": [KEY_B],
+	"inventory": [KEY_I, KEY_TAB],
 	"radar_zoom": [KEY_M],
 	"pause_game": [KEY_P, KEY_ESCAPE],
 	"restart_run": [],

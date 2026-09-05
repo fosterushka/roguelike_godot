@@ -76,9 +76,9 @@ func _create_ground() -> void:
 func _create_lighting() -> void:
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_COLOR
-	environment.background_color = Color("8fa08f")
+	environment.background_color = Color("b4c5b5")
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	environment.ambient_light_energy = 2.25 / PI
+	environment.ambient_light_energy = 2.0 / PI
 	var sky_material := ShaderMaterial.new()
 	sky_material.shader = preload("res://presentation/world/hemisphere_sky.gdshader")
 	var sky := Sky.new()
@@ -87,7 +87,7 @@ func _create_lighting() -> void:
 	environment.sky = sky
 	environment.tonemap_mode = Environment.TONE_MAPPER_ACES
 	environment.fog_enabled = true
-	environment.fog_light_color = Color("8f9a97")
+	environment.fog_light_color = Color("b4c5b5")
 	environment.fog_density = 0.0052 * 0.0052 * 65.0
 	var world_environment := WorldEnvironment.new()
 	world_environment.environment = environment
@@ -95,7 +95,7 @@ func _create_lighting() -> void:
 	var sun := DirectionalLight3D.new()
 	sun.name = "WastelandSun"
 	sun.rotation = Basis.looking_at(Vector3(45, -70, -25), Vector3.UP).get_euler()
-	sun.light_color = Color("f2dfbe")
+	sun.light_color = Color("ffe2ab")
 	sun.light_energy = 3.0 / PI
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 160
@@ -103,7 +103,7 @@ func _create_lighting() -> void:
 	var rim := DirectionalLight3D.new()
 	rim.name = "WastelandRim"
 	rim.rotation = Basis.looking_at(Vector3(-38, -24, 50), Vector3.UP).get_euler()
-	rim.light_color = Color("86b9d8")
+	rim.light_color = Color("8eb6df")
 	rim.light_energy = 0.52 / PI
 	add_child(rim)
 

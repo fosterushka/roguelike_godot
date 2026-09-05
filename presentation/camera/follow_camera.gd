@@ -5,6 +5,8 @@ extends Camera3D
 var half_height := 31.0
 var shake := 0.0
 var punch := 0.0
+var shake_intensity := 1.0
+var _impact_direction := Vector2.ZERO
 var _lead := Vector3.ZERO
 var _subject_view: Node3D
 var _focus := Vector3.ZERO
@@ -51,9 +53,13 @@ func _process(delta: float) -> void:
 		_drag = _drag.lerp(Vector3.ZERO, 1.0 - exp(-delta * 1.5))
 	_lead = _lead.lerp(forward * (5.0 + subject_speed * 0.52), 1.0 - exp(-12.0 * delta))
 	_focus = Vector3(pose.position.x, 0, pose.position.z) + _lead + _drag
-	var trauma := shake * shake
-	var oscillation := Vector3((sin(_elapsed * 47) + sin(_elapsed * 71) * 0.45) * trauma, sin(_elapsed * 61 + 1.3) * trauma * 0.38, (cos(_elapsed * 53) + sin(_elapsed * 83) * 0.35) * trauma)
-	shake = maxf(0.0, shake - delta * 1.55)
+	var trauma := shake * shake_intensity
+	var oscillation := Vector3.ZERO
+	# Screen-plane offsets remain visible even while the camera looks at the car.
+	h_offset = (sin(_elapsed * 47) * 0.72 + sin(_elapsed * 71) * 0.28 + _impact_direction.x) * size * 0.014 * trauma
+	v_offset = (sin(_elapsed * 61 + 1.3) * 0.65 + _impact_direction.y) * size * 0.009 * trauma
+	_impact_direction = _impact_direction.lerp(Vector2.ZERO, 1.0 - exp(-delta * 16.0))
+	shake = maxf(0.0, shake - delta * 2.2)
 	punch = maxf(0.0, punch - delta * 2.8)
 	var intro := clampf(_intro / 2.65, 0.0, 1.0)
 	var cinematic := not death_cinematic.is_empty() and float(death_cinematic.elapsed) < float(death_cinematic.duration)
@@ -66,13 +72,19 @@ func _process(delta: float) -> void:
 		desired = Vector3(_focus.x + cos(orbit) * distance + oscillation.x, 15.5 + oscillation.y, _focus.z + sin(orbit) * distance + oscillation.z)
 	global_position = global_position.lerp(desired, 1.0 - pow(0.00004, delta)) if cinematic else desired
 	look_at(_focus + Vector3.UP * oscillation.y * 0.12, Vector3.UP)
-	rotation.z += sin(_elapsed * 67) * trauma * 0.009
+	rotation.z += sin(_elapsed * 38) * trauma * 0.012
 	_zoom = lerpf(_zoom, (1.42 if cinematic else 1.0 - speed * 0.025 - punch * 0.015) * (1.0 - intro * 0.18), 1.0 - pow(0.001, delta))
 	size = half_height * 2.0 / _zoom
 
 func add_shake(power: float) -> void:
-	shake = maxf(shake, power)
-	punch = maxf(punch, power)
+	shake = clampf(maxf(shake, sqrt(maxf(power, 0.0))), 0.0, 1.0)
+	punch = clampf(maxf(punch, power), 0.0, 1.0)
+
+func add_hit(power: float, direction := Vector3.ZERO) -> void:
+	add_shake(power)
+	_impact_direction = Vector2(global_basis.x.dot(direction), global_basis.y.dot(direction)).limit_length(1.0)
+	if _impact_direction.is_zero_approx():
+		_impact_direction = Vector2(0.65, -0.7)
 
 func reset_view() -> void:
 	if not is_instance_valid(target):
@@ -83,6 +95,9 @@ func reset_view() -> void:
 	_intro = 2.65
 	_elapsed = 0.0
 	shake = 0.0
+	h_offset = 0.0
+	v_offset = 0.0
+	_impact_direction = Vector2.ZERO
 	punch = 0.0
 	_zoom = 0.82
 	_subject_view = target.get_node_or_null("VehicleView") as Node3D

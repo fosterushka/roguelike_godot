@@ -8,6 +8,8 @@ const RECOVERY := 10.0
 const ANNOUNCE := 2.5
 const DURATIONS := {"raiderSupplyConvoy": 95.0, "settlementDistress": 62.0, "foundryDispatch": 60.0, "scavengerRoute": 82.0}
 const REWARDS := {"raiderSupplyConvoy": 18, "settlementDistress": 14, "foundryDispatch": 10, "scavengerRoute": 8}
+const REWARD_LABELS := {"raiderSupplyConvoy": "Weapon blueprint + weapon cargo", "settlementDistress": "Repair 35% hull + medical supplies", "foundryDispatch": "Rare upgrade cargo", "scavengerRoute": "Fuel + salvage cargo"}
+const LOOT_SOURCES := {"raiderSupplyConvoy": "convoy", "settlementDistress": "settlement", "foundryDispatch": "foundry", "scavengerRoute": "salvage"}
 const OBJECTIVES := {"raiderSupplyConvoy": "Destroy the convoy before it clears the road", "settlementDistress": "Clear the raiders threatening the village", "foundryDispatch": "Intercept the foundry reinforcement", "scavengerRoute": "Meet the scavenger crawler on the road"}
 
 static func live_count(records: Array, major: bool) -> int:

@@ -10,6 +10,7 @@ import tempfile
 import time
 
 TESTS = [
+    'meta_economy_test.gd', 'combo_rewards_test.gd', 'expedition_flow_test.gd',
     'vehicle_motion_test.gd', 'offline_session_test.gd', 'combat_test.gd',
     'advanced_combat_test.gd', 'enemy_ai_test.gd', 'progression_test.gd',
     'world_generation_test.gd', 'natural_props_test.gd', 'authored_props_test.gd',

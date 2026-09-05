@@ -4,11 +4,11 @@ const Rules = preload("res://modules/world/weather_rules.gd")
 const Ground = preload("res://presentation/world/ground_surface_view.gd")
 const MUD_TEXTURES := [preload("res://assets/textures/weather/mud-patch-a.png"), preload("res://assets/textures/weather/mud-rut-b.png"), preload("res://assets/textures/weather/mud-splash-c.png")]
 const PRESETS := {
-	"clear": {"fog": "9da58f", "background": "94a08d", "density": 0.0036, "sun": 3.25, "rim": 0.58, "exposure": 1.04},
-	"sunny": {"fog": "9da58f", "background": "94a08d", "density": 0.0036, "sun": 3.25, "rim": 0.58, "exposure": 1.04},
-	"foggy": {"fog": "8f9792", "background": "8d9590", "density": 0.0135, "sun": 2.15, "rim": 0.38, "exposure": 0.96},
-	"rainy": {"fog": "7d8787", "background": "7c8685", "density": 0.0054, "sun": 1.95, "rim": 0.34, "exposure": 0.96},
-	"storm": {"fog": "6f7777", "background": "727a79", "density": 0.0059, "sun": 1.7, "rim": 0.3, "exposure": 0.88}}
+	"clear": {"fog": "bccbb2", "background": "b4c8bd", "density": 0.0036, "sun": 3.25, "rim": 0.58, "exposure": 1.04},
+	"sunny": {"fog": "bccbb2", "background": "b4c8bd", "density": 0.0036, "sun": 3.25, "rim": 0.58, "exposure": 1.04},
+	"foggy": {"fog": "a3b8b5", "background": "9dafb2", "density": 0.0135, "sun": 2.15, "rim": 0.38, "exposure": 0.96},
+	"rainy": {"fog": "899eab", "background": "899cab", "density": 0.0054, "sun": 1.95, "rim": 0.34, "exposure": 0.96},
+	"storm": {"fog": "798b9d", "background": "7b8a9e", "density": 0.0059, "sun": 1.7, "rim": 0.3, "exposure": 0.88}}
 var externally_driven := false
 var _visual_elapsed := 0.0
 var _weather_type := ""

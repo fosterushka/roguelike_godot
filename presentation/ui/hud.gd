@@ -64,6 +64,7 @@ var _world_banner_text: Label
 var _banner_remaining := 0.0
 var reward_notice: PanelContainer
 var _status_label: Label
+var fury_meter: Control
 var jammer_overlay: Control
 
 
@@ -87,6 +88,8 @@ func _ready() -> void:
 	jammer_overlay = preload("res://presentation/ui/jammer_overlay.gd").new()
 	_gameplay.add_child(jammer_overlay)
 	_build_run_info(_gameplay)
+	fury_meter = preload("res://presentation/ui/road_fury_meter.gd").new()
+	_gameplay.add_child(fury_meter)
 	touch_controls = TouchControls.new()
 	_gameplay.add_child(touch_controls)
 	touch_controls.command_requested.connect(func(command: String) -> void: touch_command_requested.emit(command))
@@ -103,7 +106,7 @@ func _ready() -> void:
 	_build_world_banner(_gameplay)
 	reward_notice = preload("res://presentation/ui/reward_notice.gd").new()
 	_gameplay.add_child(reward_notice)
-	markers.occluders.assign([_stats_panel, _hotbar, radar, _run_label, _objective_label, _target_label, _hack_label, _status_label, _world_banner, reward_notice, jammer_overlay])
+	markers.occluders.assign([_stats_panel, _hotbar, radar, _run_label, _objective_label, _target_label, _hack_label, _status_label, _world_banner, reward_notice, jammer_overlay, fury_meter])
 	_build_pause(screen)
 	_build_loading(screen)
 	_sync_gameplay_visibility()
@@ -401,6 +404,7 @@ func _build_run_info(screen: Control) -> void:
 		label.add_theme_stylebox_override("normal", backing)
 
 func update_run(data: Dictionary, camera: Camera3D, selected: int) -> void:
+	fury_meter.update_player(data.get("player", {}))
 	jammer_overlay.update_state(data)
 	markers.update_state(data, camera)
 	var hack: Dictionary = data.get("hack_status", {})
@@ -446,6 +450,8 @@ func update_world(data: Dictionary) -> void:
 	var lines: Array[String] = []
 	if not activity.is_empty():
 		lines.append(Locale.text("ЗАДАЧА: %s · %s") % [Locale.text(str(activity.get("type", ""))).to_upper(), Locale.text(str(activity.get("state", "")))])
+		if not str(activity.get("reward_label", "")).is_empty():
+			lines.append(Locale.text(str(activity.reward_label)))
 	if extraction.get("visible", false):
 		lines.append(Locale.text("ЭВАКУАЦИЯ · ЗАДАЧИ %d/%d") % [extraction.get("credits", 0), extraction.get("required_credits", 2)])
 		if extraction.get("active", false):

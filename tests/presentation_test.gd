@@ -51,8 +51,9 @@ func _run() -> void:
 		game.camera._unhandled_input(event)
 	_check(game.camera.half_height == 48, "Zoom out respects source maximum48")
 	game.camera.add_shake(0.5)
+	var initial_shake: float = game.camera.shake
 	game.camera._process(0.1)
-	_check(game.camera.shake < 0.5 and game.camera.shake > 0, "Camera trauma decays smoothly using source rate")
+	_check(game.camera.shake < initial_shake and game.camera.shake > 0, "Camera trauma decays smoothly using source rate")
 	game.combat.model.player.coins = 1000
 	game.combat.model.player.level = 4
 	game.combat.buy_upgrade("trailer")

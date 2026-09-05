@@ -1,24 +1,37 @@
 shader_type spatial;
-render_mode diffuse_burley;
+render_mode diffuse_toon, specular_disabled;
 uniform float uTime = 0.0;
 varying vec3 world_point;
-float terrain_hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
-float terrain_noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(terrain_hash(i),terrain_hash(i+vec2(1,0)),f.x),mix(terrain_hash(i+vec2(0,1)),terrain_hash(i+vec2(1,1)),f.x),f.y);}
-void vertex(){world_point=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}
-void fragment(){
- vec2 p=world_point.xz;
- float broad=terrain_noise(p*.028),medium=terrain_noise(p*.11+vec2(17,4)),fine=terrain_noise(p*.52+vec2(6,23)),micro=terrain_noise(p*2.6+vec2(31,9));
- float soil=smoothstep(.5,.78,broad+medium*.28);
- float dry=smoothstep(.58,.86,terrain_noise(p*.065+vec2(-11,28))+fine*.12);
- float rock=smoothstep(.61,.84,terrain_noise(p*.19+vec2(44,-8))+soil*.2);
- float pebble=smoothstep(.9,.975,micro)*rock;
- float pale=smoothstep(.945,.992,terrain_hash(floor(p*2.9+13.0)));
- float crack=(1.0-smoothstep(.015,.055,abs(fine-.5)))*soil*.48;
- vec3 color=mix(vec3(.282,.373,.196),vec3(.635,.604,.282),medium*.82+fine*.1);
- color=mix(color,vec3(.412,.271,.169),soil*.68);
- color=mix(color,vec3(.651,.420,.220),dry*.32);
- color=mix(color,vec3(.561,.545,.447),pebble*.72);
- color+=pale*vec3(.075,.065,.035);color-=crack*vec3(.13,.105,.07);
- color+=sin(dot(p,vec2(.048,.029))+uTime*.22)*.008;
- ALBEDO=color;ROUGHNESS=clamp(.76+soil*.15+micro*.08-pebble*.2,.58,1.0);
+
+float terrain_hash(vec2 point) {
+	point = fract(point * vec2(123.34, 456.21));
+	point += dot(point, point + 45.32);
+	return fract(point.x * point.y);
+}
+
+float terrain_noise(vec2 point) {
+	vec2 cell = floor(point);
+	vec2 weight = fract(point);
+	weight = weight * weight * (3.0 - 2.0 * weight);
+	return mix(mix(terrain_hash(cell), terrain_hash(cell + vec2(1, 0)), weight.x),
+		mix(terrain_hash(cell + vec2(0, 1)), terrain_hash(cell + vec2(1, 1)), weight.x), weight.y);
+}
+
+void vertex() {
+	world_point = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+}
+
+void fragment() {
+	vec2 point = world_point.xz;
+	float broad = terrain_noise(point * 0.028);
+	float brush = terrain_noise(point * vec2(0.11, 0.22) + vec2(17, 4));
+	float fine = terrain_noise(point * 0.52 + vec2(6, 23));
+	float soil = smoothstep(0.57, 0.78, broad + brush * 0.2);
+	float dry = smoothstep(0.58, 0.86, terrain_noise(point * 0.065 + vec2(-11, 28)));
+	vec3 meadow = mix(vec3(0.31, 0.43, 0.22), vec3(0.59, 0.64, 0.32), smoothstep(0.24, 0.72, brush));
+	vec3 color = mix(meadow, vec3(0.57, 0.42, 0.27), soil * 0.76);
+	color = mix(color, vec3(0.74, 0.62, 0.38), dry * 0.4);
+	color += (fine - 0.5) * 0.025;
+	ALBEDO = pow(color, vec3(2.2));
+	ROUGHNESS = 1.0;
 }
