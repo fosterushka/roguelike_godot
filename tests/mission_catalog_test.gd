@@ -26,7 +26,7 @@ func _signature(row: Dictionary) -> String:
 
 func _run() -> void:
 	var all := Catalog.all()
-	check(all.size() == 120 and Catalog.errors().is_empty(), "Catalog loads all 120 valid missions")
+	check(all.size() == 126 and Catalog.errors().is_empty(), "Catalog loads the original120 and six crew/caravan missions")
 	var categories := {}
 	var names_ru := {}
 	var names_en := {}
@@ -78,9 +78,9 @@ func _run() -> void:
 				valid_conditions = valid_conditions and float(objectives[condition.metric]) <= float(condition.value)
 			achievable = achievable and not (condition.metric == "shots" and condition.op == "max" and condition.value == 0)
 	check(complete_schema, "Every definition has validated IDs, localized copy, scope, level, objectives and bounded rewards")
-	check(names_ru.size() == 120 and names_en.size() == 120, "All Russian and English mission titles are unique")
-	check(descriptions_ru.size() == 120 and descriptions_en.size() == 120, "Every mission has an individual bilingual briefing")
-	check(categories.size() == 10 and categories.values().all(func(count: int) -> bool: return count == 12), "Each of ten categories contains exactly twelve missions")
+	check(names_ru.size() == all.size() and names_en.size() == all.size(), "All Russian and English mission titles are unique")
+	check(descriptions_ru.size() == all.size() and descriptions_en.size() == all.size(), "Every mission has an individual bilingual briefing")
+	check(categories.size() == 10 and categories.values().all(func(count: int) -> bool: return count >= 12), "All ten original categories retain at least their twelve existing missions")
 	check(signatures.size() >= 90, "At least ninety distinct objective/condition/delivery signatures without using numeric target differences")
 	check(multigoal_count >= 85 and conditioned_count >= 25 and raid_count >= 85, "Content includes substantial combined objectives, constraints and single-raid challenges")
 	check(used_metrics.size() >= 55 and labels_available, "At least fifty-five real gameplay metrics have human-readable bilingual labels")

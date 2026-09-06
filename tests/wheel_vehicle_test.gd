@@ -86,7 +86,10 @@ func _test_rig() -> void:
 	root.add_child(trailer)
 	check(player.get_meta("wheels").size() == 4 and trailer.get_meta("wheels").size() == 4, "Both rigs use four actual articulated wheels")
 	var names := _names(player) + _names(trailer)
-	check(not names.contains("Track") and not names.contains("Leg") and names.contains("TreadBlock") and names.contains("SuspensionStrut"), "Detailed rigs include tread and suspension without tracks or walking legs")
+	check(not names.contains("Track") and not names.contains("Leg") and player.has_meta("model_path") and trailer.has_meta("model_path"), "Both rigs use authored wheeled assets without tracks or walking legs")
+	var trailer_wheels: Array = trailer.get_meta("wheels")
+	var tire: MeshInstance3D = trailer_wheels[0].get_child(0).get_child(0)
+	check(absf(tire.mesh.get_aabb().size.y * tire.scale.y - Suspension.RADIUS * 2.0) < 0.015, "Authored trailer tire diameter matches suspension contact radius")
 	var suspension := Suspension.create()
 	suspension.wheel_offsets[0] = 0.2
 	Rig.animate(player, suspension, 1.0, 5, 2.0)

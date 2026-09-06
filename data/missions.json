@@ -3161,6 +3161,178 @@
       },
       "credits": 965,
       "xp": 470
+    },
+    {
+      "id": "rescue_new_hand",
+      "name": "Место для ещё одного",
+      "name_en": "Room for one more",
+      "description": "Спасите человека в рейде и вывезите его живым. Сначала убедитесь, что в машине или прицепе есть свободное место.",
+      "description_en": "Rescue someone during a raid and extract with them alive. Make sure your pickup or a wagon has a free seat first.",
+      "category": "rescue",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "crew_rescued",
+          "target": 1
+        },
+        {
+          "metric": "rescued_crew_extracted",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 200,
+      "xp": 140
+    },
+    {
+      "id": "working_mechanic",
+      "name": "Руки механика",
+      "name_en": "A mechanic's hands",
+      "description": "Дайте механику восстановить 120 единиц прочности машины или прицепов. Учитывается только реальный ремонт в успешно завершённых рейдах.",
+      "description_en": "Have a mechanic restore 120 hull points to your pickup or wagons. Only actual repairs during successful raids count.",
+      "category": "survival",
+      "min_level": 1,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "crew_repair_hp",
+          "target": 120
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 180,
+      "xp": 130
+    },
+    {
+      "id": "bring_team_home",
+      "name": "Возвращаемся командой",
+      "name_en": "Home as a team",
+      "description": "За один рейд вывезите минимум трёх живых сотрудников и один целый прицеп. Не оставляйте людей снаружи и никого не теряйте.",
+      "description_en": "Extract at least three living crew and one surviving wagon in a single raid. Board everyone and leave nobody dead or behind.",
+      "category": "rescue",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "crew_extracted",
+          "target": 3
+        },
+        {
+          "metric": "wagons_extracted",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "crew_lost",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 320,
+      "xp": 220
+    },
+    {
+      "id": "rescue_under_storm",
+      "name": "Забрать из грозы",
+      "name_en": "Out of the storm",
+      "description": "Спасите нового человека, проведите в грозовую погоду не менее 20 секунд и вывезите его живым в этом же рейде. Все сотрудники должны вернуться.",
+      "description_en": "Rescue a new survivor, spend at least 20 seconds in storm weather, and extract them alive in the same raid. Bring every crew member back.",
+      "category": "rescue",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "crew_rescued",
+          "target": 1
+        },
+        {
+          "metric": "rescued_crew_extracted",
+          "target": 1
+        },
+        {
+          "metric": "storm_seconds",
+          "target": 20
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "crew_lost",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 400,
+      "xp": 260
+    },
+    {
+      "id": "loaded_caravan_home",
+      "name": "Гружёный состав",
+      "name_en": "Loaded caravan",
+      "description": "Верните два целых прицепа и не менее 16 ячеек новой добычи за один рейд. Экипаж должен вернуться без потерь.",
+      "description_en": "Bring back two surviving wagons and at least 16 slots of newly collected loot in one raid. Return with no crew killed or left behind.",
+      "category": "convoy",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "wagons_extracted",
+          "target": 2
+        },
+        {
+          "metric": "loot_slots",
+          "target": 16
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "crew_lost",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 360,
+      "xp": 240
+    },
+    {
+      "id": "field_repair_convoy",
+      "name": "Полевой ремонт",
+      "name_en": "Field repairs",
+      "description": "В одном рейде восстановите экипажем 80 единиц прочности и вывезите два целых прицепа с двумя живыми сотрудниками. Прочность машины на выходе должна быть не ниже 60%.",
+      "description_en": "In one raid, have your crew restore 80 hull points and extract two surviving wagons with two living crew. Finish with at least 60% pickup hull.",
+      "category": "convoy",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "crew_repair_hp",
+          "target": 80
+        },
+        {
+          "metric": "wagons_extracted",
+          "target": 2
+        },
+        {
+          "metric": "crew_extracted",
+          "target": 2
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "health_pct",
+          "op": "min",
+          "value": 60
+        }
+      ],
+      "delivery": {},
+      "credits": 380,
+      "xp": 250
     }
   ]
 }

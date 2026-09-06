@@ -22,10 +22,10 @@ func _run() -> void:
 	var panel = game.hud.armory
 	await process_frame
 	await process_frame
-	_check(panel.cards.get_child_count() == panel._catalog.modules.size() + 1 and panel.cards.columns >= 2, "Armory exposes all modules and trailer as a tile grid")
-	_check(panel.preview.size.x >= 380 and panel.preview.size.y >= 240, "Vehicle inspection receives a large viewport")
+	_check(panel.cards.get_child_count() == panel._catalog.modules.size() and panel.cards.columns >= 2, "Armory exposes all modules as a tile grid; wagons are purchased in the hideout")
+	_check(panel.preview.size.x >= 350 and panel.preview.size.y >= 156 and panel.preview.size.y <= 230, "Vehicle inspection leaves room for visible statistics")
 	var tile: Control = panel._tile_panels.bazooka
-	_check(tile.size.y < 150 and tile.size.x < 360, "Uninstalled module is a compact tile instead of a description row")
+	_check(tile.size.y < 180 and tile.size.x < 360, "Uninstalled module is a compact tile instead of a description row")
 	var inspect: Button = tile.find_child("Inspect", true, false)
 	_click(inspect.get_global_rect().get_center())
 	_check(panel._selected == "bazooka" and panel.details.text.contains("Bazooka Pod") and is_instance_valid(panel.preview.selected), "Actual tile click selects the module and its 3D inspection model")
@@ -47,33 +47,32 @@ func _run() -> void:
 	_check(preview.camera.size < size_before and preview.zoom > 1.0, "Mouse wheel zooms in on the vehicle")
 	_click(panel.reset_view_button.get_global_rect().get_center())
 	_check(is_equal_approx(preview.yaw, 0.75) and is_equal_approx(preview.pitch, 0.52) and is_equal_approx(preview.zoom, 1.0), "Reset view button restores the inspection camera")
-	var trailer: Button = _action(panel, "trailer")
-	panel._catalog_scroll.ensure_control_visible(trailer)
-	await process_frame
-	_click(trailer.get_global_rect().get_center())
-	_check(game.combat.model.player.carriers.size() == 1 and panel.mount_selector.carrier.item_count == 3, "Actual trailer purchase adds a selectable carrier")
+	_check(_action(panel, "trailer") == null, "Raid armory has no obsolete trailer purchase action")
+	game.combat.model.player.carriers.append(preload("res://modules/caravan/wagon_factory.gd").create("cargo", "wagon-test"))
+	game._show_armory()
+	_check(panel.mount_selector.carrier.item_count == 2, "Owned wagon appears as an individual selectable carrier")
 	var selector = panel.mount_selector
-	selector.carrier.select(2)
-	selector.carrier.item_selected.emit(2)
+	selector.carrier.select(1)
+	selector.carrier.item_selected.emit(1)
 	selector.slot.select(1)
 	selector.slot.item_selected.emit(1)
 	panel.select_module("bazooka")
-	_check(preview.selected.get_meta("mount") == {"carrierId": "trailer-1", "slot": 1} and preview.selected.position.z < -6, "Chosen trailer mount previews the new equipment on that trailer")
+	_check(preview.selected.get_meta("mount") == {"carrierId": "wagon-test", "slot": 1} and preview.selected.position == preload("res://presentation/vehicles/vehicle_view.gd").TRAILER_SLOTS[1], "Chosen wagon mount previews equipment in local coordinates")
 	var purchase: Button = _action(panel, "module:bazooka")
 	panel._catalog_scroll.ensure_control_visible(purchase)
 	await process_frame
 	var money_before: int = game.combat.model.player.coins
 	_click(purchase.get_global_rect().get_center())
 	var mounted: Array = game.combat.model.player.modules.filter(func(module: Dictionary) -> bool: return module.type == "bazooka")
-	_check(mounted.size() == 1 and mounted[0].mount == {"carrierId": "trailer-1", "slot": 1} and game.combat.model.player.coins < money_before, "Actual tile purchase equips the weapon on the selected trailer slot and charges scrap")
-	_check(selector.selected_mount().get("carrierId") == "trailer-1" and selector.slot.is_item_disabled(1), "Refresh preserves carrier selection and disables the occupied mount")
+	_check(mounted.size() == 1 and mounted[0].mount == {"carrierId": "wagon-test", "slot": 1} and game.combat.model.player.coins < money_before, "Actual tile purchase equips the weapon on the selected trailer slot and charges scrap")
+	_check(selector.selected_mount().get("carrierId") == "wagon-test" and selector.slot.is_item_disabled(1), "Refresh preserves carrier selection and disables the occupied mount")
 	panel.query.text = "bazooka"
 	panel.rebuild_cards()
 	_check(panel.cards.get_child_count() == 1, "Tile search keeps matching catalog behavior")
 	panel.query.text = ""
 	panel.rebuild_cards()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	for dimensions in [Vector2(960, 600), Vector2(1280, 800)]:
+	for dimensions in [Vector2(960, 540), Vector2(1280, 720)]:
 		panel.size = dimensions
 		await process_frame
 		await process_frame

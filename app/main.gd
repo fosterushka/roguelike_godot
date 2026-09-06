@@ -35,8 +35,20 @@ var world: Node3D
 var sound: Node
 var expedition: RefCounted
 var expedition_panel: ColorRect
+var hideout_hub: ColorRect
 var raid_loot: Node3D
+var caravan: Node
+var crew_runtime: Node3D
+var caravan_panel: ColorRect
+var _crew_hint: Label
+var _crew_button: Button
+var caravan_flow := preload("res://app/caravan_flow.gd").new()
+var case_flow := preload("res://app/case_opening_flow.gd").new()
 var _expedition_return := "menu"
+var _expedition_return_page := "main"
+var _options_return := "menu"
+var _options_return_page := "main"
+var _menu_page := "main"
 var _cargo_label: Button
 var _loot_poll := 0.0
 var _mission_poll := 0.0
@@ -135,6 +147,7 @@ func _ready() -> void:
 	world.world_event.connect(progression_feedback.on_event)
 	world.world_event.connect(sound.on_world_event)
 	world.world_event.connect(_on_world_event)
+	_setup_caravan()
 	hud.set_loading_progress(Locale.text("Подготовка боя и эффектов"), 0.70)
 	await get_tree().process_frame
 	combat_view = CombatView.new()
@@ -161,6 +174,7 @@ func _ready() -> void:
 	hud.set_loading_progress(Locale.text("Прогрев материалов и звука"), 0.96)
 	combat_view.set_warmup_visible(true)
 	world.set_warmup_visible(true)
+	crew_runtime.set_warmup(true, vehicle.global_position + Vector3.UP)
 	hud.armory.preview.prepare_models()
 	hud.armory.preview.set_active(true)
 	if DisplayServer.get_name() == "headless":
@@ -171,6 +185,7 @@ func _ready() -> void:
 	await world_warmup.prepare(self, hud.set_loading_progress)
 	combat_view.set_warmup_visible(false)
 	world.set_warmup_visible(false)
+	crew_runtime.set_warmup(false, Vector3.ZERO)
 	hud.armory.preview.set_active(false)
 	preparation.finish()
 	vehicle.reset_vehicle()
@@ -184,14 +199,25 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if not ready_to_drive or screen_state in ["countdown", "death"] or (event is InputEventKey and event.echo):
 		return
+	if screen_state == "case_opening":
+		if event.is_action_pressed("pause_game") or event.is_action_pressed("ui_accept"):
+			case_flow.panel.activate()
+			get_viewport().set_input_as_handled()
+		if event is InputEventKey:
+			get_viewport().set_input_as_handled()
+		return
 	var focused := get_viewport().gui_get_focus_owner()
 	if focused is LineEdit and focused.is_visible_in_tree() and not event.is_action_pressed("pause_game"):
 		return
 	if event.is_action_pressed("pause_game"):
-		if screen_state == "expedition":
+		if screen_state == "garage":
+			_close_caravan()
+		elif screen_state == "expedition":
 			_close_expedition()
 		elif screen_state == "armory":
 			_resume()
+		elif screen_state == "options":
+			_menu_action("options_back", "")
 		else:
 			_toggle_pause()
 	elif event.is_action_pressed("inventory"):
@@ -201,10 +227,19 @@ func _input(event: InputEvent) -> void:
 			_open_expedition()
 	elif event.is_action_pressed("armory"):
 		_toggle_armory()
+	elif event.is_action_pressed("crew_menu"):
+		if screen_state == "garage":
+			_close_caravan()
+		else:
+			_open_caravan()
 	elif screen_state == "running":
 		if event.is_action_pressed("interact"):
-			if world.has_method("interact"):
+			if crew_runtime.rescue_nearest() or _recouple_nearest():
+				combat.model.player.interaction_claimed = true
+			elif world.has_method("interact"):
 				world.interact()
+		elif event.is_action_pressed("crew_collect"):
+			crew_runtime.toggle_collection()
 		elif event.is_action_pressed("focus_target"):
 			if camera._intro <= 0.0:
 				combat.focus_next()
@@ -266,6 +301,7 @@ func _focus_at_screen(point: Vector2, radius: float) -> void:
 	combat.focus_target(selected)
 
 func show_start_menu() -> void:
+	_menu_page = "main"
 	if expedition != null and expedition.snapshot().get("pending_result", false):
 		_set_screen("result")
 		_show_result()
@@ -274,24 +310,63 @@ func show_start_menu() -> void:
 		expedition.abandon_run()
 	_set_screen("menu")
 	var sound_on: bool = sound.enabled if is_instance_valid(sound) else true
-	hud.show_menu("IRON CARAVAN", ExpeditionPanel.words("Собирайте добычу, выполняйте события и эвакуируйтесь.\nГруз попадёт на склад. Гибель теряет вещи в машине.\nПобедите Левиафана в шестой волне для полного успеха.", "Collect loot, complete activities and extract.\nCargo goes to your vault. Death loses the items in your car.\nDefeat Leviathan in wave six for a full victory."), [
-		{"label": Locale.text("НАЧАТЬ ЗАЕЗД"), "action": "start"},
-		{"label": ExpeditionPanel.words("УБЕЖИЩЕ: СКЛАД / ТОРГОВЕЦ / ЗАДАНИЯ", "HIDEOUT: VAULT / TRADER / TASKS"), "action": "hideout"},
-		{"label": Locale.text("ЗВУК: ВКЛ") if sound_on else Locale.text("ЗВУК: ВЫКЛ"), "action": "sound"},
+	hud.show_menu("IRON CARAVAN", ExpeditionPanel.words("Одиночная экспедиция. Подготовьте караван и отправляйтесь в рейд.", "Offline expedition. Prepare the caravan, then deploy."), [
+		{"label": ExpeditionPanel.words("ОДИНОЧНАЯ ИГРА", "SINGLEPLAYER"), "action": "singleplayer"},
+		{"label": ExpeditionPanel.words("МУЛЬТИПЛЕЕР · СКОРО", "MULTIPLAYER · COMING SOON"), "action": "multiplayer", "disabled": true},
+		{"label": ExpeditionPanel.words("НАСТРОЙКИ", "OPTIONS"), "action": "options"},
 		{"label": Locale.text("ВЫЙТИ ИЗ ИГРЫ"), "action": "quit"},
 	], true)
 
+func _show_singleplayer_menu() -> void:
+	_menu_page = "singleplayer"
+	_set_screen("menu")
+	hud.show_menu(ExpeditionPanel.words("ОДИНОЧНАЯ ИГРА", "SINGLEPLAYER"), ExpeditionPanel.words("Выберите действие перед рейдом.", "Choose an action before deploying."), [
+		{"label": ExpeditionPanel.words("РЕЙД", "RAID"), "action": "raid"},
+		{"label": ExpeditionPanel.words("ХРАНИЛИЩЕ", "VAULT"), "action": "vault"},
+		{"label": ExpeditionPanel.words("НАЗАД", "BACK"), "action": "menu"},
+	], true)
+
+func _show_options(return_screen: String) -> void:
+	_options_return = return_screen
+	_options_return_page = _menu_page
+	_set_screen("options")
+	var sound_on: bool = sound.enabled if is_instance_valid(sound) else true
+	var shake := int(roundf(camera.shake_intensity * 100.0))
+	hud.show_menu(ExpeditionPanel.words("НАСТРОЙКИ", "OPTIONS"), ExpeditionPanel.words("Настройки сохраняются в профиле.", "Settings are saved to your profile."), [
+		{"label": ExpeditionPanel.words("ЗВУК: ВКЛ", "SOUND: ON") if sound_on else ExpeditionPanel.words("ЗВУК: ВЫКЛ", "SOUND: OFF"), "action": "sound"},
+		{"label": ExpeditionPanel.words("ТРЯСКА КАМЕРЫ −  %d%%" % shake, "CAMERA SHAKE −  %d%%" % shake), "action": "shake_down"},
+		{"label": ExpeditionPanel.words("ТРЯСКА КАМЕРЫ +  %d%%" % shake, "CAMERA SHAKE +  %d%%" % shake), "action": "shake_up"},
+		{"label": "LANGUAGE: ENGLISH" if Locale.language == "en" else "ЯЗЫК: РУССКИЙ", "action": "language"},
+		{"label": ExpeditionPanel.words("НАЗАД", "BACK"), "action": "options_back"},
+	], true)
+	hud.run_menu._language_button.visible = false
+
+func _change_camera_shake(delta: float) -> void:
+	camera.shake_intensity = clampf(camera.shake_intensity + delta, 0.0, 1.0)
+	expedition_panel.intensity = camera.shake_intensity
+	progression.profile.settings["cameraShake"] = camera.shake_intensity
+	progression._mark_dirty()
+	progression.flush()
+
 func _set_screen(value: String) -> void:
+	if is_instance_valid(hideout_hub) and hideout_hub.visible and value != "expedition":
+		hideout_hub.detach()
 	screen_state = value
+	if value in ["loading", "menu", "result", "death"]:
+		case_flow.reset()
+	if value not in ["running", "countdown"]:
+		hud.set_countdown(0, false)
 	if is_instance_valid(expedition_panel):
 		expedition_panel.visible = value == "expedition"
+	if is_instance_valid(caravan_panel):
+		caravan_panel.visible = value == "garage"
 	hud.set_gameplay_active(value in ["running", "countdown"])
 	_pointer_start.clear()
 	_pointer_dragged.clear()
 	hud.touch_controls.set_enabled(value == "running")
 	var running := value == "running"
 	get_tree().paused = not running and value != "countdown"
-	if value in ["pause", "armory", "choice", "expedition"]:
+	if value in ["pause", "armory", "choice", "expedition", "garage", "case_opening", "options"]:
 		session_flow.clock.pause()
 	elif value == "running":
 		session_flow.clock.resume()
@@ -307,6 +382,7 @@ func _set_screen(value: String) -> void:
 	vehicle.set_driving_enabled(running)
 	if running:
 		hud.hide_menus()
+		case_flow.try_open.call_deferred()
 
 func _toggle_pause() -> void:
 	if screen_state == "running":
@@ -386,6 +462,8 @@ func restart_run() -> void:
 		show_start_menu()
 		_open_expedition()
 		return
+	caravan.reset()
+	crew_runtime.reset(run_seed)
 	_sync_progression_stats()
 	session_flow.begin_run()
 	run_prepared.emit(run_seed)
@@ -412,6 +490,7 @@ func _physics_process(delta: float) -> void:
 	_loot_poll += delta
 	if _loot_poll >= 0.2:
 		_loot_poll = 0.0
+		_update_crew_hint()
 		if raid_loot.collect_near(vehicle.global_position, expedition):
 			hud.set_status(expedition.notice)
 		_update_cargo()
@@ -455,31 +534,67 @@ func _show_choices() -> void:
 	hud.show_menu(Locale.text("НОВЫЙ УРОВЕНЬ"), Locale.text("Выберите улучшение корпуса") if state.get("choice_stage", "") == "core" else Locale.text("Выберите модуль или улучшение"), _shop_rows(state.get("choices", []), "choose"))
 
 func _show_armory() -> void:
-	hud.show_armory(progression.get_shop_state(), combat.model.player)
+	var shop: Dictionary = progression.get_shop_state()
+	shop.caravan_active = expedition.caravan.active
+	shop.attachments = []
+	for wagon: Dictionary in expedition.caravan.wagons:
+		shop.attachments.append_array(expedition.caravan.attachment_rows(wagon.id))
+	if is_instance_valid(hideout_hub) and hideout_hub.visible:
+		hud.armory.display(shop, combat.model.player)
+	else:
+		hud.show_armory(shop, combat.model.player)
 
 func _menu_action(action: String, id: String) -> void:
 	if screen_state in ["countdown", "death"] and action not in ["restart", "menu"]:
 		return
 	match action:
+		"singleplayer": _show_singleplayer_menu()
+		"raid": restart_run()
+		"vault": _open_expedition()
+		"options": _show_options(screen_state)
+		"options_back":
+			if _options_return == "pause":
+				_set_screen("pause")
+				hud.set_paused(true)
+			elif _options_return_page == "singleplayer":
+				_show_singleplayer_menu()
+			else:
+				show_start_menu()
+		"language": _set_language("ru" if Locale.language == "en" else "en")
+		"shake_down":
+			_change_camera_shake(-0.1)
+			_show_options(_options_return)
+		"shake_up":
+			_change_camera_shake(0.1)
+			_show_options(_options_return)
 		"retry_save":
 			expedition.action("retry_save", "")
 			_show_result()
 		"hideout": _open_expedition()
+		"garage": _open_caravan()
+		"trailers": caravan_flow.open_trailers()
 		"reload": get_tree().reload_current_scene()
 		"sound":
 			_toggle_sound()
 			if screen_state == "menu":
 				show_start_menu()
+			elif screen_state == "options":
+				_show_options(_options_return)
 		"quit": _request_quit()
 		"start", "restart": restart_run()
 		"resume": _resume()
 		"menu": show_start_menu()
 		"buy":
-			if combat.buy_upgrade(id):
+			if _buy_equipment(id):
 				sound.play_cue("module", true)
+				expedition.caravan.capture_modules()
+				preload("res://modules/caravan/caravan_loadout.gd").refresh(progression)
+				_sync_progression_stats()
 			_show_armory()
 		"choose":
 			if combat.buy_upgrade(id):
+				expedition.caravan.capture_modules()
+				preload("res://modules/caravan/caravan_loadout.gd").refresh(progression)
 				sound.play_cue("evolve", true)
 				_sync_progression_stats()
 				if int(combat.model.player.pending_upgrades) > 0:
@@ -501,7 +616,7 @@ func _on_combat_event(event: Dictionary) -> void:
 	if expedition != null:
 		expedition.record_event(event)
 		raid_loot.on_event(event)
-		if event.get("kind", "") == "pickup" and event.get("pickup_kind", "") == "salvage":
+		if event.get("kind", "") == "pickup" and event.get("pickup_kind", "") == "salvage" and not event.get("cargo_delivered", false):
 			expedition.collect_loot("salvage", 1)
 			hud.set_status(expedition.notice)
 		_update_cargo()
@@ -562,7 +677,9 @@ func _on_world_event(event: Dictionary) -> void:
 		raid_loot.on_event(event)
 	if is_instance_valid(combat_view) and combat_view.has_method("on_world_event"):
 		combat_view.on_world_event(event)
-	if event.kind == "airdrop_claimed":
+	if event.has("case"):
+		case_flow.enqueue(event)
+	elif event.kind == "airdrop_claimed":
 		hud.reward_notice.show_reward(event)
 	if event.kind == "village_consumed":
 		hud.show_world_banner("OUTPOST SCRAPPED", "Salvage scattered across the road")
@@ -592,9 +709,22 @@ func _set_language(value: String) -> void:
 	elif screen_state == "armory":
 		_show_armory()
 	elif screen_state == "menu":
-		show_start_menu()
+		if _menu_page == "singleplayer":
+			_show_singleplayer_menu()
+		else:
+			show_start_menu()
+	elif screen_state == "options":
+		_show_options(_options_return)
 	elif screen_state == "expedition":
-		expedition_panel.show_state(expedition.snapshot())
+		if hideout_hub.visible:
+			hideout_hub.select_tab(hideout_hub.tab)
+		else:
+			expedition_panel.show_state(expedition.snapshot())
+	elif screen_state == "garage":
+		caravan_flow.refresh()
+	elif screen_state == "case_opening":
+		case_flow.panel.refresh_language()
+	_update_crew_hint()
 	_on_state(combat.get_state())
 
 func _show_result() -> void:
@@ -612,6 +742,11 @@ func _setup_expedition_ui() -> void:
 	hud.get_node("Screen").add_child(expedition_panel)
 	expedition_panel.action_requested.connect(_expedition_action)
 	expedition_panel.closed.connect(_close_expedition)
+	hideout_hub = preload("res://presentation/ui/hideout_hub.gd").new()
+	hud.get_node("Screen").add_child(hideout_hub)
+	hideout_hub.closed.connect(_close_expedition)
+	hideout_hub.garage_requested.connect(_open_caravan)
+	hideout_hub.tab_selected.connect(_select_hideout_tab)
 	expedition_panel.shake_changed.connect(func(value: float) -> void:
 		camera.shake_intensity = value
 		progression.profile.settings["cameraShake"] = value
@@ -620,6 +755,7 @@ func _setup_expedition_ui() -> void:
 	camera.shake_intensity = float(progression.profile.settings.get("cameraShake", 1.0))
 	expedition_panel.intensity = camera.shake_intensity
 	var cargo := preload("res://presentation/ui/ui_styles.gd").button(ExpeditionPanel.words("ГРУЗ [I]", "CARGO [I]"))
+	preload("res://presentation/ui/ui_icons.gd").apply(cargo, "stash")
 	cargo.custom_minimum_size = Vector2(0, 28)
 	hud._coins_label.get_parent().add_child(cargo)
 	hud._stats_panel.offset_top -= 38
@@ -632,13 +768,28 @@ func _open_expedition() -> void:
 	if screen_state not in ["menu", "running", "pause", "result"]:
 		return
 	_expedition_return = screen_state
+	_expedition_return_page = _menu_page
 	hud.hide_menus()
 	_set_screen("expedition")
-	expedition_panel.show_state(expedition.snapshot(), "backpack" if expedition.active else "stash")
+	if expedition.active:
+		expedition_panel.show_state(expedition.snapshot(), "backpack")
+	else:
+		hideout_hub.attach(hud.armory, expedition_panel)
+		hideout_hub.select_tab("armory")
+
+func _select_hideout_tab(tab: String) -> void:
+	hideout_hub.update_account(expedition.snapshot())
+	if tab == "armory":
+		_show_armory()
+	else:
+		expedition_panel.show_state(expedition.snapshot(), tab)
 
 func _close_expedition() -> void:
 	if _expedition_return == "menu":
-		show_start_menu()
+		if _expedition_return_page == "singleplayer":
+			_show_singleplayer_menu()
+		else:
+			show_start_menu()
 	elif _expedition_return == "pause":
 		_set_screen("pause")
 		hud.set_paused(true)
@@ -657,20 +808,44 @@ func _expedition_action(kind: String, id: String) -> void:
 	else:
 		expedition.action(kind, id)
 	expedition_panel.show_state(expedition.snapshot())
+	if hideout_hub.visible:
+		hideout_hub.update_account(expedition.snapshot())
 	_update_mission_hint()
 	_update_cargo()
 
 func _update_cargo() -> void:
 	if not is_instance_valid(_cargo_label):
 		return
-	var used := preload("res://modules/meta/expedition_catalog.gd").used(expedition.backpack)
+	var used := int(expedition.snapshot().used)
 	_cargo_label.text = ExpeditionPanel.words("ГРУЗ %d/%d [I]", "CARGO %d/%d [I]") % [used, expedition.capacity()]
+
+func _setup_caravan() -> void:
+	caravan_flow.setup(self)
+	case_flow.setup(self)
+
+func _open_caravan() -> void:
+	caravan_flow.open()
+
+func _close_caravan() -> void:
+	caravan_flow.close()
+
+func _buy_equipment(id: String) -> bool:
+	return caravan_flow.buy_equipment(id)
+
+func _recouple_nearest() -> bool:
+	return caravan_flow.recouple_nearest()
+
+func _update_crew_hint() -> void:
+	caravan_flow.update_hint()
 
 func _expedition_result_text() -> String:
 	if expedition == null or expedition.last_result.is_empty():
 		return ""
 	var result: Dictionary = expedition.last_result
 	var text := "\n" + ExpeditionPanel.words("Опыт профиля: +%d. %s", "Account XP: +%d. %s") % [result.get("xp", 0), ExpeditionPanel.words("Добыча отправлена на склад.", "Cargo moved to your vault.") if result.get("success", false) else ExpeditionPanel.words("Груз потерян.", "Cargo lost.")]
+	var convoy: Dictionary = result.get("caravan", {})
+	if not convoy.is_empty():
+		text += "\n" + ExpeditionPanel.words("Вернулись: прицепы %d, экипаж %d. Потеряны: прицепы %d, экипаж %d.", "Returned: %d wagons, %d crew. Lost: %d wagons, %d crew.") % [convoy.get("wagons_returned", []).size(), convoy.get("crew_returned", []).size(), convoy.get("wagons_lost", []).size(), convoy.get("crew_lost", []).size()]
 	var claimable_count := 0
 	for mission: Dictionary in expedition.active_missions():
 		claimable_count += int(mission.get("can_claim", false))

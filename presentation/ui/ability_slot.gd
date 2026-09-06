@@ -1,5 +1,6 @@
 extends Button
 
+const Icons = preload("res://presentation/ui/ui_icons.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 const INK := Color("eee9db")
 const AMBER := Color("e6ac58")
@@ -39,6 +40,9 @@ func _ready() -> void:
 	_status_label.size = Vector2(70, 18)
 	_status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_status_label.clip_text = true
+	var action_icon := Icons.view(["fuel", "ammo", "repair"][slot], 20)
+	action_icon.position = Vector2(6, 27)
+	add_child(action_icon)
 
 func _label(origin: Vector2, font_size: int) -> Label:
 	var label := Label.new()
@@ -83,18 +87,5 @@ func update_state(player: Dictionary, selected: bool) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var ink := MUTED if disabled else AMBER
-	var origin := Vector2(16, 36)
-	match slot:
-		0:
-			for shift in [-4, 3]:
-				var x: float = origin.x + shift
-				draw_polyline(PackedVector2Array([Vector2(x - 3, 30), Vector2(x + 2, 36), Vector2(x - 3, 42)]), ink, 2.0, true)
-		1:
-			draw_polyline(PackedVector2Array([origin + Vector2(-7, -6), origin + Vector2(4, -6), origin + Vector2(8, 0), origin + Vector2(4, 6), origin + Vector2(-7, 6)]), ink, 2.0, true)
-			draw_line(origin + Vector2(-9, 0), origin + Vector2(5, 0), ink, 2.0, true)
-		2:
-			draw_line(origin + Vector2(-6, 0), origin + Vector2(6, 0), ink, 3.0, true)
-			draw_line(origin + Vector2(0, -6), origin + Vector2(0, 6), ink, 3.0, true)
 	if cooldown_ratio > 0.0:
 		draw_rect(Rect2(1, size.y - 3, (size.x - 2) * cooldown_ratio, 2), AMBER)

@@ -3,6 +3,7 @@ extends VBoxContainer
 signal action_requested(kind: String, id: String)
 
 const Styles = preload("res://presentation/ui/ui_styles.gd")
+const Icons = preload("res://presentation/ui/ui_icons.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 const Catalog = preload("res://modules/meta/mission_catalog.gd")
 const CATEGORIES := {
@@ -40,6 +41,7 @@ func _ready() -> void:
 	add_theme_constant_override("separation", 10)
 	var top := HBoxContainer.new()
 	add_child(top)
+	top.add_child(Icons.view("missions"))
 	summary = Styles.label("", 15)
 	summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -262,6 +264,7 @@ func _add_mission(quest: Dictionary) -> void:
 
 func _action(parent: Node, kind: String, id: String, caption: String, disabled: bool) -> void:
 	var button := Styles.button(caption)
+	Icons.apply(button, "close" if kind == "abandon" else "stash" if kind == "claim" else "missions")
 	button.custom_minimum_size = Vector2(148, 38)
 	button.disabled = disabled
 	button.set_meta("expedition_action", kind + ":" + id)

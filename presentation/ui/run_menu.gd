@@ -5,6 +5,7 @@ signal language_requested(language: String)
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 var _language_button: Button
 var _content: Dictionary = {}
+const Icons = preload("res://presentation/ui/ui_icons.gd")
 const Styles = preload("res://presentation/ui/ui_styles.gd")
 var _background: TextureRect
 var _column: VBoxContainer
@@ -29,8 +30,8 @@ func _ready() -> void:
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(center)
 	_column = VBoxContainer.new()
-	_column.custom_minimum_size.x = 540
-	_column.add_theme_constant_override("separation", 12)
+	_column.custom_minimum_size.x = 520
+	_column.add_theme_constant_override("separation", 10)
 	center.add_child(_column)
 	_title = Styles.label("", 30)
 	_column.add_child(_title)
@@ -38,10 +39,11 @@ func _ready() -> void:
 	_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_column.add_child(_description)
 	_language_button = Styles.button("LANGUAGE: ENGLISH" if Locale.language == "en" else "ЯЗЫК: РУССКИЙ")
+	Icons.apply(_language_button, "settings")
 	_language_button.pressed.connect(func() -> void: language_requested.emit("ru" if Locale.language == "en" else "en"))
 	_column.add_child(_language_button)
 	_scroll = ScrollContainer.new()
-	_scroll.custom_minimum_size = Vector2(580, 380)
+	_scroll.custom_minimum_size = Vector2(520, 320)
 	_column.add_child(_scroll)
 	_rows = VBoxContainer.new()
 	_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -52,10 +54,10 @@ func display(title: String, description: String, rows: Array, main_menu: bool = 
 	_content = {"title": title, "description": description, "rows": rows, "main_menu": main_menu}
 	_background.visible = main_menu
 	_language_button.visible = main_menu
-	_scroll.custom_minimum_size.y = rows.size() * 52 if main_menu else 320
-	_title.add_theme_font_size_override("font_size", 48 if main_menu else 28)
-	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER if main_menu else HORIZONTAL_ALIGNMENT_LEFT
-	_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER if main_menu else HORIZONTAL_ALIGNMENT_LEFT
+	_scroll.custom_minimum_size.y = mini(rows.size() * 54, 300) if main_menu else 280
+	_title.add_theme_font_size_override("font_size", 42 if main_menu else 26)
+	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_title.text = Locale.text(title)
 	_description.text = Locale.text(description)
 	for child in _rows.get_children():
@@ -63,18 +65,20 @@ func display(title: String, description: String, rows: Array, main_menu: bool = 
 		child.queue_free()
 	for row: Dictionary in rows:
 		var button := Styles.button(str(row.get("label", "")))
+		var action: String = str(row.get("action", ""))
 		button.disabled = bool(row.get("disabled", false))
 		button.set_meta("action_id", str(row.get("action", "")))
 		if main_menu:
 			button.custom_minimum_size.y = 48
-			button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+			button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+			button.add_theme_font_size_override("font_size", 17)
 		button.tooltip_text = Locale.text(str(row.get("description", "")))
 		button.pressed.connect(func() -> void: action_requested.emit(str(row.get("action", "")), str(row.get("id", ""))))
 		_rows.add_child(button)
 		if not str(row.get("description", "")).is_empty():
 			var detail := Styles.label(str(row.description), 13)
 			detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			detail.custom_minimum_size.x = 500
+			detail.custom_minimum_size.x = 440
 			_rows.add_child(detail)
 	visible = true
 

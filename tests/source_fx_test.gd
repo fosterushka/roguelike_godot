@@ -123,6 +123,8 @@ func _run() -> void:
 				captured_wheels += 1
 				break
 	check(captured_wheels == 4 and effects.player_destruction._count <= effects.player_destruction.parts.size(), "Death retains all four current articulated wheels in prepared hull slots")
+	var burned_material: ShaderMaterial = effects.player_destruction.parts[0].material_override
+	check(burned_material.get_shader_parameter("has_base_texture") and burned_material.get_shader_parameter("base_texture") != null, "Destroyed pickup retains its palette texture")
 	effects.player_destruction.advance(1.25)
 	near(effects.player_destruction.rotation.x, 0.12, "Source wreck fall pitch")
 	near(absf(effects.player_destruction.rotation.z), 0.24, "Source wreck fall roll")
@@ -138,7 +140,7 @@ func _run() -> void:
 	state.player.position.z += 0.3
 	effects.tracks.sync_state(state, 0.1, effects)
 	var first: Transform3D = effects.tracks.submitted_stamps[0]
-	check(first.origin.distance_to(Vector3(2.888, 0.04, 8.368)) < 0.00001, "Player distance samples use actual four-wheel anchor scale")
+	check(first.origin.distance_to((state.player.position + preload("res://modules/caravan/wheel_suspension.gd").ANCHORS[0] * 0.88 + Vector3.UP * 0.04)) < 0.00001, "Player distance samples use actual four-wheel anchor scale")
 	check(effects.dust.pool.active_count() == 0, "Rain suppresses driving dust")
 	effects.tracks.sync_state(state, 0.0, effects)
 	check(effects.tracks.count == 4, "Paused track clock produces no stamps")

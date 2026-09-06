@@ -1,9 +1,13 @@
-# Airdrop and support pickup feedback
+# Airdrop и машины поддержки
 
-Claim events carry the collector position and final source yaw. The reward and actor removal still happen exactly once in the support domain. A separate preallocated visual survives that removal: the crate or support car rises, shrinks and curves into the moving player over 0.95 seconds, with six colored reward motes. The claim model excludes the parachute, source aura and flare geometry. Four reusable animation slots and a 16-ID deduplication history bound simultaneous effects and retained data; claiming creates no scene nodes.
+Сверено с кодом 2026-09-06. Игровые правила: `modules/world/activities/support_system.gd`.
 
-Airdrops emit 12 procedural smoke plumes: red during descent, green when landed and collectible. The existing landed flare meshes and light also turn green. Smoke remains above the source crate, uses the existing procedural billboard shader, normal depth testing and transparent priority 0. It does not modify ground decal ordering. The empty support snapshot hides the standing smoke and light immediately after collection or reset.
+В мире одновременно остаётся не больше одного airdrop и одной машины поддержки. Первый airdrop запланирован через 28–40 с, дальнейший интервал 46–64 с; новый объект ждёт освобождения текущего. Ящик падает с высоты 12, живёт 90 с и забирается после посадки при расстоянии меньше 4.3 м.
 
-Both claim-model material variants and reward motes have a dedicated inert warmup preview. The activity warmup exposes the smoke shader and restores the real drop state afterward. All models/materials are prepared in `_ready`; no new image or shader assets are introduced. Claim animation follows the existing cinematic clock; activity smoke follows the pausable world process. Restart clears animation slots, collector references and duplicate IDs.
+Airdrop даёт `24 + level * 4` лома, округлённые `salvage * 0.85` XP и до `32 + level * 3` топлива. Машина поддержки восстанавливает до `90 + level * 5` HP с ограничением по максимуму. Оба источника дополнительно выдают результат через `CaseRewards.award`; receipt передаётся в событии `case`. Награда выдаётся до визуального открытия и защищена от повторного получения. Подробности открытия: [trailers-and-case-opening.md](trailers-and-case-opening.md).
 
-Headless Godot 4.7.2: support feedback 118/118, source VFX 1467/1467, world presentation 1838/1838, world activities 73/73, presentation details 35/35. Feedback tests exercise real claim rewards and removal, visual survival, collector movement, pool rollover, depth material settings, pause, reset and warmup restoration. These are automated logic/resource checks. GPU compilation time, rendered smoke appearance, transparency occlusion and subjective animation quality still require a graphical playthrough; none is claimed here.
+При получении события несут позицию, направление источника и позицию сборщика. Источник удаляется из игрового состояния, а отдельная копия за 0.95 с поднимается, уменьшается и летит к движущейся машине. `presentation/combat/fx/support_pickup.gd` использует четыре готовых слота, частицы и ограниченную историю ID.
+
+`presentation/world/airdrop_flare_smoke.gd` переиспользует 12 дымных частиц: красные при спуске, зелёные после посадки. Подсветка и flare тоже меняют цвет. При удалении объекта дым скрывается. Эффекты подготавливаются заранее, учитывают паузу и очищаются на перезапуске.
+
+Проверки: `tests/support_feedback_test.gd`, `world_activities_test.gd`. Они покрывают события, награды, удаление, лимиты эффектов и паузу. Новый прогон в рамках обновления документа не выполнялся; графическое качество дыма и скорость прогрева GPU из headless не следуют.

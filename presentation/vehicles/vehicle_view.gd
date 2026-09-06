@@ -4,9 +4,10 @@ const Pose = preload("res://modules/caravan/vehicle_pose.gd")
 const VisualMotion = preload("res://presentation/vehicles/vehicle_visual_motion.gd")
 const WheeledRig = preload("res://presentation/vehicles/wheeled_rig.gd")
 const Suspension = preload("res://modules/caravan/wheel_suspension.gd")
-const SourceModel = preload("res://presentation/combat/source_model.gd")
-const SLOTS := [Vector3(-1.4, 2.2, -2.2), Vector3(1.4, 2.2, -2.2), Vector3(-2.35, 2.25, 0.0), Vector3(2.35, 2.25, 0.0), Vector3(-2.1, 2.3, 2.4), Vector3(2.1, 2.3, 2.4), Vector3(0, 3.85, -0.05), Vector3(0, 2.45, 2.7), Vector3(-2.3, 2.25, -1.4), Vector3(2.3, 2.25, -1.4), Vector3(-2.3, 2.25, 1.4), Vector3(2.3, 2.25, 1.4)]
-const TRAILER_SLOTS := [Vector3(-1.0, 1.48, -0.6), Vector3(1.0, 1.48, -0.6), Vector3(0, 1.48, 0.8)]
+const Equipment = preload("res://presentation/vehicles/equipment_model.gd")
+const Attachments = preload("res://presentation/vehicles/attachment_view.gd")
+const SLOTS := [Vector3(-1.4, 2.2, -2.2), Vector3(1.4, 2.2, -2.2), Vector3(-1.65, 2.1, 0.0), Vector3(1.65, 2.1, 0.0), Vector3(-1.55, 2.05, 2.4), Vector3(1.55, 2.05, 2.4), Vector3(0, 3.18, 0.2), Vector3(0, 1.95, 2.7), Vector3(-1.6, 2.2, -1.4), Vector3(1.6, 2.2, -1.4), Vector3(-1.6, 2.1, 1.4), Vector3(1.6, 2.1, 1.4)]
+const TRAILER_SLOTS := [Vector3(-0.85, 1.48, 0.7), Vector3(0.85, 1.48, 0.7), Vector3(0, 1.48, -0.85)]
 var time_delta: Callable
 var _previous_pose: Dictionary = {}
 var _current_pose: Dictionary = {}
@@ -17,6 +18,7 @@ var _model: Node3D
 var _wheels: Array[Node3D] = []
 var _modules: Dictionary = {}
 var _trailers: Dictionary = {}
+var _attachments: Dictionary = {}
 var _evolutions: Array[Node3D] = []
 var _speed := 0.0
 var _steer := 0.0
@@ -58,6 +60,7 @@ func apply_player_state(player: Dictionary, generation: int) -> void:
 		for trailer: Node3D in _trailers.values():
 			trailer.queue_free()
 		_trailers.clear()
+		_attachments.clear()
 		for evolution: Node3D in _evolutions:
 			evolution.queue_free()
 		_evolutions.clear()
@@ -76,7 +79,7 @@ func apply_player_state(player: Dictionary, generation: int) -> void:
 			var trailer := Node3D.new()
 			trailer.top_level = true
 			add_child(trailer)
-			trailer.add_child(WheeledRig.build_trailer())
+			trailer.add_child(WheeledRig.build_trailer(str(carrier.get("type", "cargo"))))
 			trailer.set_meta("suspension", Suspension.create())
 			trailer.set_meta("wheel_angle", 0.0)
 			trailer.set_meta("previous_pose", {})
@@ -87,6 +90,7 @@ func apply_player_state(player: Dictionary, generation: int) -> void:
 			_trailers[carrier.id] = trailer
 		leader = _trailers[carrier.id]
 		leader.global_basis = Basis(Vector3.UP, leader.global_rotation.y).scaled(Vector3.ONE * float(player.get("visual_scale", 0.88)))
+	_sync_attachments(player)
 	var current: Dictionary = {}
 	for module: Dictionary in player.get("modules", []):
 		var mount: Dictionary = module.get("mount", {"carrierId": "crawler", "slot": 0})
@@ -94,13 +98,13 @@ func apply_player_state(player: Dictionary, generation: int) -> void:
 		current[key] = true
 		if _modules.has(key):
 			continue
-		var visual := SourceModel.instantiate("weapon_" + str(module.type))
+		var visual := Equipment.build(str(module.type))
 		var crawler: bool = mount.carrierId == "crawler"
 		var parent: Node3D = self if crawler else _trailers.get(mount.carrierId, self)
 		parent.add_child(visual)
 		var slot: int = int(mount.slot)
 		visual.position = Vector3(0, 1.25, 3.85) if module.type == "bumper" else SLOTS[clampi(slot, 0, 11)] if crawler else TRAILER_SLOTS[clampi(slot, 0, 2)]
-		visual.rotation.y = 0.0 if module.type == "bumper" else atan2(visual.position.x, visual.position.z)
+		visual.rotation.y = 0.0
 		visual.set_meta("module_type", module.type)
 		visual.set_meta("weapon", module.get("def", {}).has("projectile"))
 		visual.set_meta("aim", {"yaw": visual.rotation.y, "pitch": 0.0, "current_pitch": 0.0, "recoil": 0.0, "base_position": visual.position})
@@ -117,7 +121,7 @@ func set_evolution_tier(tier: int) -> void:
 	for next_tier in range(_evolution_tier + 1, mini(tier, 4) + 1):
 		var upgrade := Node3D.new()
 		upgrade.name = "WheelVehicleEvolution%d" % next_tier
-		WheeledRig._box(upgrade, "ReinforcedEquipmentRack", Vector3(3.4, 0.13, 0.15), Vector3(0, 3.72 + next_tier * 0.1, -0.6 + next_tier * 0.4), "8b8e76")
+		WheeledRig._box(upgrade, "ReinforcedEquipmentRack", Vector3(3.0, 0.13, 0.15), Vector3(0, 3.12, -0.65 + next_tier * 0.3), "8b8e76")
 		_model.add_child(upgrade)
 		_evolutions.append(upgrade)
 	_evolution_tier = maxi(tier, _evolution_tier)
@@ -141,11 +145,10 @@ func _process(delta: float) -> void:
 		if module.get_meta("weapon", false):
 			module.rotation.y = lerp_angle(module.rotation.y, aim.yaw, 1.0 - exp(-18.0 * delta))
 			aim.current_pitch = lerpf(aim.current_pitch, aim.pitch, 1.0 - exp(-14.0 * delta))
-			SourceModel.animate_instance(module, {"weapon_pitch": aim.current_pitch})
+			Equipment.animate(module, aim.current_pitch, aim.recoil)
 		if module.get_meta("module_type", "") == "counterDroneJammer":
-			SourceModel.animate_instance(module, {"elapsed": _elapsed})
-		var angle := module.rotation.y
-		module.position = aim.base_position - Vector3(sin(angle), 0.0, cos(angle)) * 0.22 * aim.recoil
+			Equipment.animate(module, 0.0)
+		module.position = aim.base_position
 
 func _advance_physics(delta: float) -> void:
 	if _player.is_empty():
@@ -165,6 +168,15 @@ func _advance_physics(delta: float) -> void:
 	var leader := {"x": _current_pose.position.x, "z": _current_pose.position.z, "heading": _current_pose.heading, "scale": visual_scale, "rear_hitch": 3.78}
 	var index := 0
 	for trailer: Node3D in _trailers.values():
+		var carrier := _carrier_for(trailer)
+		if _physics_source and carrier.has("hp"):
+			var canonical: Dictionary = carrier.get("pose", {})
+			if not canonical.is_empty():
+				trailer.set_meta("current_pose", canonical)
+				trailer.set_meta("previous_pose", carrier.get("previous_pose", canonical))
+				leader = {"x": canonical.position.x, "z": canonical.position.z, "heading": canonical.heading, "scale": visual_scale, "rear_hitch": 2.1}
+			index += 1
+			continue
 		var pose: Dictionary = trailer.get_meta("pose")
 		var suspension: Dictionary = trailer.get_meta("suspension")
 		VisualMotion.trailer(pose, leader, delta, 7.03 if index == 0 else 5.35)
@@ -189,6 +201,14 @@ func render_interpolated(fraction: float) -> void:
 	var leader: Node3D = self
 	var rear_hitch := 3.78
 	for trailer: Node3D in _trailers.values():
+		var carrier := _carrier_for(trailer)
+		var canonical: bool = _physics_source and carrier.has("hp")
+		trailer.visible = not carrier.get("dead", false) and (not canonical or not carrier.get("pose", {}).is_empty())
+		if not trailer.visible:
+			continue
+		if canonical:
+			trailer.set_meta("current_pose", carrier.pose)
+			trailer.set_meta("previous_pose", carrier.get("previous_pose", carrier.pose))
 		var current: Dictionary = trailer.get_meta("current_pose")
 		if current.is_empty():
 			continue
@@ -198,6 +218,9 @@ func render_interpolated(fraction: float) -> void:
 		var rig: Node3D = trailer.get_child(0)
 		WheeledRig.animate(rig, pose.suspension, pose.steer, pose.speed, pose.wheel_angle, true)
 		var drawbar: Node3D = rig.get_meta("drawbar")
+		drawbar.visible = not canonical or carrier.get("attached", true)
+		if not drawbar.visible:
+			continue
 		var hitch := leader.to_global(Vector3(0, 1.0, -rear_hitch))
 		drawbar.scale = Vector3.ONE
 		if drawbar.global_position.distance_to(hitch) > 0.01:
@@ -212,6 +235,8 @@ func get_tire_contacts() -> Array[Dictionary]:
 	_append_contacts(contacts, "crawler", _model, _rendered_pose)
 	for id in _trailers:
 		var trailer: Node3D = _trailers[id]
+		if not trailer.visible:
+			continue
 		var pose: Dictionary = trailer.get_meta("rendered_pose", {})
 		if not pose.is_empty():
 			_append_contacts(contacts, str(id), trailer.get_child(0), pose)
@@ -262,3 +287,30 @@ func get_weapon_origin(weapon: Dictionary) -> Vector3:
 
 func get_render_pose() -> Dictionary:
 	return _rendered_pose
+
+func _carrier_for(trailer: Node3D) -> Dictionary:
+	for carrier: Dictionary in _player.get("carriers", []):
+		if _trailers.get(carrier.id) == trailer:
+			return carrier
+	return {}
+
+func _sync_attachments(player: Dictionary) -> void:
+	var current: Dictionary = {}
+	for carrier: Dictionary in player.get("carriers", []):
+		if not _trailers.has(carrier.id):
+			continue
+		for installation: Dictionary in carrier.get("attachments", []):
+			var slot := int(installation.get("slot", -1))
+			if slot < 0 or slot >= TRAILER_SLOTS.size():
+				continue
+			var key := "%s:%d:%s" % [carrier.id, slot, installation.type]
+			current[key] = true
+			if not _attachments.has(key):
+				var visual := Attachments.build(str(installation.type))
+				visual.position = TRAILER_SLOTS[slot]
+				_trailers[carrier.id].add_child(visual)
+				_attachments[key] = visual
+	for key: String in _attachments.keys():
+		if not current.has(key):
+			_attachments[key].queue_free()
+			_attachments.erase(key)

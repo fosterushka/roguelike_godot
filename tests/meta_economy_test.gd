@@ -4,6 +4,7 @@ const Progression = preload("res://modules/progression/progression.gd")
 const Expedition = preload("res://modules/meta/expedition.gd")
 const Store = preload("res://infrastructure/persistence/profile_store.gd")
 const Model = preload("res://modules/combat/combat_model.gd")
+var initial_credits := 1000 if OS.is_debug_build() else 300
 var checks := 0
 var failures := 0
 
@@ -19,13 +20,15 @@ func check(value: bool, label: String) -> void:
 func run() -> void:
 	var path := "/private/tmp/expedition-test-%d.json" % Time.get_ticks_usec()
 	var progression := Progression.new(path)
+	check(Store.normalize({"expedition": {"credits": 27}}).expedition.credits == 27, "loading existing balance never refills debug credits")
+	check(Store.normalize({"expedition": {"credits": 0}}).expedition.credits == 0, "spent balance remains zero after reload")
 	var model := Model.new()
 	progression.setup(model)
 	var raid := Expedition.new(progression)
-	check(raid.snapshot().credits == 300 and raid.snapshot().level == 1, "legacy profile receives starter account")
+	check(raid.snapshot().credits == initial_credits and raid.snapshot().level == 1, "legacy profile receives starter account")
 	check(raid.action("accept", "first_delivery") and not raid.action("accept", "first_delivery"), "quest accepted once")
 	check(raid.action("accept", "road_keeper") and raid.action("accept", "helping_hand"), "all three quests available")
-	check(raid.action("buy", "repair_kit") and raid.snapshot().credits == 240, "buy debits credits")
+	check(raid.action("buy", "repair_kit") and raid.snapshot().credits == initial_credits - 60, "buy debits credits")
 	check(raid.action("equip", "repair_kit") and raid.snapshot().stash.repair_kit == 2, "equipping transfers inventory")
 	check(not raid.action("equip", "scrap"), "only useful gear can be loaded")
 	check(raid.begin_run(model.player), "run begins and reserves gear")
@@ -80,7 +83,7 @@ func run() -> void:
 	var failed := Progression.new(path + "/missing/profile.json")
 	failed.setup(Model.new())
 	var unavailable := Expedition.new(failed)
-	check(not unavailable.action("buy", "repair_kit") and unavailable.snapshot().credits == 300, "failed save rolls back economic mutation")
+	check(not unavailable.action("buy", "repair_kit") and unavailable.snapshot().credits == initial_credits, "failed save rolls back economic mutation")
 	check(not unavailable.begin_run(failed.model.player) and not unavailable.active, "raid cannot start without durable gear reservation")
 	model.reset_run()
 	progression.reset_run()

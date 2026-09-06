@@ -1,11 +1,11 @@
-# Mine hacking
+# Взлом мин
 
-Buy and mount **Mine Hacking Kit** in the armory (60 scrap, weight 2, one per caravan). The existing mount selector supports the main vehicle or an owned trailer. The kit uses the existing support-mast geometry registered under its own model ID and included in loading/prewarm catalogs.
+Сверено с кодом 2026-09-06. Купите и установите **Mine Hacking Kit**: 60 лома, вес 2, один на караван. Модуль можно установить на основную машину или доступный прицеп.
 
-An armed hostile mine within 4.5m shows a localized E prompt. Hold E for 3 uninterrupted seconds. Releasing E, moving out of range, switching the nearest mine, or losing the module immediately resets the hold. Pausing or opening the armory cancels the hold while freezing mine lifetime and preserving the mine. Without the installed kit, the HUD explains which module is required.
+Возле вооружённой вражеской мины в пределах 4.5 м удерживайте E три секунды. Отпускание, выход из радиуса, смена ближайшей мины или потеря модуля сбрасывают прогресс. Пауза и открытие арсенала отменяют взлом, но замораживают время жизни мины. Без модуля HUD показывает требование установки.
 
-A converted mine turns green and ignores the player, friendly NPCs, and nonhostile NPCs. A hostile enemy in its trigger radius consumes it and takes the existing 30 damage; nearby hostile enemies also take damage. Existing arming delay, lifetime and mine limits remain in force.
+После взлома мина становится зелёной, не реагирует на игрока и союзников, срабатывает на враждебного NPC и наносит 30 урона в радиусе 2.35 м. До завершения взлома она остаётся опасной. Вооружение занимает 0.9 с, жизнь составляет 25 с; пределы: 6 мин владельца и 36 всего. Минный заградитель входит в волны начиная с третьей.
 
-`tests/mine_hacking_module_test.gd` injects an actual viewport pointer click on the armory purchase button and checks purchase, mount, E mapping, simulated held input, timing, all interruption cases, EN/RU prompts, green presentation state and hostile-only triggering. It uses headless Godot; it does not establish rendered appearance or physical keyboard handling in a graphical session.
+Правила находятся в `modules/combat/mine_rules.gd`, отображение в `presentation/combat/mine_views.gd`. Определение `mineHacker` сохраняется при экспорте каталога через `scripts/godot_module_additions.json`.
 
-The native module definition/build profile also live in `scripts/godot_module_additions.json`. The TypeScript catalog exporter merges these additions, so re-exporting the reference catalog preserves the kit. The original exported constants remain unchanged.
+`tests/mine_hacking_module_test.gd` проверяет покупку через UI, установку, hold-ввод, прерывания, локализацию и выбор враждебных целей. Наличие сценария не означает новый прогон; физическую клавиатуру и читаемость мины нужно проверять графически.

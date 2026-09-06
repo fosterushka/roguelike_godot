@@ -1,0 +1,498 @@
+{
+  "mode": "headless automated; no GPU rendering, listening or balance-playthrough claim",
+  "project": "/Users/fosterushka/Work/vibe/roguelike_godot/new-game-project",
+  "results": [
+    {
+      "test": "ui_icons_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.15
+    },
+    {
+      "test": "case_rewards_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.14
+    },
+    {
+      "test": "case_opening_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 5.45
+    },
+    {
+      "test": "trailer_ui_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.7
+    },
+    {
+      "test": "caravan_loadout_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24
+    },
+    {
+      "test": "caravan_combat_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24
+    },
+    {
+      "test": "armory_unit_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "military_pickup_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25
+    },
+    {
+      "test": "convoy_assets_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24
+    },
+    {
+      "test": "caravan_formation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.53
+    },
+    {
+      "test": "crew_runtime_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.63
+    },
+    {
+      "test": "crew_seating_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.26
+    },
+    {
+      "test": "screen_tracers_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24
+    },
+    {
+      "test": "tornado_interaction_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.59
+    },
+    {
+      "test": "caravan_crew_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "caravan_integration_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.74
+    },
+    {
+      "test": "natural_mesh_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24
+    },
+    {
+      "test": "vegetation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 10.66
+    },
+    {
+      "test": "mission_catalog_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.14
+    },
+    {
+      "test": "mission_tracker_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "crew_missions_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "mission_board_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "mission_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 5.64
+    },
+    {
+      "test": "extraction_defense_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 9.2
+    },
+    {
+      "test": "extraction_zone_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.34
+    },
+    {
+      "test": "meta_economy_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "combo_rewards_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24
+    },
+    {
+      "test": "expedition_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 9.1
+    },
+    {
+      "test": "vehicle_motion_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24
+    },
+    {
+      "test": "offline_session_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 16.34
+    },
+    {
+      "test": "combat_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25
+    },
+    {
+      "test": "advanced_combat_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24
+    },
+    {
+      "test": "enemy_ai_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24
+    },
+    {
+      "test": "progression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.33
+    },
+    {
+      "test": "world_generation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44
+    },
+    {
+      "test": "natural_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "authored_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.07
+    },
+    {
+      "test": "world_builder_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 7.84
+    },
+    {
+      "test": "world_gameplay_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.49
+    },
+    {
+      "test": "world_activities_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.69
+    },
+    {
+      "test": "ambient_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.49
+    },
+    {
+      "test": "world_rebuild_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 3.34
+    },
+    {
+      "test": "world_result_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.39
+    },
+    {
+      "test": "presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.52
+    },
+    {
+      "test": "visual_smoke.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.51
+    },
+    {
+      "test": "ui_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.43
+    },
+    {
+      "test": "integration_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.34
+    },
+    {
+      "test": "composed_world_seed_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 25.83
+    },
+    {
+      "test": "full_run_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 19.23
+    },
+    {
+      "test": "combat_soak_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 4.57
+    },
+    {
+      "test": "combat_presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.64
+    },
+    {
+      "test": "source_fx_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44
+    },
+    {
+      "test": "world_presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25
+    },
+    {
+      "test": "run_clock_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25
+    },
+    {
+      "test": "session_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.9
+    },
+    {
+      "test": "presentation_details_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44
+    },
+    {
+      "test": "loading_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.66
+    },
+    {
+      "test": "minimap_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "ui_menu_regression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44
+    },
+    {
+      "test": "ui_language_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.52
+    },
+    {
+      "test": "hud_layout_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44
+    },
+    {
+      "test": "ground_effect_depth_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "countdown_ui_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25
+    },
+    {
+      "test": "reward_radar_mount_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.75
+    },
+    {
+      "test": "armory_tiles_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.47
+    },
+    {
+      "test": "ground_surface_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44
+    },
+    {
+      "test": "wheel_vehicle_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.93
+    },
+    {
+      "test": "radar_progression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "radar_armory_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.54
+    },
+    {
+      "test": "vehicle_response_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25
+    },
+    {
+      "test": "vehicle_render_runtime_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 4.21
+    },
+    {
+      "test": "tire_trails_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.45
+    },
+    {
+      "test": "road_speed_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.73
+    },
+    {
+      "test": "enemy_factory_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "weather_transition_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44
+    },
+    {
+      "test": "support_feedback_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.53
+    },
+    {
+      "test": "support_wave_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34
+    },
+    {
+      "test": "jammer_gameplay_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25
+    },
+    {
+      "test": "jammer_feedback_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.53
+    },
+    {
+      "test": "mine_hacking_module_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.53
+    },
+    {
+      "test": "village_destruction_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.07
+    },
+    {
+      "test": "village_decoration_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.34
+    }
+  ]
+}

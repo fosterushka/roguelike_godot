@@ -46,7 +46,7 @@ func _button(caption: String, action: String) -> Button:
 	return button
 
 func _layout() -> void:
-	visible = enabled and (DisplayServer.is_touchscreen_available() or get_viewport_rect().size.x < 1000)
+	visible = enabled and DisplayServer.is_touchscreen_available()
 
 func set_enabled(value: bool) -> void:
 	enabled = value

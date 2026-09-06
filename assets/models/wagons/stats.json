@@ -1,0 +1,146 @@
+{
+  "asset_type": "military_wagons",
+  "variants": {
+    "cargo": {
+      "triangles": 1672,
+      "mesh_count": 4,
+      "material_count": 1,
+      "bounds": {
+        "min": [
+          -2.242,
+          0.0,
+          -2.43
+        ],
+        "max": [
+          2.242,
+          2.45,
+          3.39
+        ],
+        "size": [
+          4.484,
+          2.45,
+          5.82
+        ]
+      }
+    },
+    "repair": {
+      "triangles": 1624,
+      "mesh_count": 4,
+      "material_count": 1,
+      "bounds": {
+        "min": [
+          -2.242,
+          0.0,
+          -2.43
+        ],
+        "max": [
+          2.242,
+          2.45,
+          3.39
+        ],
+        "size": [
+          4.484,
+          2.45,
+          5.82
+        ]
+      }
+    },
+    "weapon": {
+      "triangles": 1672,
+      "mesh_count": 4,
+      "material_count": 1,
+      "bounds": {
+        "min": [
+          -2.242,
+          0.0,
+          -2.43
+        ],
+        "max": [
+          2.242,
+          2.45,
+          3.39
+        ],
+        "size": [
+          4.484,
+          2.45,
+          5.82
+        ]
+      }
+    },
+    "fuel": {
+      "triangles": 1672,
+      "mesh_count": 4,
+      "material_count": 1,
+      "bounds": {
+        "min": [
+          -2.242,
+          0.0,
+          -2.43
+        ],
+        "max": [
+          2.242,
+          2.45,
+          3.39
+        ],
+        "size": [
+          4.484,
+          2.45,
+          5.82
+        ]
+      }
+    },
+    "anti_tank": {
+      "triangles": 1648,
+      "mesh_count": 4,
+      "material_count": 1,
+      "bounds": {
+        "min": [
+          -2.242,
+          0.0,
+          -2.43
+        ],
+        "max": [
+          2.242,
+          2.45,
+          3.39
+        ],
+        "size": [
+          4.484,
+          2.45,
+          5.82
+        ]
+      }
+    },
+    "anti_air": {
+      "triangles": 1636,
+      "mesh_count": 4,
+      "material_count": 1,
+      "bounds": {
+        "min": [
+          -2.242,
+          0.0,
+          -2.43
+        ],
+        "max": [
+          2.242,
+          2.45,
+          3.39
+        ],
+        "size": [
+          4.484,
+          2.45,
+          5.82
+        ]
+      }
+    }
+  },
+  "wheel_count": 4,
+  "glb": [
+    "military_wagon_cargo.glb",
+    "military_wagon_repair.glb",
+    "military_wagon_weapon.glb",
+    "military_wagon_fuel.glb",
+    "military_wagon_anti_tank.glb",
+    "military_wagon_anti_air.glb"
+  ]
+}

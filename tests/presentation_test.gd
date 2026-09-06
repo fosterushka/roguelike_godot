@@ -20,6 +20,7 @@ func _run() -> void:
 		_check(stream != null and stream.mix_rate == 44100 and stream.data.size() > 1000, "Each procedural cue is decoded 44.1kHz PCM before gameplay")
 		total_samples += stream.data.size()
 	_check(total_samples > 1000000, "Prepared soundbank contains full original layered recipes")
+	_check(game.expedition.caravan.buy_wagon("cargo"), "Buy an individual wagon at base before raid")
 	await game.restart_run()
 	var recipes: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/audio_recipes.json"))
 	_check(recipes.recipes.mineHack == [{"kind": "tone", "frequency": 620.0, "duration": 0.12, "type": "square", "gain": 0.025, "slide": 90.0, "delay": 0.0, "filter": 0.0}], "Mine hack recipe preserves original source tone")
@@ -56,9 +57,9 @@ func _run() -> void:
 	_check(game.camera.shake < initial_shake and game.camera.shake > 0, "Camera trauma decays smoothly using source rate")
 	game.combat.model.player.coins = 1000
 	game.combat.model.player.level = 4
-	game.combat.buy_upgrade("trailer")
+	game.combat._publish()
 	var view = game.vehicle.get_node("VehicleView")
-	_check(view._trailers.size() == 1 and view._trailers.values()[0].get_child_count() > 0, "Bought trailer uses exported source geometry")
+	_check(view._trailers.size() == 1 and view._trailers.values()[0].get_child_count() > 0, "Owned wagon uses the pickup-compatible wheeled model")
 	game.combat.model.spawn_enemy("shooter", Vector3(5, 0, 8))
 	game.combat._publish()
 	_check(game.combat_view._active_counts.drone > 0, "Shooter drone maps to original flying model")

@@ -27,6 +27,7 @@ func _box(parent: Node3D, dimensions: Array, material: String, position := Vecto
 	return _shape(parent, "box", dimensions, material, position, rotation)
 
 func _finish(group: Node3D) -> void:
+	preload("res://presentation/world/structure_batch.gd").compact(group)
 	_no_shadows(group)
 	ctx.groups.append(group)
 
@@ -58,6 +59,8 @@ func watchtower(x: float, z: float, angle: float = 0) -> void:
 		if index % 2 == 0:
 			natural.scrub(x + cos(a) * radius * 0.8, z + sin(a) * radius * 0.8, rng.between(0.7, 1.2), true)
 
+	_military_details("watchtower", x, z, angle)
+
 func pumpjack(x: float, z: float, angle: float = 0) -> void:
 	_land("ironStructure", x, z, 0, 0.18, 0, 4.8, 0.36, 3.8, angle)
 	for side in [-1, 1]:
@@ -74,6 +77,7 @@ func pumpjack(x: float, z: float, angle: float = 0) -> void:
 	ctx.append("tankInstances", Vector3(tank.x, 1.05, tank.z), Vector3(0, angle, PI / 2), Vector3(1.55, 2.6, 1.55))
 	natural.fence(x + rng.between(-4, 4), z + rng.between(-4, 4), angle, 5)
 	call("prop_cluster", x + rng.between(-4, 4), z + rng.between(-4, 4), 0.9)
+	_industrial_details("pumpjack", x, z, angle)
 
 func rock_spire(x: float, z: float) -> void:
 	natural.boulder(x, z, rng.between(3.8, 5.2))
@@ -119,6 +123,8 @@ func water_tower(x: float, z: float, angle: float = 0) -> void:
 	for index in 6:
 		natural.scrub(x + rng.between(-7, 7), z + rng.between(-7, 7), rng.between(0.7, 1.2), index % 2 == 0)
 
+	_military_details("water_tower", x, z, angle)
+
 func recycling_factory(x: float, z: float, angle: float = 0) -> void:
 	_land("ironStructure", x, z, 0, 1.5, 0, 10, 3, 7, angle)
 	_land("metalStructure", x, z, 0, 3.25, 0, 10.8, 0.35, 7.8, angle, 0.03)
@@ -132,6 +138,7 @@ func recycling_factory(x: float, z: float, angle: float = 0) -> void:
 	var scrap: Dictionary = ctx.rotate_offset(x, z, -6.5, 1.5, angle)
 	call("prop_cluster", scrap.x, scrap.z, 1.2)
 	natural.fence(x, z - 7, angle, 7)
+	_industrial_details("factory", x, z, angle)
 
 func cargo_crane(x: float, z: float, angle: float = 0) -> void:
 	for side in [-1, 1]:
@@ -142,6 +149,7 @@ func cargo_crane(x: float, z: float, angle: float = 0) -> void:
 	for index in 7:
 		var point: Dictionary = ctx.rotate_offset(x, z, rng.between(-7, 7), rng.between(-5, 5), angle)
 		ctx.structure("metalStructure" if index % 2 else "redStructure", point.x, 0.65, point.z, rng.between(1.5, 3), 1.3, rng.between(1.8, 3.4), angle + rng.between(-0.15, 0.15))
+	_industrial_details("crane", x, z, angle)
 
 func refinery(x: float, z: float, angle: float = 0) -> void:
 	for offset in [[-3.2, -1.8], [0.2, 1.5], [3.4, -1]]:
@@ -150,6 +158,7 @@ func refinery(x: float, z: float, angle: float = 0) -> void:
 	_land("ironStructure", x, z, 0, 4.2, -4.2, 0.6, 8.4, 0.6, angle)
 	_land("metalStructure", x, z, 0, 6.8, -4.2, 4.6, 0.3, 0.35, angle)
 	natural.fence(x, z + 7, angle, 8)
+	_industrial_details("refinery", x, z, angle)
 
 func satellite_array(x: float, z: float, angle: float = 0) -> void:
 	for index in 3:
@@ -159,3 +168,87 @@ func satellite_array(x: float, z: float, angle: float = 0) -> void:
 		_shape(group, "cylinder", [1.65, 1.65, 0.22, 18], "metal", Vector3(0, 3.6, 0), Vector3(PI / 2, 0, rng.between(-0.55, 0.55)))
 		_shape(group, "sphere", [0.2], "gold", Vector3(0, 3.8, 0.6))
 		ctx.groups.append(group)
+	_industrial_details("satellite", x, z, angle)
+
+func _industrial_details(kind: String, x: float, z: float, angle: float) -> void:
+	var group := _group(x, z, angle)
+	group.name = "MilitarySiteDetails"
+	group.set_meta("military_detail", true)
+	var palette = preload("res://presentation/world/military_environment_palette.gd")
+	var iron: Material = palette.material_for("iron")
+	var metal: Material = palette.material_for("metal")
+	var sand: Material = palette.material_for("sand")
+	var accent: Material = palette.material_for("signal")
+	match kind:
+		"factory":
+			_detail_box(group, Vector3(0, 1.35, 3.53), Vector3(3, 2.5, 0.12), iron)
+			for index in 7:
+				_detail_box(group, Vector3(0, 0.35 + index * 0.32, 3.61), Vector3(2.85, 0.055, 0.05), metal)
+			for side in [-1, 1]:
+				_detail_box(group, Vector3(side * 1.62, 1.35, 3.65), Vector3(0.16, 2.65, 0.16), accent)
+				_detail_box(group, Vector3(side * 3.65, 2.15, 3.55), Vector3(1.3, 0.6, 0.14), sand)
+			for index in 4:
+				_detail_box(group, Vector3(-3.6 + index * 2.4, 3.55, 0), Vector3(0.16, 0.2, 6.8), metal)
+			_detail_box(group, Vector3(2.3, 3.83, -0.5), Vector3(2.1, 0.65, 1.35), iron)
+			for index in 5:
+				_detail_box(group, Vector3(1.55 + index * 0.37, 4.18, -0.5), Vector3(0.08, 0.06, 1.2), metal)
+		"crane":
+			for side in [-1, 1]:
+				_detail_box(group, Vector3(side * 2.7, 0.13, 0), Vector3(0.7, 0.26, 5.4), iron)
+				_detail_box(group, Vector3(side * 2.7, 1.1, 0), Vector3(1.25, 0.2, 1.2), accent)
+				_detail_box(group, Vector3(0, 7.35, side * 0.38), Vector3(7.2, 0.08, 0.08), metal)
+				for index in 5:
+					_detail_box(group, Vector3(-3.4 + index * 1.7, 7.1, side * 0.38), Vector3(0.07, 0.5, 0.07), metal)
+			_detail_box(group, Vector3(-2.7, 5.85, 0), Vector3(1.4, 1.3, 1.4), sand)
+			_detail_box(group, Vector3(-2.7, 6.1, 0.72), Vector3(1.1, 0.52, 0.04), iron)
+			for rung in 17:
+				_detail_box(group, Vector3(-2.7, 0.3 + rung * 0.32, 0.85), Vector3(0.75, 0.06, 0.10), metal)
+		"refinery":
+			for side in [-1, 1]:
+				_detail_box(group, Vector3(0, 0.55, side * 3.1), Vector3(9.0, 0.23, 0.23), metal)
+				for index in 4:
+					_detail_box(group, Vector3(-3.8 + index * 2.5, 0.3, side * 3.1), Vector3(0.35, 0.6, 0.65), iron)
+				_detail_box(group, Vector3(side * 4.4, 1.1, 0), Vector3(0.25, 0.25, 6.4), metal)
+				_detail_box(group, Vector3(side * 4.4, 0.8, -3.1), Vector3(0.3, 0.8, 0.3), accent)
+			_detail_box(group, Vector3(0, 0.75, 4.8), Vector3(2.2, 1.5, 0.65), sand)
+			for index in 3:
+				_detail_box(group, Vector3(-0.65 + index * 0.65, 1.05, 5.14), Vector3(0.38, 0.35, 0.05), iron)
+		"pumpjack":
+			_detail_box(group, Vector3(-1.5, 0.8, 0), Vector3(1.8, 1.15, 1.2), sand)
+			for index in 6:
+				_detail_box(group, Vector3(-2.18 + index * 0.25, 1.4, 0), Vector3(0.08, 0.06, 1.0), iron)
+			_detail_box(group, Vector3(3.3, 1.1, 0), Vector3(0.14, 2.2, 0.14), metal)
+			_detail_box(group, Vector3(3.3, 0.16, 0), Vector3(1.0, 0.32, 1.0), iron)
+		"satellite":
+			_detail_box(group, Vector3(0, 0.85, 4), Vector3(2.8, 1.7, 1.5), sand)
+			for side in [-1, 1]:
+				_detail_box(group, Vector3(side * 0.68, 1.15, 4.77), Vector3(0.92, 0.6, 0.05), iron)
+				for index in 3:
+					_detail_box(group, Vector3(side * 0.68, 0.5 + index * 0.11, 4.8), Vector3(0.84, 0.04, 0.06), metal)
+			_detail_box(group, Vector3(1.2, 2.2, 4), Vector3(0.07, 1.8, 0.07), iron)
+	_finish(group)
+
+func _military_details(kind: String, x: float, z: float, angle: float) -> void:
+	var group := _group(x, z, angle)
+	group.name = "MilitarySiteDetails"
+	group.set_meta("military_detail", true)
+	var height := 4.9 if kind == "watchtower" else 5.8
+	var depth := 1.65 if kind == "watchtower" else 1.9
+	var palette = preload("res://presentation/world/military_environment_palette.gd")
+	for rung in 14:
+		_detail_box(group, Vector3(0, 0.32 + rung * height / 14, depth), Vector3(0.82, 0.065, 0.10), palette.material_for("iron"))
+	for side in [-1, 1]:
+		_detail_box(group, Vector3(side * 0.45, height / 2, depth), Vector3(0.08, height, 0.12), palette.material_for("metal"))
+		var brace := _detail_box(group, Vector3(side * 1.4, 2.4, 0), Vector3(0.12, 4.4, 0.12), palette.material_for("iron"))
+		brace.rotation.z = side * 0.5
+	_finish(group)
+
+func _detail_box(group: Node3D, point: Vector3, dimensions: Vector3, material: Material) -> MeshInstance3D:
+	var mesh := BoxMesh.new()
+	mesh.size = dimensions
+	var visual := MeshInstance3D.new()
+	visual.mesh = mesh
+	visual.material_override = material
+	visual.position = point
+	group.add_child(visual)
+	return visual

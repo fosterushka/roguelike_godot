@@ -1,0 +1,66 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Metal 4.0 - Forward+ - Using Device #0: Apple - Apple M4 Pro (Apple9)
+
+WARNING: The variable "remap" has the same name as a built-in function.
+   at: GDScript::reload (res://presentation/world/tree_replacements.gd:20)
+WARNING: The function parameter "seed" has the same name as a built-in function.
+   at: GDScript::reload (res://modules/world/weather_rules.gd:23)
+WARNING: The function parameter "seed" has the same name as a built-in function.
+   at: GDScript::reload (res://modules/world/weather_rules.gd:29)
+WARNING: The function parameter "seed" has the same name as a built-in function.
+   at: GDScript::reload (res://modules/world/weather_rules.gd:45)
+WARNING: The function parameter "seed" has the same name as a built-in function.
+   at: GDScript::reload (res://modules/world/weather_rules.gd:48)
+WARNING: The function parameter "seed" has the same name as a built-in function.
+   at: GDScript::reload (res://modules/world/activities/source_random.gd:5)
+WARNING: Integer division. Decimal part will be discarded.
+   at: GDScript::reload (res://modules/world/generation/generation_context.gd:110)
+WARNING: The local function parameter "transform" is shadowing an already-declared property in the base class "Node3D".
+   at: GDScript::reload (res://presentation/world/generated_world_view.gd:54)
+WARNING: The local variable "transform" is shadowing an already-declared property in the base class "Node3D".
+   at: GDScript::reload (res://presentation/world/arena.gd:138)
+WARNING: The function parameter "seed" has the same name as a built-in function.
+   at: GDScript::reload (res://modules/combat/jammer_rules.gd:13)
+WARNING: The local function parameter "reference" is shadowing an already-declared method in the base class "RefCounted".
+   at: GDScript::reload (res://modules/combat/rocket_rules.gd:9)
+WARNING: The local function parameter "sample" is shadowing an already-declared function at line 36 in the current class.
+   at: GDScript::reload (res://modules/combat/rocket_rules.gd:16)
+WARNING: The local variable "reference" is shadowing an already-declared method in the base class "RefCounted".
+   at: GDScript::reload (res://modules/combat/rocket_rules.gd:46)
+WARNING: The function parameter "seed" has the same name as a built-in function.
+   at: GDScript::reload (res://modules/world/weather_state.gd:16)
+WARNING: The function parameter "seed" has the same name as a built-in function.
+   at: GDScript::reload (res://modules/world/tornado_rules.gd:12)
+WARNING: The local variable "rotation" is shadowing an already-declared property in the base class "Node3D".
+   at: GDScript::reload (res://presentation/world/wind_debris.gd:58)
+WARNING: The variable "sample" is declared below in the parent block.
+   at: GDScript::reload (res://modules/world/activities/activity_system.gd:200)
+WARNING: Integer division. Decimal part will be discarded.
+   at: GDScript::reload (res://modules/world/activities/activity_system.gd:422)
+WARNING: The local variable "basis" is shadowing an already-declared property in the base class "Node3D".
+   at: GDScript::reload (res://presentation/world/activity_view.gd:98)
+WARNING: The local variable "transform" is shadowing an already-declared property in the base class "Node3D".
+   at: GDScript::reload (res://presentation/world/activity_view.gd:174)
+WARNING: The variable "offset" is declared below in the parent block.
+   at: GDScript::reload (res://modules/world/navigation/rock_steering.gd:22)
+WARNING: The local function parameter "position" is shadowing an already-declared property in the base class "Node3D".
+   at: GDScript::reload (res://presentation/combat/fx/effect_pool.gd:96)
+WARNING: The local function parameter "rotation" is shadowing an already-declared property in the base class "Node3D".
+   at: GDScript::reload (res://presentation/combat/fx/effect_pool.gd:96)
+WARNING: The local variable "basis" is shadowing an already-declared property in the base class "Node3D".
+   at: GDScript::reload (res://presentation/combat/fx/wheel_tracks.gd:68)
+WARNING: The local function parameter "position" is shadowing an already-declared property in the base class "Node3D".
+   at: GDScript::reload (res://presentation/combat/fx/dust_field.gd:9)
+WARNING: The variable "mote" is declared below in the parent block.
+   at: GDScript::reload (res://presentation/combat/fx/support_pickup.gd:40)
+WARNING: The local variable "basis" is shadowing an already-declared property in the base class "Node3D".
+   at: GDScript::reload (res://presentation/combat/combat_view.gd:126)
+WARNING: The local variable "transform" is shadowing an already-declared property in the base class "Node3D".
+   at: GDScript::reload (res://presentation/combat/combat_view.gd:140)
+TORNADO_FRAME_MS fall n=30 p50=8.17 p95=9.65 max=43.08 (rendered scenario, includes frame pacing)
+/tmp/tornado-stage1-fall.png
+TORNADO_FRAME_MS fling n=72 p50=8.40 p95=9.14 max=9.37 (rendered scenario, includes frame pacing)
+/tmp/tornado-stage1-fling.png
+TORNADO_FRAME_MS land n=150 p50=8.31 p95=9.14 max=9.57 (rendered scenario, includes frame pacing)
+/tmp/tornado-stage1-land.png
+TORNADO_CAPTURE: actual arena, prop lifecycle, NPC and vehicle simulation rendered

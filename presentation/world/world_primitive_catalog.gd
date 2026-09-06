@@ -1,5 +1,6 @@
 extends RefCounted
 const Source = preload("res://presentation/combat/source_model.gd")
+const Palette = preload("res://presentation/world/military_environment_palette.gd")
 static var meshes: Dictionary = {}
 
 static func prepare() -> void:
@@ -19,6 +20,7 @@ static func create(shape: String, dimensions: Array, material: String, position 
 	var result := MeshInstance3D.new()
 	result.name = material + "_" + shape
 	result.mesh = meshes.get(key)
+	result.material_override = Palette.material_for(Palette.role_for(material))
 	result.rotation_order = EULER_ORDER_XYZ
 	result.position = position
 	result.rotation = rotation

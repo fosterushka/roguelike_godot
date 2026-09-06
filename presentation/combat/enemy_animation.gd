@@ -23,4 +23,5 @@ static func advance(enemy: Dictionary, pose: Dictionary, delta: float, elapsed: 
 	elif type in ["bike", "buggy", "priorityVehicle"]:
 		point.y = sin(elapsed * (9.0 if type == "bike" else 6.0 if type == "buggy" else 5.0) + float(enemy.get("yaw", 0.0))) * 0.035
 	point.y += Terrain.height_at(point.x, point.z)
+	point.y += float(enemy.get("lift_height", 0.0))
 	return {"position": point, "basis": Basis(Vector3.BACK, float(enemy.get("roll", 0.0))).scaled(scale_vector), "pose": pose}

@@ -17,13 +17,14 @@ func run() -> void:
 	progression.setup(model)
 	model.player.coins = 1000
 	model.player.level = 2
-	check(progression.buy_upgrade("trailer"), "Trailer purchase")
+	var raid := preload("res://modules/meta/expedition.gd").new(progression)
+	check(raid.caravan.buy_wagon("cargo") and raid.begin_run(model.player), "Owned wagon bought at base and selected for raid")
 	var coins: int = model.player.coins
-	for id in ["module:bazooka:missing:0", "module:bazooka:trailer-1:3", "module:bazooka:trailer-1:-1", "module:bazooka:trailer-1:no", "module:bazooka:crawler:0", "module:bazooka:trailer-1:0:extra"]:
+	for id in ["module:bazooka:missing:0", "module:bazooka:wagon-1:3", "module:bazooka:wagon-1:-1", "module:bazooka:wagon-1:no", "module:bazooka:wagon-1:0:extra"]:
 		check(not progression.buy_upgrade(id) and model.player.coins == coins and model.weapons.size() == 1, "Invalid mount cannot charge coins or create equipment: " + id)
-	check(progression.buy_upgrade("module:bazooka:trailer-1:1") and model.weapons[-1].mount == {"carrierId": "trailer-1", "slot": 1}, "Weapon installs on requested trailer slot")
+	check(progression.buy_upgrade("module:bazooka:wagon-1:1") and model.weapons[-1].mount == {"carrierId": "wagon-1", "slot": 1}, "Weapon installs on requested trailer slot")
 	coins = model.player.coins
-	check(not progression.buy_upgrade("module:radar:trailer-1:1") and model.player.coins == coins and model.player.radar_range == 0, "Occupied mount refuses passive without charge")
+	check(not progression.buy_upgrade("module:radar:wagon-1:1") and model.player.coins == coins and model.player.radar_range == 0, "Occupied mount refuses passive without charge")
 	check(progression.buy_upgrade("module:radar:crawler:2") and model.player.radar_range == 40, "Radar upgrade installs in requested free slot")
 	var radar := preload("res://presentation/ui/radar.gd").new()
 	root.add_child(radar)
@@ -63,6 +64,8 @@ func run() -> void:
 	game.run_seed_override = 72841
 	root.add_child(game)
 	await game.game_ready
+	for node: Node in [game, game.session_flow, game.combat, game.world, game.vehicle]:
+		node.set_physics_process(false)
 	game._set_screen("running")
 	game.vehicle.fuel = game.vehicle.max_fuel - 2
 	var previous_coins: int = game.combat.model.player.coins
@@ -77,7 +80,12 @@ func run() -> void:
 			check(event.salvage == game.combat.model.player.coins - previous_coins and event.xp == game.combat.model.player.xp - previous_xp and event.fuel == 2, "Airdrop reports actual credited rewards including fuel cap")
 			check(not event.blueprint.is_empty() and game.combat.model.player.unlocked_weapons.has(event.blueprint), "Reported blueprint is actually unlocked")
 			game._on_world_event(event)
-	check(rewards == 1 and game.hud.reward_notice.visible and game.hud.reward_notice.label.text.contains("SUPPLIES COLLECTED") and game.hud.reward_notice.label.text.contains("Fuel +2") and game.hud.reward_notice.label.text.contains("Install in Armory"), "Claim flows through application to readable reward receipt")
+	await process_frame
+	var case_panel = game.case_flow.panel
+	case_panel.set_process(false)
+	check(rewards == 1 and game.screen_state == "case_opening" and paused and case_panel.visible and case_panel.title.text == "AIRDROP CACHE" and case_panel.guaranteed.text.contains("Fuel +2"), "Claim opens paused case with actual guaranteed fuel receipt")
+	case_panel.activate()
+	check(case_panel.revealed and case_panel.result.text.begins_with("RECEIVED:") and case_panel.subtitle.text.contains("Install the weapon in Armory"), "Revealed blueprint explains where to install its actual reward")
 	game.world.support._update_airdrops(0)
 	check(game.world.support.drain_events().is_empty(), "Collected airdrop cannot grant or notify twice")
 	for type: String in game.combat.model._catalog:
@@ -86,20 +94,31 @@ func run() -> void:
 	drop = game.world.support.spawn_airdrop(game.vehicle.global_position)
 	drop.landed = true
 	game.world.support._update_airdrops(0)
+	var fallback: Dictionary = {}
 	for event: Dictionary in game.world.support.drain_events():
 		if event.kind == "airdrop_claimed":
+			fallback = event.case
 			game._on_world_event(event)
-			check(event.blueprint.is_empty() and event.fuel == 0 and not game.hud.reward_notice.label.text.contains("Blueprint:"), "Full fuel and all blueprints give honest zero fuel, no phantom unlock")
+			check(event.blueprint.is_empty() and event.fuel == 0 and fallback.guaranteed.fuel == 0 and fallback.pool.all(func(entry: Dictionary) -> bool: return entry.kind in ["salvage", "xp"]), "Full fuel and exhausted blueprints offer only useful actual fallback rewards")
+	await process_frame
+	check(game.case_flow.pending.size() == 1, "Second claim waits behind existing revealed case")
+	var first_result: String = case_panel.result.text
 	game.hud.show_world_banner("WAVE 2", "Next wave")
-	check(game.hud.reward_notice.label.text.contains("SUPPLIES COLLECTED"), "Wave banner cannot overwrite loot receipt")
+	check(case_panel.result.text == first_result, "Wave banner cannot overwrite case reward")
 	game._toggle_pause()
-	var remaining: float = game.hud.reward_notice.remaining
-	game.hud.reward_notice._process(20)
-	check(game.hud.reward_notice.remaining == remaining, "Paused receipt timer is preserved")
+	check(game.screen_state == "case_opening" and paused and not game.world.running and not game.combat.model.running, "Pause toggle cannot resume combat behind a case")
+	case_panel.activate()
+	check(game.screen_state == "case_opening" and paused and case_panel.reward == fallback and not case_panel.revealed and game.case_flow.pending.is_empty(), "Continue advances to queued case without resuming simulation")
+	check(not case_panel.guaranteed.text.contains("Fuel") and not case_panel.contents.text.contains("Blueprint:"), "Fallback case omits unavailable fuel and phantom unlocks")
 	game._set_language("ru")
-	check(game.hud.reward_notice.label.text.contains("ПРИПАСЫ ПОЛУЧЕНЫ") and game.hud.reward_notice.label.text.contains("Топливо +0"), "Existing receipt changes to Russian")
+	check(case_panel.title.text == "ВОЗДУШНЫЙ ГРУЗ" and case_panel.guaranteed.text.contains("Лом +28") and case_panel.contents.text.contains("ВОЗМОЖНЫЕ БОНУСЫ"), "Active case changes to Russian with actual guaranteed bundle")
+	case_panel.advance(case_panel.DURATION)
+	check(case_panel.revealed and case_panel.result.text.begins_with("ПОЛУЧЕНО: "), "Queued case completes its real reward reveal")
+	case_panel.activate()
+	check(game.screen_state == "running" and not paused and not case_panel.visible, "Continue resumes only after all queued cases are shown")
+	game._set_screen("loading")
 	game.hud.set_loading(true)
-	check(game.hud.reward_notice.reward.is_empty() and not game.hud.reward_notice.visible, "Restart clears old receipt")
+	check(case_panel.reward.is_empty() and not case_panel.visible and game.case_flow.pending.is_empty() and game.case_flow.seen.is_empty(), "Restart clears case receipt, queue and duplicate history")
 	game.queue_free()
 	radar.queue_free()
 	markers.queue_free()

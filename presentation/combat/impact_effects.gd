@@ -159,13 +159,16 @@ func on_world_event(event: Dictionary) -> void:
 		spawn_healing_burst(point)
 		if event.get("kind") == "healer_claimed":
 			support_pickup.spawn(event, player_view)
+	elif event.get("kind") == "tornado_debris":
+		spawn_crash_debris(event.get("position", Vector3.ZERO) + Vector3.UP * 1.5, 0.32, str(event.get("debris_kind", "stone")))
 	elif event.get("kind") == "prop_destroyed":
 		var kind := str(event.get("prop_kind", "wood"))
 		var large: bool = event.get("large", kind in ["building", "monument"])
 		var force := float(event.get("force", 1.0))
 		var point: Vector3 = event.get("position", Vector3.ZERO)
 		point.y = 0.7 if large else 0.6
-		spawn_crash_debris(point, 0.9 + force * 0.2 if large else 0.45 + force * 0.15, str(event.get("debris_kind", "mixed" if kind in ["monument", "streetlight"] else "wood")))
+		if not event.get("tree_fall", false):
+			spawn_crash_debris(point, 0.9 + force * 0.2 if large else 0.45 + force * 0.15, str(event.get("debris_kind", "mixed" if kind in ["monument", "streetlight"] else "wood")))
 		if kind == "tree":
 			spawn_leaf_burst(point, 5 + floori(force * 2.0))
 		point.y = 0.04

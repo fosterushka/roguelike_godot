@@ -2,6 +2,7 @@ extends SceneTree
 
 const Main = preload("res://app/main.tscn")
 const Store = preload("res://infrastructure/persistence/profile_store.gd")
+var initial_credits := 1000 if OS.is_debug_build() else 300
 var checks := 0
 var failures := 0
 
@@ -30,13 +31,18 @@ func _press(node: Node, metadata: String, value: String) -> void:
 		button.pressed.emit()
 
 func _tab(panel, id: String) -> void:
-	var names := {"stash": ["СКЛАД", "VAULT"], "trade": ["ТОРГОВЕЦ", "TRADER"], "quests": ["ЗАДАНИЯ", "TASKS"], "upgrades": ["ПРОКАЧКА", "UPGRADES"]}
+	var hub: Node = panel.get_parent()
+	while hub != null and not hub.has_signal("tab_selected"):
+		hub = hub.get_parent()
+	if hub != null and hub.has_signal("tab_selected"):
+		_press(hub, "hub_tab", id)
+		return
 	for button: Button in panel.tabs.get_children():
-		if button.text in names[id]:
+		if button.get_meta("expedition_tab", "") == id:
 			if not button.disabled:
 				button.pressed.emit()
 			return
-	check(false, "Missing actual tab button: " + id)
+	panel.show_state(panel.state, id)
 
 func _key(game, key: Key) -> void:
 	var event := InputEventKey.new()
@@ -72,13 +78,26 @@ func _run() -> void:
 		node.set_physics_process(false)
 	game.camera.set_process(false)
 	check(game.screen_state == "menu" and paused, "Boot exposes a paused main menu")
-	_press(game.hud.run_menu, "action_id", "hideout")
-	check(game.screen_state == "expedition" and game.expedition_panel.visible, "Menu opens the actual hideout panel")
+	_press(game.hud.run_menu, "action_id", "singleplayer")
+	_press(game.hud.run_menu, "action_id", "vault")
+	check(game.screen_state == "expedition" and game.hideout_hub.visible and game.hud.armory.visible, "Menu opens unified hideout on Armory")
 	var panel = game.expedition_panel
+	check(game.hud.armory.get_parent() == panel.get_parent(), "Armory and storage share one content module")
+	check(game.hideout_hub.resources.text == ("CREDITS %d · LV 1" % initial_credits) and game.hideout_hub.resources.is_visible_in_tree(), "Armory shows persistent account credits and level")
+	_press(game.hideout_hub, "hub_action", "garage")
+	check(game.screen_state == "garage" and not game.hideout_hub.visible, "Visible hub Garage button opens management")
+	game.caravan_flow.close()
+	check(game.screen_state == "expedition" and game.hideout_hub.visible and game.hud.armory.visible, "Trailer Back restores the same hub Armory")
+	_press(game.hideout_hub, "hub_tab", "loadout")
+	check(panel.visible and panel.tab == "loadout" and not game.hud.armory.visible, "Stash tab switches content without stacking overlays")
+	_press(game.hideout_hub, "hub_tab", "stash")
+	check(panel.visible and panel.tab == "stash", "Vault tab opens persistent inventory")
 	_tab(panel, "trade")
 	_press(panel, "expedition_action", "buy:repair_kit")
-	check(game.expedition.snapshot().credits == 240 and game.expedition.snapshot().stash.repair_kit == 3, "Trader purchase charges account credits and stores the purchased kit")
+	check(game.expedition.snapshot().credits == initial_credits - 60 and game.expedition.snapshot().stash.repair_kit == 3, "Trader purchase charges account credits and stores the purchased kit")
+	check(game.hideout_hub.resources.text == ("CREDITS %d · LV 1" % (initial_credits - 60)), "Trader purchase immediately refreshes header balance")
 	_tab(panel, "stash")
+	check(game.hideout_hub.resources.text == ("CREDITS %d · LV 1" % (initial_credits - 60)), "Account balance remains visible across tabs")
 	_press(panel, "expedition_action", "equip:repair_kit")
 	check(game.expedition.snapshot().loadout.repair_kit == 1 and game.expedition.snapshot().stash.repair_kit == 2, "Pack button moves a real item out of the vault")
 	_tab(panel, "quests")
@@ -86,10 +105,15 @@ func _run() -> void:
 	check(game.progression.profile.expedition.quests.first_delivery.status == "active", "Task button accepts the delivery contract")
 	_tab(panel, "upgrades")
 	_press(panel, "expedition_action", "upgrade:armor")
-	check(game.expedition.snapshot().credits == 40, "Permanent armor upgrade uses account credits")
+	check(game.expedition.snapshot().credits == initial_credits - 260, "Permanent armor upgrade uses account credits")
+	check(game.hideout_hub.resources.text == ("CREDITS %d · LV 1" % (initial_credits - 260)), "Base upgrade immediately refreshes header balance")
+	_press(game.hideout_hub, "hub_action", "garage")
+	game.caravan_flow.close()
+	check(game.hideout_hub.tab == "upgrades" and panel.visible, "Garage Back preserves the selected Base tab")
 	_key(game, KEY_ESCAPE)
-	check(game.screen_state == "menu" and paused, "Hideout Escape restores the start menu")
-	await _start(game, "start")
+	check(game.screen_state == "menu" and paused and not game.hideout_hub.visible, "Hideout Escape restores the start menu")
+	check(game.hud.armory.get_parent().name == "Screen" and panel.get_parent().name == "Screen", "Closing the hub restores standalone raid panels")
+	await _start(game, "raid")
 	var model = game.combat.model
 	check(game.expedition.backpack.get("repair_kit", 0) == 1 and game.expedition.snapshot().loadout.is_empty(), "Starting consumes saved loadout into raid backpack")
 	check(model.player.max_hp == 270.0 and game.vehicle.max_health == 270.0, "Permanent armor applies to both combat and live vehicle")
@@ -193,12 +217,14 @@ func _run() -> void:
 	check(loaded.expedition.stash.get("scrap", 0) == 6 and loaded.expedition.stash.get("weapon_parts", 0) == 2 and loaded.expedition.stash.get("relic", 0) == 1, "A newly loaded profile contains all extracted cargo")
 	check(loaded.expedition.xp > 0 and loaded.expedition.quests.first_delivery.progress == 6, "Account experience and delivery progress survive disk reload")
 	_press(game.hud.run_menu, "action_id", "menu")
-	_press(game.hud.run_menu, "action_id", "hideout")
+	_press(game.hud.run_menu, "action_id", "singleplayer")
+	_press(game.hud.run_menu, "action_id", "vault")
 	_tab(panel, "quests")
 	var credits_before: int = game.expedition.snapshot().credits
 	_press(panel, "expedition_action", "claim:first_delivery")
 	check(game.expedition.snapshot().credits == credits_before + 180 and game.progression.profile.expedition.quests.first_delivery.status == "claimed" and game.expedition.snapshot().stash.get("scrap", 0) == 0, "Claim button transfers delivered scrap and pays the account task reward")
 	_tab(panel, "trade")
+	_press(panel, "trader_id", "scavenger")
 	credits_before = game.expedition.snapshot().credits
 	_press(panel, "expedition_action", "sell:relic")
 	check(game.expedition.snapshot().credits == credits_before + 125 and not game.expedition.snapshot().stash.has("relic"), "Trader sells extracted relic for account credits")
@@ -206,7 +232,7 @@ func _run() -> void:
 	_press(panel, "expedition_action", "equip:fuel_cell")
 	_key(game, KEY_ESCAPE)
 	var saved_stash: Dictionary = Store.new(path).load_profile().expedition.stash.duplicate(true)
-	await _start(game, "start")
+	await _start(game, "raid")
 	check(game.expedition.backpack.get("fuel_cell", 0) == 1, "Second raid carries the fuel cell packed through the real hideout")
 	model.spawn_pickup(model.player.position, 1)
 	model._update_pickups(0.0)

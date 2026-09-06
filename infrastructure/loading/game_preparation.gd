@@ -2,7 +2,10 @@ extends RefCounted
 
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 
+const Equipment = preload("res://presentation/vehicles/equipment_model.gd")
 const SourceModel = preload("res://presentation/combat/source_model.gd")
+const WagonCatalog = preload("res://modules/caravan/wagon_catalog.gd")
+const AttachmentView = preload("res://presentation/vehicles/attachment_view.gd")
 const WheeledRig = preload("res://presentation/vehicles/wheeled_rig.gd")
 const NaturalMeshes = preload("res://presentation/world/natural_meshes.gd")
 var procedural_models: Array[String] = []
@@ -59,20 +62,30 @@ func prepare(parent: Node3D, point: Vector3, progress: Callable) -> bool:
 	var interference := preload("res://presentation/ui/jammer_vhs.gd").new()
 	screen_layer.add_child(interference)
 	interference.update_state({"player": {"hp": 100, "jammed": true, "jammer_strength": 1.0}})
+	interference.update_weather({"weather": {"type": "storm"}})
+	interference.advance(2.0)
 	var catalog: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/visual_models/catalog.json"))
 	var index := 0
 	for entry: Dictionary in catalog.models:
 		index += 1
 		if str(entry.name).begins_with("world_") and str(entry.name) != "world_primitives":
 			continue
-		var visual := SourceModel.instantiate(str(entry.name))
+		var model_name := str(entry.name)
+		var visual := Equipment.build(model_name.trim_prefix("weapon_")) if model_name.begins_with("weapon_") else SourceModel.instantiate(model_name)
 		visual.position = point
 		warmup_root.add_child(visual)
 		progress.call(Locale.text("Подготовка модели: ") + str(entry.name), 0.75 + 0.2 * index / float(catalog.models.size()))
 		if index % 4 == 0:
 			await parent.get_tree().process_frame
 	procedural_models.clear()
-	for visual: Node3D in [WheeledRig.build_player(), WheeledRig.build_trailer()]:
+	var procedural: Array[Node3D] = [WheeledRig.build_player()]
+	for type: String in WagonCatalog.TYPES:
+		var rig := WheeledRig.build_trailer(type)
+		rig.name = "SteeringWheelTrailer_" + type
+		procedural.append(rig)
+	for type: String in WagonCatalog.ATTACHMENTS:
+		procedural.append(AttachmentView.build(type))
+	for visual: Node3D in procedural:
 		visual.position = point
 		warmup_root.add_child(visual)
 		procedural_models.append(str(visual.name))

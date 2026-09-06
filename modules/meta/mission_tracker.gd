@@ -1,7 +1,7 @@
 extends RefCounted
 
 const RECENT_EVENT_LIMIT := 4096
-const EVENT_KINDS := ["death", "activity_completed", "shot", "player_hit", "ability", "extraction_started", "extraction_failed", "ram_impact", "roadkill_impact", "overdrive_started", "airdrop_claimed", "healer_claimed", "mine_hacked", "boss_component_destroyed"]
+const EVENT_KINDS := ["death", "activity_completed", "shot", "player_hit", "ability", "extraction_started", "extraction_failed", "ram_impact", "roadkill_impact", "overdrive_started", "airdrop_claimed", "healer_claimed", "mine_hacked", "boss_component_destroyed", "crew_rescued", "crew_died"]
 
 var metrics: Dictionary = {}
 var _seen: Dictionary = {}
@@ -12,6 +12,9 @@ var _acquired: Dictionary = {}
 var _site := ""
 var _finalized := false
 var _max_hp := 1.0
+var _repair_totals: Dictionary = {}
+var _rescued_crew: Dictionary = {}
+var _lost_crew: Dictionary = {}
 
 func reset(player: Dictionary) -> void:
 	metrics = {"min_health_pct": 100.0}
@@ -22,6 +25,12 @@ func reset(player: Dictionary) -> void:
 	_acquired.clear()
 	_site = ""
 	_finalized = false
+	_repair_totals.clear()
+	_rescued_crew.clear()
+	_lost_crew.clear()
+	for person: Dictionary in player.get("crew", []):
+		if person.get("role", "") == "mechanic":
+			_repair_totals[str(person.id)] = maxf(0.0, float(person.get("work_total", 0.0)))
 	sample(player, 0.0, "sunny")
 
 func add(metric: String, amount: float = 1.0) -> void:
@@ -31,6 +40,9 @@ func add(metric: String, amount: float = 1.0) -> void:
 func sample(player: Dictionary, delta: float, weather: String) -> void:
 	if _finalized or not is_finite(delta) or delta < 0.0:
 		return
+	for person: Dictionary in player.get("crew", []):
+		if person.get("role", "") == "mechanic":
+			_record_repair(str(person.get("id", "")), float(person.get("work_total", 0.0)))
 	var speed := absf(float(player.get("speed", 0.0)))
 	add("seconds", delta)
 	add("distance", speed * delta)
@@ -67,6 +79,10 @@ func record(event: Dictionary) -> void:
 	if _finalized:
 		return
 	var kind := str(event.get("kind", ""))
+	if kind == "crew_repaired":
+		if event.has("total"):
+			_record_repair(str(event.get("id", "")), float(event.total))
+		return
 	if kind not in EVENT_KINDS or (kind == "shot" and event.get("team", "") != "player") or (kind == "death" and not event.get("rewarded", true)):
 		return
 	if event.has("id"):
@@ -128,6 +144,44 @@ func record(event: Dictionary) -> void:
 		"healer_claimed": add("healers")
 		"mine_hacked": add("mine_hacks")
 		"boss_component_destroyed": add("boss_components")
+		"crew_rescued":
+			var id := str(event.get("id", ""))
+			if not id.is_empty() and not _rescued_crew.has(id):
+				_rescued_crew[id] = true
+				add("crew_rescued")
+		"crew_died":
+			var id := str(event.get("id", ""))
+			if not id.is_empty() and not _lost_crew.has(id):
+				_lost_crew[id] = true
+				add("crew_lost")
+
+func _record_repair(id: String, total: float) -> void:
+	if id.is_empty() or not is_finite(total) or total < 0.0:
+		return
+	var previous := float(_repair_totals.get(id, 0.0))
+	add("crew_repair_hp", maxf(0.0, total - previous))
+	_repair_totals[id] = maxf(previous, total)
+
+func _finalize_caravan(player: Dictionary) -> void:
+	var carriers := {"crawler": true}
+	for wagon: Dictionary in player.get("carriers", []):
+		var id := str(wagon.get("id", ""))
+		if not id.is_empty() and not carriers.has(id) and wagon.get("attached", false) and not wagon.get("dead", false) and float(wagon.get("hp", 0)) > 0:
+			carriers[id] = true
+			add("wagons_extracted")
+	var counted := {}
+	for person: Dictionary in player.get("crew", []):
+		var id := str(person.get("id", ""))
+		if id.is_empty() or counted.has(id) or person.get("faction", "ally") != "ally":
+			continue
+		counted[id] = true
+		if not person.get("dead", false) and float(person.get("hp", 0)) > 0 and person.get("boarded", false) and carriers.has(str(person.get("carrier_id", ""))):
+			add("crew_extracted")
+			if person.get("rescued", false) or _rescued_crew.has(id):
+				add("rescued_crew_extracted")
+		elif not _lost_crew.has(id):
+			_lost_crew[id] = true
+			add("crew_lost")
 
 func current_metrics(backpack: Dictionary, items: Dictionary) -> Dictionary:
 	if _finalized:
@@ -149,6 +203,8 @@ func finalize(player: Dictionary, backpack: Dictionary, items: Dictionary, resul
 		return
 	sample(player, 0.0, "")
 	metrics = current_metrics(backpack, items)
+	if result.get("extracted", false) or result.get("won", false):
+		_finalize_caravan(player)
 	if result.get("extracted", false):
 		add("extractions")
 		if _site in ["extract-1", "extract-2", "extract-3"]:

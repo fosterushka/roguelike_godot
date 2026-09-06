@@ -1,5 +1,6 @@
 extends RefCounted
 
+const CaravanSave = preload("res://modules/caravan/caravan_save.gd")
 const Missions = preload("res://modules/meta/mission_catalog.gd")
 const MissionProgress = preload("res://modules/meta/mission_progress.gd")
 
@@ -21,7 +22,7 @@ static func quests() -> Dictionary:
 	return Missions.all()
 
 static func defaults() -> Dictionary:
-	return {"credits": 300, "xp": 0, "stash": {"repair_kit": 2, "fuel_cell": 1}, "loadout": {}, "upgrades": {"cargo": 0, "armor": 0, "engine": 0}, "quests": {}}
+	return {"credits": 1000 if OS.is_debug_build() else 300, "xp": 0, "stash": {"repair_kit": 2, "fuel_cell": 1}, "loadout": {}, "upgrades": {"cargo": 0, "armor": 0, "engine": 0}, "quests": {}, "caravan": CaravanSave.defaults()}
 
 static func integer(value: Variant, maximum: int = 1000000000) -> int:
 	if not (value is int or value is float) or not is_finite(float(value)) or floor(float(value)) != float(value):
@@ -41,7 +42,7 @@ static func normalize(value: Variant) -> Dictionary:
 	var result := defaults()
 	if not value is Dictionary:
 		return result
-	result.credits = integer(value.get("credits", 300))
+	result.credits = integer(value.get("credits", result.credits))
 	result.xp = integer(value.get("xp", 0))
 	result.stash = inventory(value.get("stash", {}))
 	var upgrades: Variant = value.get("upgrades", {})
@@ -55,6 +56,7 @@ static func normalize(value: Variant) -> Dictionary:
 			result.loadout[id] = amount
 			space -= amount * int(ITEMS[id].size)
 	result.quests = MissionProgress.normalize(value.get("quests", {}), quests())
+	result.caravan = CaravanSave.normalize(value.get("caravan"))
 	return result
 
 static func account(xp: int) -> Dictionary:

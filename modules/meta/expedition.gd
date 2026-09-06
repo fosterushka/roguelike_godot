@@ -1,9 +1,11 @@
 extends RefCounted
 
+const CaravanRoster = preload("res://modules/caravan/caravan_roster.gd")
 const Catalog = preload("res://modules/meta/expedition_catalog.gd")
 const MissionProgress = preload("res://modules/meta/mission_progress.gd")
 const MissionTracker = preload("res://modules/meta/mission_tracker.gd")
 var progression: RefCounted
+var caravan: RefCounted
 var active := false
 var backpack: Dictionary = {}
 var last_result: Dictionary = {}
@@ -20,6 +22,7 @@ var _pending_result: Variant = null
 func _init(owner: RefCounted) -> void:
 	progression = owner
 	progression.profile.expedition = Catalog.normalize(progression.profile.get("expedition"))
+	caravan = CaravanRoster.new(progression)
 
 func _data() -> Dictionary:
 	return progression.profile.expedition
@@ -33,19 +36,50 @@ func _commit(before: Dictionary) -> bool:
 	notice = "Не удалось сохранить профиль. Действие отменено."
 	return false
 
-func capacity() -> int:
+func base_capacity() -> int:
 	return 12 + 4 * int(_data().upgrades.cargo)
+
+func capacity() -> int:
+	var total := base_capacity()
+	if active:
+		for wagon: Dictionary in caravan.cargo_containers():
+			total += int(wagon.cargo_capacity)
+	return total
+
+func cargo_inventory() -> Dictionary:
+	var result := backpack.duplicate(true)
+	if active:
+		for wagon: Dictionary in caravan.cargo_containers():
+			for id: String in wagon.cargo:
+				result[id] = int(result.get(id, 0)) + int(wagon.cargo[id])
+	return result
+
+func _remove_cargo(id: String) -> bool:
+	if int(backpack.get(id, 0)) > 0:
+		backpack[id] -= 1
+		if backpack[id] == 0:
+			backpack.erase(id)
+		return true
+	for wagon: Dictionary in caravan.cargo_containers():
+		if int(wagon.cargo.get(id, 0)) > 0:
+			wagon.cargo[id] -= 1
+			if wagon.cargo[id] == 0:
+				wagon.cargo.erase(id)
+			return true
+	return false
 
 func begin_run(player: Dictionary) -> bool:
 	if active:
 		return false
 	var before := _data().duplicate(true)
 	var carried: Dictionary = _data().loadout.duplicate(true)
+	var staged: Dictionary = caravan.stage_begin()
 	_data().loadout.clear()
 	if not _commit(before):
 		return false
 	backpack = carried
 	active = true
+	caravan.activate(staged, player)
 	last_result.clear()
 	_seen.clear()
 	_mission_result.clear()
@@ -73,10 +107,21 @@ func collect_loot(source: String, count: int = 1) -> bool:
 			"settlement", "settlementDistress": id = "repair_kit"
 			_: id = "circuit" if _loot_index % 5 == 4 else "scrap"
 	var accepted := count
-	if accepted > int((capacity() - Catalog.used(backpack)) / int(Catalog.ITEMS[id].size)):
+	var item_size := int(Catalog.ITEMS[id].size)
+	var containers: Array = [{"cargo": backpack, "cargo_capacity": base_capacity()}]
+	containers.append_array(caravan.cargo_containers())
+	var free_units := 0
+	for container: Dictionary in containers:
+		free_units += maxi(0, int((int(container.cargo_capacity) - Catalog.used(container.cargo)) / item_size))
+	if accepted > free_units:
 		notice = "Рюкзак заполнен. Используйте припасы или эвакуируйтесь."
 		return false
-	backpack[id] = int(backpack.get(id, 0)) + accepted
+	var remaining := accepted
+	for container: Dictionary in containers:
+		var amount := mini(remaining, maxi(0, int((int(container.cargo_capacity) - Catalog.used(container.cargo)) / item_size)))
+		if amount > 0:
+			container.cargo[id] = int(container.cargo.get(id, 0)) + amount
+			remaining -= amount
 	_loot_index += 1
 	_raid_xp += accepted * (12 if id == "relic" else 5)
 	missions.loot(id, accepted)
@@ -114,13 +159,15 @@ func finish_run(success: bool) -> bool:
 		return false
 	if _pending_result != null:
 		success = bool(_pending_result)
-	missions.finalize(_player, backpack, Catalog.ITEMS, _mission_result if not _mission_result.is_empty() else {"extracted": success})
+	var final_cargo := cargo_inventory()
+	missions.finalize(_player, final_cargo, Catalog.ITEMS, _mission_result if not _mission_result.is_empty() else {"extracted": success})
 	var before := _data().duplicate(true)
+	var caravan_result: Dictionary = caravan.stage_finish(success)
 	var gained_xp := 60 + _raid_xp if success else int(_raid_xp / 4)
 	var overflow := 0
 	if success:
-		for id: String in backpack:
-			var amount: int = backpack[id]
+		for id: String in final_cargo:
+			var amount: int = final_cargo[id]
 			var stored := mini(amount, 9999 - int(_data().stash.get(id, 0)))
 			_data().stash[id] = int(_data().stash.get(id, 0)) + stored
 			overflow += (amount - stored) * int(Catalog.ITEMS[id].sell)
@@ -130,7 +177,8 @@ func finish_run(success: bool) -> bool:
 	if not _commit(before):
 		_pending_result = success
 		return false
-	last_result = {"success": success, "items": backpack.duplicate(true) if success else {}, "lost": {} if success else backpack.duplicate(true), "xp": gained_xp, "credits": overflow, "overflow_credits": overflow}
+	last_result = {"success": success, "items": final_cargo.duplicate(true) if success else {}, "lost": {} if success else final_cargo.duplicate(true), "xp": gained_xp, "credits": overflow, "overflow_credits": overflow, "caravan": caravan_result}
+	caravan.end_run()
 	backpack.clear()
 	active = false
 	_pending_result = null
@@ -139,7 +187,8 @@ func finish_run(success: bool) -> bool:
 
 func abandon_run() -> void:
 	if active:
-		last_result = {"success": false, "items": {}, "lost": backpack.duplicate(true), "xp": 0, "credits": 0, "overflow_credits": 0}
+		last_result = {"success": false, "items": {}, "lost": cargo_inventory(), "xp": 0, "credits": 0, "overflow_credits": 0}
+		caravan.end_run()
 		backpack.clear()
 		active = false
 		_pending_result = null
@@ -150,10 +199,7 @@ func action(kind: String, id: String) -> bool:
 		return finish_run(bool(_pending_result))
 	if _pending_result != null:
 		return false
-	if active and kind == "discard" and int(backpack.get(id, 0)) > 0:
-		backpack[id] -= 1
-		if backpack[id] == 0:
-			backpack.erase(id)
+	if active and kind == "discard" and _remove_cargo(id):
 		notice = "Предмет выброшен."
 		return true
 	if active:
@@ -246,7 +292,7 @@ func _upgrade(id: String) -> bool:
 	return true
 
 func consume(id: String, player: Dictionary) -> bool:
-	if not active or _pending_result != null or int(backpack.get(id, 0)) <= 0:
+	if not active or _pending_result != null or int(cargo_inventory().get(id, 0)) <= 0:
 		return false
 	match id:
 		"repair_kit":
@@ -263,9 +309,7 @@ func consume(id: String, player: Dictionary) -> bool:
 			player.damage_mult = float(player.get("damage_mult", 1.0)) * 1.2
 			_weapon_improved = true
 		_: return false
-	backpack[id] -= 1
-	if backpack[id] == 0:
-		backpack.erase(id)
+	_remove_cargo(id)
 	missions.consumable(id)
 	notice = "Использовано: " + str(Catalog.ITEMS[id].name)
 	return true
@@ -273,7 +317,7 @@ func consume(id: String, player: Dictionary) -> bool:
 func active_missions() -> Array:
 	var rows: Array = []
 	var definitions := Catalog.quests()
-	var pending := missions.current_metrics(backpack, Catalog.ITEMS)
+	var pending := missions.current_metrics(cargo_inventory(), Catalog.ITEMS)
 	var account_level: int = Catalog.account(_data().xp).level
 	var count := MissionProgress.active_count(_data().quests)
 	for id: String in _data().quests:
@@ -285,7 +329,7 @@ func snapshot() -> Dictionary:
 	var account := Catalog.account(_data().xp)
 	var quests: Array = []
 	var count := MissionProgress.active_count(_data().quests)
-	var pending := missions.current_metrics(backpack, Catalog.ITEMS)
+	var pending := missions.current_metrics(cargo_inventory(), Catalog.ITEMS)
 	var definitions := Catalog.quests()
 	for id: String in definitions:
 		quests.append(MissionProgress.row(definitions[id], _data().quests.get(id, {}), pending, account.level, active, count, _data().stash))
@@ -300,4 +344,4 @@ func snapshot() -> Dictionary:
 		row.cost_label = "%d кредитов · ур. аккаунта %d" % [row.cost, row.required_level]
 		row.enabled = not active and row.level < row.max_level and account.level >= row.required_level and _data().credits >= row.cost
 		upgrades.append(row)
-	return {"active": active, "pending_result": _pending_result != null, "credits": _data().credits, "xp": account.xp, "total_xp": _data().xp, "xp_next": account.xp_next, "level": account.level, "capacity": capacity(), "used": Catalog.used(backpack if active else _data().loadout), "stash": _data().stash.duplicate(true), "loadout": _data().loadout.duplicate(true), "backpack": backpack.duplicate(true), "items": Catalog.ITEMS.duplicate(true), "quests": quests, "active_quest_count": count, "quest_limit": MissionProgress.LIMIT, "upgrades": upgrades, "last_result": last_result.duplicate(true), "notice": notice, "storage_status": progression.store.status}
+	return {"active": active, "pending_result": _pending_result != null, "credits": _data().credits, "xp": account.xp, "total_xp": _data().xp, "xp_next": account.xp_next, "level": account.level, "capacity": capacity(), "used": Catalog.used(cargo_inventory() if active else _data().loadout), "stash": _data().stash.duplicate(true), "loadout": _data().loadout.duplicate(true), "backpack": cargo_inventory(), "caravan": caravan.snapshot(), "items": Catalog.ITEMS.duplicate(true), "quests": quests, "active_quest_count": count, "quest_limit": MissionProgress.LIMIT, "upgrades": upgrades, "last_result": last_result.duplicate(true), "notice": notice, "storage_status": progression.store.status}

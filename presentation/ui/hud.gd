@@ -1,5 +1,6 @@
 extends CanvasLayer
 
+const Icons = preload("res://presentation/ui/ui_icons.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 
 signal ability_selected(slot: int)
@@ -37,6 +38,7 @@ var _player_stats_label: Label
 var _target_label: Label
 var _sound_button: Button
 var _language_button: Button
+var _options_button: Button
 var _gameplay: Control
 var _gameplay_active := false
 var _last_telemetry: Dictionary = {}
@@ -134,6 +136,7 @@ func set_paused(value: bool) -> void:
 
 func set_loading(value: bool) -> void:
 	if value:
+		jammer_vhs.reset_weather()
 		loading_progress = 0.0
 		reward_notice.clear()
 		_banner_remaining = 0.0
@@ -152,25 +155,30 @@ func _build_telemetry(screen: Control) -> void:
 	_stats_panel.name = "PlayerStats"
 	_stats_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	_stats_panel.offset_left = 12
-	_stats_panel.offset_right = 208
-	_stats_panel.offset_top = -232
+	_stats_panel.offset_right = 232
+	_stats_panel.offset_top = -222
 	_stats_panel.offset_bottom = -12
 	_stats_panel.add_theme_stylebox_override("panel", _panel_style())
 	_stats_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	screen.add_child(_stats_panel)
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 8)
+	column.add_theme_constant_override("separation", 6)
 	_stats_panel.add_child(column)
-	var health := _meter(column)
+	var health := _meter(column, "health")
 	_health_label = health[0]
 	_health_bar = health[1]
-	var fuel := _meter(column)
+	var fuel := _meter(column, "fuel")
 	_fuel_label = fuel[0]
 	_fuel_bar = fuel[1]
 	_speed_label = _label("", 12, INK)
 	column.add_child(_speed_label)
 	_coins_label = _label("", 12, AMBER)
 	column.add_child(_coins_label)
+	var scrap_icon := Icons.view("scrap", 18)
+	_coins_label.add_child(scrap_icon)
+	var scrap_backing := StyleBoxEmpty.new()
+	scrap_backing.content_margin_left = 24
+	_coins_label.add_theme_stylebox_override("normal", scrap_backing)
 	_player_stats_label = _label("", 11, MUTED)
 	column.add_child(_player_stats_label)
 	var actions := HBoxContainer.new()
@@ -179,9 +187,13 @@ func _build_telemetry(screen: Control) -> void:
 	var armory_button := _button(Locale.text("АРСЕНАЛ"), 76)
 	armory_button.tooltip_text = Locale.text("АРСЕНАЛ [B]")
 	armory_button.pressed.connect(func() -> void: armory_requested.emit())
+	Icons.apply(armory_button, "armory", 18)
+	armory_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	actions.add_child(armory_button)
 	var pause_button := _button(Locale.text("ПАУЗА"), 76)
 	pause_button.pressed.connect(func() -> void: pause_requested.emit())
+	Icons.apply(pause_button, "settings", 18)
+	pause_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	actions.add_child(pause_button)
 	update_telemetry({"health": 100.0, "fuel": 100.0})
 
@@ -224,12 +236,9 @@ func _build_pause(screen: Control) -> void:
 	var restart_button := _button(Locale.text("НАЧАТЬ ЗАНОВО"), 300)
 	restart_button.pressed.connect(func() -> void: restart_requested.emit())
 	column.add_child(restart_button)
-	_sound_button = _button(Locale.text("ЗВУК: ВКЛ"), 300)
-	_sound_button.pressed.connect(func() -> void: sound_requested.emit())
-	column.add_child(_sound_button)
-	_language_button = _button("LANGUAGE: ENGLISH" if Locale.language == "en" else "ЯЗЫК: РУССКИЙ", 300)
-	_language_button.pressed.connect(func() -> void: language_requested.emit("ru" if Locale.language == "en" else "en"))
-	column.add_child(_language_button)
+	_options_button = _button("НАСТРОЙКИ" if Locale.language == "ru" else "OPTIONS", 300)
+	_options_button.pressed.connect(func() -> void: menu_action_requested.emit("options", ""))
+	column.add_child(_options_button)
 	var menu_button := _button(Locale.text("ГЛАВНОЕ МЕНЮ"), 300)
 	menu_button.pressed.connect(func() -> void: menu_action_requested.emit("menu", ""))
 	column.add_child(menu_button)
@@ -271,14 +280,17 @@ func _label(text: String, size: int, color: Color) -> Label:
 	return label
 
 
-func _meter(parent: BoxContainer) -> Array:
+func _meter(parent: BoxContainer, icon_key: String) -> Array:
 	var column := VBoxContainer.new()
 	column.custom_minimum_size.x = 126
 	column.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	column.add_theme_constant_override("separation", 4)
 	parent.add_child(column)
 	var label := _label("", 12, INK)
-	column.add_child(label)
+	var row := HBoxContainer.new()
+	row.add_child(Icons.view(icon_key, 18))
+	row.add_child(label)
+	column.add_child(row)
 	var bar := ProgressBar.new()
 	bar.custom_minimum_size = Vector2(126, 5)
 	bar.show_percentage = false
@@ -304,8 +316,8 @@ func _panel_style() -> StyleBoxFlat:
 	style.bg_color = STRIP
 	style.border_color = Color("786347")
 	style.border_width_bottom = 1
-	style.content_margin_left = 16
-	style.content_margin_right = 16
+	style.content_margin_left = 10
+	style.content_margin_right = 10
 	style.content_margin_top = 6
 	style.content_margin_bottom = 6
 	return style
@@ -447,6 +459,7 @@ func hide_menus() -> void:
 	set_paused(false)
 
 func update_world(data: Dictionary) -> void:
+	jammer_vhs.update_weather(data)
 	markers.update_world(data)
 	radar.update_world(data)
 	var activity: Dictionary = data.get("activity", {}).get("current", {})
@@ -479,7 +492,8 @@ func update_world(data: Dictionary) -> void:
 		set_status("")
 
 func set_sound_enabled(value: bool) -> void:
-	_sound_button.text = Locale.text("ЗВУК: ВКЛ") if value else Locale.text("ЗВУК: ВЫКЛ")
+	if is_instance_valid(_sound_button):
+		_sound_button.text = Locale.text("ЗВУК: ВКЛ") if value else Locale.text("ЗВУК: ВЫКЛ")
 
 func set_loading_progress(stage: String, progress: float) -> void:
 	loading_progress = maxf(loading_progress, clampf(progress, 0.0, 1.0))
@@ -541,7 +555,10 @@ func _sync_gameplay_visibility() -> void:
 func set_language(value: String) -> void:
 	Locale.set_language(value)
 	Locale.refresh_controls(get_node("Screen"))
-	_language_button.text = "LANGUAGE: ENGLISH" if Locale.language == "en" else "ЯЗЫК: РУССКИЙ"
+	if is_instance_valid(_language_button):
+		_language_button.text = "LANGUAGE: ENGLISH" if Locale.language == "en" else "ЯЗЫК: РУССКИЙ"
+	if is_instance_valid(_options_button):
+		_options_button.text = "НАСТРОЙКИ" if Locale.language == "ru" else "OPTIONS"
 	run_menu.refresh_language()
 	reward_notice.refresh_language()
 	jammer_overlay.refresh_language()

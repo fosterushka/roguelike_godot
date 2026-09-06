@@ -19,6 +19,8 @@ func build(generated: RefCounted) -> Dictionary:
 		instances.transform_format = MultiMesh.TRANSFORM_3D
 		var natural_mesh: Mesh = NaturalMeshes.mesh_for(pool)
 		instances.mesh = natural_mesh if natural_mesh != null else template.mesh
+		if natural_mesh == null:
+			batch.material_override = preload("res://presentation/world/military_environment_palette.gd").material_for(_palette_role(pool))
 		if pool.begins_with("rockMass"):
 			batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 		instances.instance_count = values.size()
@@ -50,6 +52,14 @@ func build(generated: RefCounted) -> Dictionary:
 		for index in road.points.size():
 			anchors.append({"id": "%s-anchor-%02d" % [road.id, index], "roadId": road.id, "routeId": route_id, "order": index, "x": road.points[index].x, "z": road.points[index].z})
 	return {"seed": context.layout.seed, "name": context.layout.name, "roads": roads, "villages": context.villages, "landmarks": context.landmarks, "activityRoutes": routes, "activityAnchors": anchors, "activityBlockers": context.activity_blockers, "rockObstacles": context.rock_obstacles, "props": props, "terrainDetails": context.terrain_details, "battlefieldFeatures": context.rendered_features}
+
+static func _palette_role(pool: String) -> String:
+	if pool in ["fencePosts", "fenceRails", "woodStructure"]: return "bark"
+	if pool in ["earthStructure", "trenches", "bowls", "rims", "decals", "char"]: return "sand_dark"
+	if pool in ["stoneInstances", "rockInstances", "ruinStructure", "scarStructure", "cliffFaces", "cliffStrata"]: return "stone"
+	if pool in ["redStructure", "barrelInstances"]: return "rust"
+	if pool in ["ironStructure", "metalStructure", "tankInstances", "crateInstances"]: return "iron"
+	return "olive"
 
 static func matrix(transform: Transform3D) -> Array:
 	return [transform.basis.x.x, transform.basis.x.y, transform.basis.x.z, 0, transform.basis.y.x, transform.basis.y.y, transform.basis.y.z, 0, transform.basis.z.x, transform.basis.z.y, transform.basis.z.z, 0, transform.origin.x, transform.origin.y, transform.origin.z, 1]

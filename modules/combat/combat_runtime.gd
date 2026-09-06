@@ -9,6 +9,7 @@ var vehicle: CharacterBody3D
 var progression: RefCounted
 var clock_delta: Callable
 var result_deferred: Callable
+var support_step: Callable
 var _delivered_result_generation := -1
 
 func _ready() -> void:
@@ -55,6 +56,8 @@ func _physics_process(delta: float) -> void:
 	if not model.running or not is_instance_valid(vehicle):
 		return
 	_sync_vehicle_to_model()
+	if support_step.is_valid():
+		support_step.call(delta)
 	model.step(delta)
 	_sync_model_to_vehicle()
 	_publish()
@@ -116,6 +119,10 @@ func _sync_vehicle_to_model() -> void:
 	model.player.slip_angle = vehicle.motion.slip_angle
 	model.player.handbraking = Input.is_action_pressed("handbrake")
 	model.player.interact = Input.is_physical_key_pressed(KEY_E) or (InputMap.has_action("interact") and Input.is_action_pressed("interact"))
+	if not model.player.interact:
+		model.player.interaction_claimed = false
+	elif model.player.get("interaction_claimed", false):
+		model.player.interact = false
 	model.player.hp = vehicle.health
 	model.player.max_hp = vehicle.max_health
 	model.player.fuel = vehicle.fuel

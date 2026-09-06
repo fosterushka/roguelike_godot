@@ -146,6 +146,10 @@ static func attack(model, enemy: Dictionary, delta: float, cadence: float, dista
 	var origin: Vector3 = enemy.position + Vector3.UP * (height + Terrain.height_at(enemy.position.x, enemy.position.z))
 	var forward := Vector3(sin(model.player.heading), 0.0, cos(model.player.heading))
 	var aim: Vector3 = model.player.position + Vector3.UP * aim_height + forward * model.player.speed * lead
+	if model.enemy_target_query.is_valid():
+		var target: Dictionary = model.enemy_target_query.call(origin)
+		if not target.is_empty():
+			aim = target.position + Vector3(target.get("velocity", Vector3.ZERO)) * lead
 	model.fire_projectile(enemy.get("projectile", "bullet"), "enemy", origin, aim, enemy.damage)
 	enemy.cooldown = (enemy.interval + model.random.randf_range(0.0, enemy.get("jitter", 0.0))) * 1.4
 	enemy.attack_animation = 1.0

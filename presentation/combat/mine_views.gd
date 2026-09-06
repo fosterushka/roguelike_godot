@@ -9,6 +9,8 @@ func _ready() -> void:
 		add_child(model)
 		var signal_visual: MeshInstance3D = model.get_child(1)
 		signal_visual.material_override = signal_visual.mesh.surface_get_material(0).duplicate()
+		signal_visual.material_override.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		signal_visual.material_override.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		var track := _bar(Vector3(1.18, 0.08, 0.15), Color("241f18"), 0.84)
 		track.position = Vector3(0, 0.455, -0.56)
 		model.add_child(track)
@@ -16,7 +18,7 @@ func _ready() -> void:
 		fill.position = Vector3(-0.54, 0.46, -0.56)
 		model.add_child(fill)
 		model.visible = false
-		entries.append({"visual": model, "signal": signal_visual, "signal_basis": signal_visual.basis.scaled(Vector3.ONE / 1.1), "track": track, "fill": fill})
+		entries.append({"visual": model, "signal": signal_visual, "signal_basis": signal_visual.basis, "track": track, "fill": fill})
 
 func _bar(size_value: Vector3, color: Color, opacity: float) -> MeshInstance3D:
 	var result := MeshInstance3D.new()

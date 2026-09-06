@@ -14,6 +14,8 @@ const KEYS := {
 	"activate_ability": [KEY_SPACE],
 	"armory": [KEY_B],
 	"inventory": [KEY_I, KEY_TAB],
+	"crew_menu": [KEY_J],
+	"crew_collect": [KEY_C],
 	"radar_zoom": [KEY_M],
 	"pause_game": [KEY_P, KEY_ESCAPE],
 	"restart_run": [],

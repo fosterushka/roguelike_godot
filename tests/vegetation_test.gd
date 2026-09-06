@@ -30,6 +30,8 @@ func _run() -> void:
 		check(mesh.get_surface_count() == 1, "Whole tree species batches as a single surface")
 		check(mesh.get_aabb().size.y > 6.0 and mesh.get_aabb().size.x > 2.0, "Every species has a recognizable full-sized silhouette")
 		var arrays := mesh.surface_get_arrays(0)
+		var tree_material := mesh.surface_get_material(0) as StandardMaterial3D
+		check(tree_material.albedo_texture != null, "Trees retain their soft color ramp material")
 		check(arrays[Mesh.ARRAY_VERTEX].size() == arrays[Mesh.ARRAY_COLOR].size(), "Trunk and foliage colors survive instancing")
 		check(arrays[Mesh.ARRAY_INDEX].size() < 6000, "Tree geometry remains bounded below 2000 triangles")
 		signatures[str(mesh.get_aabb())] = true
@@ -51,6 +53,8 @@ func _run() -> void:
 			check(Layout.distance_to_road(prop.position, context.layout.roads) > 12.0, "Road and shoulder retain at least twelve meters of center clearance")
 			check(not context.near_village(point.x, point.y, 32.0), "Additional trees preserve settlement access")
 			check(not prop.solid and prop.parts.size() == 1 and prop.parts[0].instance >= 0, "Destructible trees use one instance and create no static body")
+			var pose: Transform3D = prop.parts[0].transform
+			check(absf(pose.basis.y.x) < 0.0001 and absf(pose.basis.y.z) < 0.0001, "Generated tree trunks stay upright")
 		check(vegetation.size() >= 900 and vegetation.size() <= Vegetation.TREE_BUDGET, "Groves add substantial bounded vegetation")
 		check(nearby >= 30 and middle >= 400, "Vegetation is visible around the start and early play area")
 		check(species.size() == 2 and species.has("spruceTrees") and species.has("birchTrees"), "Every seed contains only birch and spruce")

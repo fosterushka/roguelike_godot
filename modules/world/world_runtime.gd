@@ -6,6 +6,9 @@ signal world_event(event: Dictionary)
 const Props = preload("res://modules/world/prop_system.gd")
 const Weather = preload("res://modules/world/weather_state.gd")
 const Rules = preload("res://modules/world/weather_rules.gd")
+const Damage = preload("res://modules/world/damage_context.gd")
+const TornadoInteraction = preload("res://modules/world/tornado_interaction.gd")
+const PropMotionView = preload("res://presentation/world/prop_motion_view.gd")
 const Tornado = preload("res://modules/world/tornado_rules.gd")
 const Grid = preload("res://modules/world/spatial_grid.gd")
 const WeatherView = preload("res://presentation/world/weather_view.gd")
@@ -27,6 +30,8 @@ var foundries := Foundries.new()
 var _activity_view: Node3D
 var weather := Weather.new()
 var tornado := Tornado.new()
+var tornado_interaction := TornadoInteraction.new()
+var prop_motion_view: Node3D
 var arena: Node3D
 var combat: Node3D
 var vehicle: CharacterBody3D
@@ -53,6 +58,9 @@ func setup(world_arena: Node3D, combat_runtime: Node3D, player_vehicle: Characte
 	vehicle = player_vehicle
 	vehicle.obstacle_impact_query = handle_vehicle_impact
 	props.setup(arena.world_layout)
+	prop_motion_view = PropMotionView.new()
+	add_child(prop_motion_view)
+	prop_motion_view.setup(arena)
 	rock_steering.setup(arena.world_layout.rockObstacles)
 	for property in combat.model.get_property_list():
 		_model_properties[str(property.name)] = true
@@ -81,7 +89,17 @@ func set_running(enabled: bool) -> void:
 
 func reset_run(seed_value: int = 72841) -> void:
 	_seed = seed_value
+	tornado_interaction.reset(vehicle)
+	if is_instance_valid(prop_motion_view):
+		prop_motion_view.reset()
+	for enemy: Dictionary in combat.model.enemies:
+		if enemy.has("lift_height") or enemy.get("tornado_recovery", 0.0) > 0:
+			enemy.airborne = false
+			enemy.lift_height = 0.0
+			enemy.tornado_recovery = 0.0
+			enemy.roll = 0.0
 	for id in props.reset():
+		arena.set_prop_position(id, props.records[id].position)
 		arena.set_prop_destroyed(id, false)
 	_refresh_rock_navigation()
 	ambient.reset(seed_value)
@@ -148,7 +166,7 @@ func step(delta: float) -> void:
 	if combat.model.status in ["dead", "complete", "extracted"]:
 		_publish()
 		return
-	var response := props.ram(vehicle.global_position, vehicle.motion.speed, float(combat.model.player.get("ram_timer", 0.0)) > 0, delta, float(combat.model.player.get("visual_scale", 0.88)))
+	var response := props.ram(vehicle.global_position, vehicle.motion.speed, float(combat.model.player.get("ram_timer", 0.0)) > 0, delta, float(combat.model.player.get("visual_scale", 0.88)), _impact_direction())
 	vehicle.motion.speed *= float(response.retention)
 	_flush_prop_events()
 	tornado.step(_seed, weather.phase, weather.elapsed, delta)
@@ -170,15 +188,18 @@ func _sync_weather_model() -> void:
 		if _model_properties.has("weather_fog_strength"):
 			combat.model.weather_fog_strength = weather.visual_mix().y
 
-func damage_props(point: Vector3, radius: float, amount: float) -> int:
-	var destroyed := props.damage_at(point, radius, amount)
+func damage_props(point: Vector3, radius: float, amount: float, context: Dictionary = {}) -> int:
+	context = Damage.normalized(context, "explosion")
+	if context.cause == "explosion" and amount > 0.0 and is_instance_valid(prop_motion_view):
+		prop_motion_view.explosion(point, radius)
+	var destroyed := props.damage_at(point, radius, amount, context)
 	_flush_prop_events()
 	return destroyed
 
 func handle_vehicle_impact(collider: Object, approach_speed: float) -> bool:
 	if not running or not is_instance_valid(collider) or not collider.has_meta("destructible_prop_id"):
 		return false
-	var destroyed := props.impact(str(collider.get_meta("destructible_prop_id")), approach_speed, float(combat.model.player.get("ram_timer", 0.0)) > 0.0)
+	var destroyed := props.impact(str(collider.get_meta("destructible_prop_id")), approach_speed, float(combat.model.player.get("ram_timer", 0.0)) > 0.0, _impact_direction())
 	_flush_prop_events()
 	return destroyed
 
@@ -188,7 +209,7 @@ func handle_projectile(shot: Dictionary) -> bool:
 		return false
 	shot.position = hit.position
 	if str(shot.kind) not in ["rocket", "grenade"]:
-		damage_props(hit.position, 1.2, float(shot.damage) * 1.8)
+		damage_props(hit.position, 1.2, float(shot.damage) * 1.8, Damage.create("shot", shot.position - shot.previous, str(shot.get("team", "")), "shot:%s" % str(shot.get("id", "")) if shot.has("id") else ""))
 	world_event.emit({"kind": "prop_hit", "position": hit.position, "id": hit.prop.id})
 	return true
 
@@ -201,12 +222,21 @@ func resolve_enemy_motion(enemy: Dictionary, start: Vector3, end: Vector3) -> Ve
 func is_spawn_clear(point: Vector3, radius: float = 2.0) -> bool:
 	return props.is_clear(point, radius)
 
+func _impact_direction() -> Vector3:
+	return Vector3(sin(vehicle.motion.move_heading), 0, cos(vehicle.motion.move_heading)) * signf(vehicle.motion.speed)
+
 func _flush_prop_events() -> void:
 	var rebuild_navigation := false
 	for event in props.drain_events():
-		rebuild_navigation = rebuild_navigation or bool(props.records.get(str(event.id), {}).get("rock_obstacle", false))
-		arena.set_prop_destroyed(str(event.id), true)
-		if int(event.salvage) > 0:
+		var kind := str(event.kind)
+		if is_instance_valid(prop_motion_view):
+			prop_motion_view.on_event(event)
+		if kind in ["prop_destroyed", "prop_lifted"]:
+			rebuild_navigation = rebuild_navigation or bool(props.records.get(str(event.id), {}).get("rock_obstacle", false))
+			arena.set_prop_destroyed(str(event.id), true)
+		elif kind == "prop_landed":
+			arena.set_prop_position(str(event.id), event.position)
+		if kind == "prop_destroyed" and int(event.get("salvage", 0)) > 0:
 			combat.model.spawn_pickup(event.position, int(event.salvage))
 		world_event.emit(event)
 	if rebuild_navigation:
@@ -217,7 +247,7 @@ func _refresh_rock_navigation() -> void:
 
 func _on_combat_event(event: Dictionary) -> void:
 	if str(event.get("kind", "")) == "explosion":
-		damage_props(event.position, float(event.radius), float(event.get("damage", 0.0)) * 1.6)
+		damage_props(event.position, float(event.radius), float(event.get("damage", 0.0)) * 1.6, Damage.create("explosion", Vector3.ZERO, str(event.get("team", "")), "explosion:%s:%s" % [str(event.get("generation", "")), str(event.id)] if event.has("id") else ""))
 		weather.create_mud(event.position)
 	elif str(event.get("kind", "")) == "result":
 		running = false
@@ -273,39 +303,15 @@ func _update_tornado(delta: float) -> void:
 	camera_dust += (target_dust - camera_dust) * (1.0 - exp(-dust_response * delta))
 	if camera_dust < 0.001 and target_dust == 0:
 		camera_dust = 0.0
-	if influence.strength > 0.0:
-		var position := props.resolve_motion(vehicle.global_position, vehicle.global_position + influence.force * delta, float(combat.model.player.get("radius", 3.5)))
-		vehicle.global_position = position
-		var buffet := sin(tornado.age * 6.7) + sin(tornado.age * 11.3 + 1.7) * 0.45
-		vehicle.motion.heading += buffet * influence.strength * delta * 0.46
-		vehicle.motion.move_heading += (buffet * 0.3 + 0.18) * influence.strength * delta
-		vehicle.motion.yaw_velocity += buffet * influence.strength * delta * 0.75
-		vehicle.motion.speed *= exp(-0.34 * influence.strength * delta)
-	for enemy: Dictionary in combat.model.enemies:
-		if enemy.dead or enemy.get("airborne", false) or str(enemy.type) not in ["soldier", "bike", "buggy"]:
-			continue
-		var effect := tornado.influence(enemy.position)
-		if effect.core:
-			combat.model.kill_enemy(enemy, {"grant_rewards": false, "cause": "tornado"})
-		elif effect.strength > 0.0:
-			if enemy.get("activity_route_controlled", false):
-				var previous := Vector3(float(enemy.get("tornado_offset_x", 0)), 0, float(enemy.get("tornado_offset_z", 0)))
-				var next: Vector3 = previous + effect.force * delta * 1.15
-				next.x = clampf(next.x, -9, 9)
-				next.z = clampf(next.z, -9, 9)
-				enemy.position += next - previous
-				enemy.tornado_offset_x = next.x
-				enemy.tornado_offset_z = next.z
-			else:
-				enemy.position = props.resolve_motion(enemy.position, enemy.position + effect.force * delta * 0.34, float(enemy.radius))
-				enemy.velocity += effect.force * delta * 2.15
-			enemy.yaw += effect.strength * delta * 2.8
+	tornado_interaction.step(self, delta)
+	_flush_prop_events()
+	prop_motion_view.step(delta, tornado_interaction.prop_flights)
 
 func get_state() -> Dictionary:
 	return {"weather": {"type": str(weather.phase.get("type", "clear")), "phase": int(weather.phase.get("index", 0)), "remaining": maxf(0.0, float(weather.phase.get("ends_at", 0)) - weather.elapsed), "traction": weather.traction, "fog_strength": weather.visual_mix().y, "phase_data": weather.phase.duplicate(), "elapsed": weather.elapsed},
 		"boundary": {"outside": outside, "remaining": outside_remaining, "radius": PLAYABLE_RADIUS},
 		"station": station.duplicate(), "mud_zones": weather.mud_zones.duplicate(true),
-		"tornado": {"position": tornado.position, "intensity": tornado.intensity, "age": tornado.age, "camera_dust": camera_dust},
+		"tornado": {"position": tornado.position, "intensity": tornado.intensity, "age": tornado.age, "camera_dust": camera_dust, "player_mode": tornado_interaction.player_state.mode, "player_strength": tornado_interaction.player_state.blend},
 		"wind": wind.get_state(), "seed": _seed, "ambient_count": ambient.critters.size(), "game_time": combat.model.elapsed, "elapsed": weather.elapsed, "destroyed_props": props.destroyed_ids.size(),
 		"activity": activities.get_state(), "extraction": activities.get_extraction_state(), "support": support.get_state(), "foundries": foundries.get_state()}
 
@@ -320,6 +326,8 @@ func _publish() -> void:
 
 
 func set_warmup_visible(enabled: bool) -> void:
+	if is_instance_valid(prop_motion_view):
+		prop_motion_view.set_warmup_visible(enabled, vehicle.global_position + Vector3.UP)
 	if is_instance_valid(_weather_view):
 		_weather_view.set_warmup_visible(enabled)
 	if is_instance_valid(_activity_view):

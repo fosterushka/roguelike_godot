@@ -1,7 +1,8 @@
 extends SubViewportContainer
 
+const AttachmentView = preload("res://presentation/vehicles/attachment_view.gd")
 const VehicleView = preload("res://presentation/vehicles/vehicle_view.gd")
-const SourceModel = preload("res://presentation/combat/source_model.gd")
+const Equipment = preload("res://presentation/vehicles/equipment_model.gd")
 const WheeledRig = preload("res://presentation/vehicles/wheeled_rig.gd")
 var viewport: SubViewport
 var assembly: Node3D
@@ -21,13 +22,13 @@ var _selected_type := ""
 var _build_version := 0
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(330, 240)
+	custom_minimum_size = Vector2(300, 174)
 	stretch = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_default_cursor_shape = Control.CURSOR_DRAG
 	focus_mode = Control.FOCUS_ALL
 	viewport = SubViewport.new()
-	viewport.size = Vector2i(660, 540)
+	viewport.size = Vector2i(660, 400)
 	viewport.gui_disable_input = true
 	viewport.own_world_3d = true
 	viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
@@ -57,9 +58,46 @@ func _ready() -> void:
 
 func prepare_models() -> void:
 	if not is_instance_valid(vehicle_view):
-		vehicle_view = VehicleView.new()
+		vehicle_view = Node3D.new()
+		vehicle_view.name = "LocalUnit"
 		assembly.add_child(vehicle_view)
-		vehicle_view.set_process(false)
+
+func selected_carrier() -> String:
+	return str(_mount_target.get("carrierId", "crawler"))
+
+func _rebuild_unit() -> void:
+	prepare_models()
+	for child in vehicle_view.get_children():
+		vehicle_view.remove_child(child)
+		child.queue_free()
+	var crawler := selected_carrier() == "crawler"
+	var trailer_type := "cargo"
+	for carrier: Dictionary in _player.get("carriers", []):
+		if str(carrier.id) == selected_carrier():
+			trailer_type = str(carrier.get("type", "cargo"))
+	vehicle_view.add_child(WheeledRig.build_player() if crawler else WheeledRig.build_trailer(trailer_type))
+	for module: Dictionary in _player.get("modules", []):
+		if str(module.get("mount", {}).get("carrierId", "crawler")) != selected_carrier():
+			continue
+		var model := Equipment.build(str(module.type))
+		vehicle_view.add_child(model)
+		_place_module(model, str(module.type), module.mount)
+	for carrier: Dictionary in _player.get("carriers", []):
+		if str(carrier.id) == selected_carrier():
+			for entry: Dictionary in carrier.get("attachments", []):
+				var model := AttachmentView.build(str(entry.type))
+				vehicle_view.add_child(model)
+				model.position = VehicleView.TRAILER_SLOTS[clampi(int(entry.slot), 0, 2)]
+	_fit_size = 11.0 if crawler else 8.0
+	_target = Vector3(0, 1.7 if crawler else 1.2, 0)
+	_apply_view()
+
+func _place_module(model: Node3D, type: String, mount: Dictionary) -> void:
+	var slot := int(mount.get("slot", 0))
+	var crawler := selected_carrier() == "crawler"
+	model.position = Vector3(0, 1.25, 3.85) if type == "bumper" else VehicleView.SLOTS[clampi(slot, 0, 11)] if crawler else VehicleView.TRAILER_SLOTS[clampi(slot, 0, 2)]
+	model.rotation.y = 0.0
+	model.set_meta("mount", mount.duplicate())
 
 func set_active(value: bool) -> void:
 	_active = value
@@ -70,59 +108,42 @@ func set_active(value: bool) -> void:
 
 func show_module(type: String) -> void:
 	_selected_type = type
-	_fit_size = 13.0 + _player.get("carriers", []).size() * 6.0
 	if is_instance_valid(selected):
+		selected.get_parent().remove_child(selected)
 		selected.queue_free()
 	selected = null
-	if _player.get("modules", []).any(func(module: Dictionary) -> bool: return module.type == type):
+	if type == "walkerTrailer" or (type == "bumper" and selected_carrier() != "crawler"):
 		_apply_view()
 		return
-	var model_name := "walker_trailer" if type == "walkerTrailer" else "weapon_" + type
-	selected = WheeledRig.build_trailer() if type == "walkerTrailer" else SourceModel.instantiate(model_name)
+	if _player.get("modules", []).any(func(module: Dictionary) -> bool: return module.type == type and module.get("mount", {}).get("carrierId", "crawler") == selected_carrier()):
+		_apply_view()
+		return
+	var mount := _preview_mount()
+	if int(mount.get("slot", -1)) < 0:
+		return
+	selected = Equipment.build(type)
 	assembly.add_child(selected)
-	if type == "walkerTrailer":
-		selected.position = Vector3(0, 0, -7.2 - _player.get("carriers", []).size() * 5.6)
-		_fit_size = 19.0 + _player.get("carriers", []).size() * 6.0
-	else:
-		var mount := _preview_mount()
-		var crawler: bool = mount.get("carrierId", "crawler") == "crawler"
-		var slot := int(mount.get("slot", 0))
-		if crawler:
-			selected.position = Vector3(0, 1.25, 3.85) if type == "bumper" else VehicleView.SLOTS[clampi(slot, 0, 11)]
-		else:
-			var trailer_index := 0
-			for index in _player.get("carriers", []).size():
-				if _player.carriers[index].id == mount.carrierId:
-					trailer_index = index
-			selected.position = Vector3(0, 0, -7.2 - trailer_index * 5.6) + VehicleView.TRAILER_SLOTS[clampi(slot, 0, 2)]
-		selected.rotation.y = 0.0 if type == "bumper" else atan2(selected.position.x, selected.position.z)
-		selected.set_meta("mount", mount)
-	selected.scale = Vector3.ONE
+	_place_module(selected, type, mount)
 	_apply_view()
 
 func set_mount_target(mount: Dictionary) -> void:
+	var changed := str(mount.get("carrierId", "crawler")) != selected_carrier()
 	_mount_target = mount.duplicate()
+	if changed:
+		_rebuild_unit()
 	if not _selected_type.is_empty():
-		show_module(_selected_type)
+		show_attachment(_selected_type.trim_prefix("attachment:")) if _selected_type.begins_with("attachment:") else show_module(_selected_type)
 
 func _preview_mount() -> Dictionary:
 	if _selected_type == "bumper":
 		return {"carrierId": "crawler", "slot": 12}
-	if not _mount_target.is_empty():
-		return _mount_target
-	var carriers: Array = _player.get("carriers", []).duplicate()
-	carriers.append({"id": "crawler", "slotCount": 12})
-	for carrier: Dictionary in carriers:
-		for slot_index in int(carrier.get("slotCount", 3)):
-			if not _player.get("modules", []).any(func(module: Dictionary) -> bool: return module.get("mount", {}) == {"carrierId": carrier.id, "slot": slot_index}):
-				return {"carrierId": carrier.id, "slot": slot_index}
-	return {"carrierId": "crawler", "slot": 0}
+	return _mount_target if not _mount_target.is_empty() else {"carrierId": "crawler", "slot": 0}
 
 func reset_view() -> void:
 	yaw = 0.75
 	pitch = 0.52
 	zoom = 1.0
-	_fit_size = 13.0 + _player.get("carriers", []).size() * 6.0
+	_fit_size = 11.0 if selected_carrier() == "crawler" else 8.0
 	_apply_view()
 
 func _apply_view() -> void:
@@ -153,11 +174,24 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 
 func show_build(player: Dictionary) -> void:
-	prepare_models()
-	_player = player
+	_player = player.duplicate(true)
 	_build_version += 1
-	vehicle_view.apply_player_state(player, _build_version)
-	var trailers: int = player.get("carriers", []).size()
-	_fit_size = 13.0 + trailers * 6.0
-	_target = Vector3(0, 2, -trailers * 3.0)
-	_apply_view()
+	_rebuild_unit()
+
+func show_attachment(type: String) -> void:
+	if is_instance_valid(selected):
+		selected.get_parent().remove_child(selected)
+		selected.queue_free()
+	selected = null
+	_selected_type = "attachment:" + type
+	if selected_carrier() == "crawler":
+		return
+	for carrier: Dictionary in _player.get("carriers", []):
+		if str(carrier.id) == selected_carrier() and carrier.get("attachments", []).any(func(item: Dictionary) -> bool: return item.type == type):
+			return
+	var mount := _preview_mount()
+	if int(mount.get("slot", -1)) < 0:
+		return
+	selected = AttachmentView.build(type)
+	assembly.add_child(selected)
+	_place_module(selected, type, mount)

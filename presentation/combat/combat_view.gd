@@ -21,10 +21,13 @@ var _animation: Dictionary = {}
 var _last_elapsed := 0.0
 var _projectile_age: Dictionary = {}
 var _soldier_free: Dictionary = {}
+var tracers: Node3D
 
 
 func setup(runtime: Node3D, vehicle: Node3D) -> void:
 	_vehicle = vehicle
+	tracers = preload("res://presentation/combat/fx/bullet_tracers.gd").new()
+	add_child(tracers)
 	SourceModel.preload_models()
 	for model_name in ENEMY_MODELS + PROJECTILE_MODELS + ["pickup_salvage", "pickup_fuel"]:
 		var capacity := 512 if model_name.begins_with("projectile") or model_name.begins_with("pickup") else 110
@@ -47,6 +50,7 @@ func setup(runtime: Node3D, vehicle: Node3D) -> void:
 
 func set_warmup_visible(enabled: bool) -> void:
 	_warmup = enabled
+	tracers.set_warmup(enabled, _vehicle.global_position + Vector3.UP * 2.0)
 	_mines.set_warmup(enabled, _vehicle.global_position + Vector3.UP * 1.5)
 	if enabled:
 		for pool in _pools.values():
@@ -65,6 +69,8 @@ func apply_state(data: Dictionary) -> void:
 		return
 	if int(data.get("generation", 0)) != _generation:
 		_generation = int(data.get("generation", 0))
+		if is_instance_valid(tracers):
+			tracers.reset()
 		_animation.clear()
 		_projectile_age.clear()
 		_soldier_free.clear()
@@ -75,6 +81,8 @@ func apply_state(data: Dictionary) -> void:
 			_effects.reset_effects()
 	var elapsed := float(data.get("elapsed", 0.0))
 	var delta := maxf(0.0, elapsed - _last_elapsed)
+	if is_instance_valid(tracers):
+		tracers.advance(delta)
 	_last_elapsed = elapsed
 	if is_instance_valid(_effects):
 		_effects.sync_state(data, delta)
@@ -138,6 +146,10 @@ func apply_state(data: Dictionary) -> void:
 
 
 func on_event(event: Dictionary) -> void:
+	if event.get("kind", "") == "bullet_segment":
+		if not _warmup:
+			tracers.segment(event)
+		return
 	if not is_instance_valid(_effects):
 		return
 	_effects.on_event(event)

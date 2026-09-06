@@ -32,9 +32,10 @@ func _run() -> void:
 			var p: Dictionary = context.props[index]
 			var actual := {"id": p.id, "kind": p.kind, "x": p.position.x, "z": p.position.z, "radius": p.radius, "hp": p.hp, "salvage": p.salvage, "village_id": p.get("village_id")}
 			compare(actual, fixture.props[index], label + " prop")
-		compare(context.groups.size(), fixture.groups.size(), label + " group count")
-		for index in mini(context.groups.size(), fixture.groups.size()):
-			_node(context.groups[index], fixture.groups[index], label + " group " + str(index))
+		var original_groups: Array = context.groups.filter(func(group: Node) -> bool: return not group.get_meta("military_detail", false))
+		compare(original_groups.size(), fixture.groups.size(), label + " animation group count")
+		for index in mini(original_groups.size(), fixture.groups.size()):
+			_node(original_groups[index], fixture.groups[index], label + " group " + str(index))
 		compare(context.ambient_animators.size(), fixture.animators.size(), label + " animator count")
 		for index in mini(context.ambient_animators.size(), fixture.animators.size()):
 			for key in fixture.animators[index]:
@@ -91,6 +92,20 @@ func _node(actual: Node3D, expected: Dictionary, label: String) -> void:
 		compare(actual.mesh == Primitives.meshes.get(key), true, label + " exact primitive/material " + key)
 		compare(actual.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON, definition.cast, label + " cast shadow")
 		compare(not actual.mesh.surface_get_material(0).disable_receive_shadows, definition.receive, label + " receive shadow")
+	if actual.has_node("MilitaryStructure"):
+		var batch := actual.get_node("MilitaryStructure") as MeshInstance3D
+		compare(batch.mesh.get_surface_count() > 0, true, label + " batched geometry exists")
+		var static_fixture: Dictionary = expected.duplicate()
+		static_fixture.children = expected.children.filter(func(child: Dictionary) -> bool: return child.mesh != null)
+		var moving_fixtures: Array = expected.children.filter(func(child: Dictionary) -> bool: return child.mesh == null)
+		var moving_nodes: Array = actual.get_children().filter(func(child: Node) -> bool: return child != batch)
+		compare(actual.get_child_count(), 1 + moving_fixtures.size(), label + " static pieces merged and moving roots retained")
+		for index in mini(moving_nodes.size(), moving_fixtures.size()):
+			_node(moving_nodes[index], moving_fixtures[index], label + "/moving/" + str(index))
+		var expected_bounds := _fixture_bounds(static_fixture, Transform3D.IDENTITY, true)
+		compare(batch.mesh.get_aabb().position.distance_to(expected_bounds.position) < 0.002, true, label + " batch keeps geometry origin")
+		compare(batch.mesh.get_aabb().size.distance_to(expected_bounds.size) < 0.002, true, label + " batch keeps geometry dimensions")
+		return
 	compare(actual.get_child_count(), expected.children.size(), label + " hierarchy count")
 	for index in mini(actual.get_child_count(), expected.children.size()):
 		_node(actual.get_child(index), expected.children[index], label + "/" + str(index))
@@ -106,3 +121,35 @@ func _buffers() -> void:
 			var vertex: Vector3 = arrays[Mesh.ARRAY_VERTEX][index]
 			compare([vertex.x, vertex.y, vertex.z], recipe.attributes.position.slice(index * 3, index * 3 + 3), recipe.name + " source vertex", 0.000001)
 		compare(Array(arrays[Mesh.ARRAY_INDEX]), recipe.indices, recipe.name + " source winding")
+
+func _fixture_bounds(node: Dictionary, parent: Transform3D, skip_root: bool = false) -> AABB:
+	var transform := parent if skip_root else parent * preload("res://presentation/combat/source_animation.gd").matrix(node.matrix)
+	var points: Array[Vector3] = []
+	if node.mesh != null:
+		var recipe: Dictionary = node.mesh
+		var args: Dictionary = recipe.parameters
+		var shape := "box"
+		var dimensions: Array = []
+		match str(recipe.shape):
+			"BoxGeometry": dimensions = [args.width, args.height, args.depth]
+			"CylinderGeometry":
+				shape = "cylinder"
+				dimensions = [args.radiusTop, args.radiusBottom, args.height, args.radialSegments]
+			"ConeGeometry":
+				shape = "cone"
+				dimensions = [args.radius, args.height, args.radialSegments]
+			"IcosahedronGeometry":
+				shape = "sphere"
+				dimensions = [args.radius]
+		var key := shape
+		for dimension in dimensions: key += ":%.6f" % float(dimension)
+		key += ":" + str(recipe.material)
+		var mesh: Mesh = Primitives.meshes[key]
+		for vertex: Vector3 in mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]: points.append(transform * vertex)
+	for child: Dictionary in node.children:
+		var bounds := _fixture_bounds(child, transform)
+		points.append(bounds.position)
+		points.append(bounds.end)
+	var result := AABB(points[0], Vector3.ZERO) if not points.is_empty() else AABB()
+	for point: Vector3 in points: result = result.expand(point)
+	return result

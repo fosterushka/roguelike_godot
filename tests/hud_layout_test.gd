@@ -22,7 +22,7 @@ func _run() -> void:
 	hud.ability_selected.connect(func(index: int) -> void: actions.append("select:%d" % index))
 	hud.ability_requested.connect(func() -> void: actions.append("activate"))
 	hud.get_node("Screen").set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	for dimensions in [Vector2(960, 600), Vector2(1280, 800), Vector2(1920, 1080)]:
+	for dimensions in [Vector2(960, 540), Vector2(1280, 720), Vector2(1920, 1080)]:
 		hud.get_node("Screen").size = dimensions
 		await process_frame
 		await process_frame
@@ -33,6 +33,7 @@ func _run() -> void:
 		_check(hotbar.size.x <= 340 and hotbar.size.y <= 56 and absf(hotbar.get_center().x - dimensions.x / 2) < 1, "Three ability slots remain compact and centered at " + str(dimensions))
 		_check(not stats.intersects(hotbar) and not hotbar.intersects(map) and not stats.intersects(map), "Stats, ability slots and minimap do not overlap at " + str(dimensions))
 		_check(map.end.x <= dimensions.x and map.end.y <= dimensions.y and stats.end.x < dimensions.x, "Bottom UI fits viewport at " + str(dimensions))
+	_check(DisplayServer.is_touchscreen_available() or not hud.touch_controls.visible, "Compact desktop never exposes touch controls over telemetry")
 	_check(hud._hotbar.get_child_count() == 3 and hud._hotbar_buttons.size() == 3, "Hotbar has exactly three direct action slots without an Activate column")
 	_check(hud._health_label.get_global_position().y < hud._fuel_label.get_global_position().y and hud._fuel_label.get_global_position().y < hud._speed_label.get_global_position().y and hud._speed_label.get_global_position().y < hud._coins_label.get_global_position().y, "Hull, fuel, speed and scrap form a vertical stats stack")
 	_check(hud._run_label.text == "WAVE 2/6 · HOSTILES 7" and not hud._run_label.text.contains("XP"), "Top status contains only wave and enemies")

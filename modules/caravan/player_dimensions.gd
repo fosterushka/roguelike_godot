@@ -1,5 +1,10 @@
 extends RefCounted
 
+# Authored pickup is normalized to the existing 0.88 tire radius.
+const MODEL_SCALE := 0.88 / 0.705
+const WHEEL_HALF_TRACK := 1.4396 * MODEL_SCALE
+const WHEEL_FRONT_Z := 1.98 * MODEL_SCALE
+
 const BASE_SCALE := 0.88
 const MAX_SCALE := 1.42
 const BASE_RADIUS := 3.5

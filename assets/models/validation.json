@@ -1,0 +1,207 @@
+{
+  "blender_version": "5.2.1 LTS",
+  "checks": [
+    {
+      "file": "/Users/fosterushka/Work/vibe/roguelike_godot/new-game-project/assets/models/player/player.blend",
+      "blend": {
+        "objects": 5,
+        "vertices": 1428,
+        "faces": 1954,
+        "triangles": 1954,
+        "materials": [
+          "Pickup_Palette"
+        ],
+        "bounds": [
+          [
+            -1.7935999631881714,
+            -3.299999952316284,
+            0.004999995231628418
+          ],
+          [
+            1.7935999631881714,
+            3.305000066757202,
+            2.5490000247955322
+          ]
+        ]
+      },
+      "obj": {
+        "objects": 5,
+        "vertices": 1428,
+        "faces": 1954,
+        "triangles": 1954,
+        "materials": [
+          "Pickup_Palette"
+        ],
+        "bounds": [
+          [
+            -1.7935999631881714,
+            -3.299999952316284,
+            0.004999850410968065
+          ],
+          [
+            1.7935999631881714,
+            3.305000066757202,
+            2.5490000247955322
+          ]
+        ]
+      },
+      "max_bounds_error": 1.448206603527069e-07,
+      "status": "passed"
+    },
+    {
+      "file": "/Users/fosterushka/Work/vibe/roguelike_godot/new-game-project/assets/models/trees/birch_tree.blend",
+      "blend": {
+        "objects": 1,
+        "vertices": 420,
+        "faces": 549,
+        "triangles": 732,
+        "materials": [
+          "birch_bark",
+          "birch_bark_marks",
+          "birch_leaf",
+          "birch_leaf_light"
+        ],
+        "bounds": [
+          [
+            -2.892988920211792,
+            -1.6624999046325684,
+            -0.028452681377530098
+          ],
+          [
+            2.7840073108673096,
+            1.3889998197555542,
+            8.671000480651855
+          ]
+        ]
+      },
+      "obj": {
+        "objects": 1,
+        "vertices": 420,
+        "faces": 732,
+        "triangles": 732,
+        "materials": [
+          "birch_bark",
+          "birch_bark_marks",
+          "birch_leaf",
+          "birch_leaf_light"
+        ],
+        "bounds": [
+          [
+            -2.892988920211792,
+            -1.6624995470046997,
+            -0.028453050181269646
+          ],
+          [
+            2.7840070724487305,
+            1.389000415802002,
+            8.670999526977539
+          ]
+        ]
+      },
+      "max_bounds_error": 9.5367431640625e-07,
+      "status": "passed"
+    },
+    {
+      "file": "/Users/fosterushka/Work/vibe/roguelike_godot/new-game-project/assets/models/trees/dead_tree.blend",
+      "blend": {
+        "objects": 1,
+        "vertices": 222,
+        "faces": 149,
+        "triangles": 368,
+        "materials": [
+          "dead_cut_wood",
+          "dead_wood"
+        ],
+        "bounds": [
+          [
+            -1.7649515867233276,
+            -0.6247854232788086,
+            -0.028452681377530098
+          ],
+          [
+            1.8098945617675781,
+            0.6979880332946777,
+            6.409200668334961
+          ]
+        ]
+      },
+      "obj": {
+        "objects": 1,
+        "vertices": 222,
+        "faces": 368,
+        "triangles": 368,
+        "materials": [
+          "dead_cut_wood",
+          "dead_wood"
+        ],
+        "bounds": [
+          [
+            -1.7649519443511963,
+            -0.6247850060462952,
+            -0.028453050181269646
+          ],
+          [
+            1.8098950386047363,
+            0.697987973690033,
+            6.409201145172119
+          ]
+        ]
+      },
+      "max_bounds_error": 4.76837158203125e-07,
+      "status": "passed"
+    },
+    {
+      "file": "/Users/fosterushka/Work/vibe/roguelike_godot/new-game-project/assets/models/trees/spruce_tree.blend",
+      "blend": {
+        "objects": 1,
+        "vertices": 531,
+        "faces": 366,
+        "triangles": 866,
+        "materials": [
+          "spruce_bark",
+          "spruce_bark_dark",
+          "spruce_needles",
+          "spruce_needles_light"
+        ],
+        "bounds": [
+          [
+            -1.9089000225067139,
+            -1.9088999032974243,
+            -0.028452681377530098
+          ],
+          [
+            1.9997999668121338,
+            1.8179999589920044,
+            7.585000038146973
+          ]
+        ]
+      },
+      "obj": {
+        "objects": 1,
+        "vertices": 531,
+        "faces": 866,
+        "triangles": 866,
+        "materials": [
+          "spruce_bark",
+          "spruce_bark_dark",
+          "spruce_needles",
+          "spruce_needles_light"
+        ],
+        "bounds": [
+          [
+            -1.9089000225067139,
+            -1.9088999032974243,
+            -0.028453050181269646
+          ],
+          [
+            1.9997999668121338,
+            1.818000078201294,
+            7.585000991821289
+          ]
+        ]
+      },
+      "max_bounds_error": 9.5367431640625e-07,
+      "status": "passed"
+    }
+  ]
+}

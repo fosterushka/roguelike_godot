@@ -50,9 +50,9 @@ func _run() -> void:
 	var hints := hud._pause_overlay.find_child("ControlTips", true, false) as Label
 	_check(hints != null and hints.text.contains("WASD") and not hints.text.contains("Restart"), "Control tips live inside pause and do not advertise R restart")
 	_check(hud._gameplay.find_child("ControlTips", true, false) == null, "Gameplay has no persistent control-tip strip")
-	_click(hud._language_button.get_global_rect().get_center())
-	_check(Locale.language == "ru" and restart.text == "НАЧАТЬ ЗАНОВО", "Pause language button switches visible controls to Russian")
-	_check(hints.text.contains("Движение"), "Control tips switch immediately")
+	_check(_button(hud._pause_overlay, "OPTIONS") != null, "Pause exposes the options entry")
+	hud.set_language("ru")
+	_check(Locale.language == "ru" and restart.text == "НАЧАТЬ ЗАНОВО", "Language switch updates pause controls")
 	var config := ConfigFile.new()
 	_check(config.load(Locale.settings_path) == OK and config.get_value("interface", "language") == "ru", "Language selection is persisted")
 	Locale._initialized = false

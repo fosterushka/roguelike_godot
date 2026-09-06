@@ -14,6 +14,7 @@ var _prop_records: Dictionary = {}
 var _prop_colliders: Dictionary = {}
 var _collision_nodes: Array[StaticBody3D] = []
 var _roads: Node3D
+var _prop_offsets: Dictionary = {}
 
 
 func _ready() -> void:
@@ -135,6 +136,8 @@ func set_prop_destroyed(id: String, destroyed: bool) -> bool:
 		if visual == null:
 			continue
 		var transform := Transform3D(Basis.from_scale(Vector3.ZERO), Vector3.ZERO) if destroyed else SourceModel._transform(part.matrix)
+		if not destroyed:
+			transform.origin += Vector3(_prop_offsets.get(id, Vector3.ZERO))
 		visual.multimesh.set_instance_transform(int(part.instance), transform)
 	for index in prop.get("meshes", []):
 		source_world.get_child(int(index)).visible = not destroyed
@@ -142,6 +145,64 @@ func set_prop_destroyed(id: String, destroyed: bool) -> bool:
 		var collider: StaticBody3D = _prop_colliders[id]
 		collider.collision_layer = 0 if destroyed else 1
 	return true
+
+func set_prop_position(id: String, point: Vector3) -> void:
+	if not _prop_records.has(id):
+		return
+	var prop: Dictionary = _prop_records[id]
+	var origin := Vector3(prop.position.x, 0, prop.position.z)
+	var offset := Vector3(point.x, 0, point.z) - origin
+	offset.y = TerrainSurface.height_at(point.x, point.z) - TerrainSurface.height_at(origin.x, origin.z)
+	var previous: Vector3 = _prop_offsets.get(id, Vector3.ZERO)
+	_prop_offsets[id] = offset
+	for node: Node3D in prop.get("visual_nodes", []):
+		node.position += offset - previous
+	for index in prop.get("meshes", []):
+		source_world.get_child(int(index)).position += offset - previous
+	if _prop_colliders.has(id):
+		_prop_colliders[id].position += offset - previous
+	set_prop_destroyed(id, false)
+
+func clone_prop(id: String, reusable: Node3D = null) -> Node3D:
+	if not _prop_records.has(id):
+		return null
+	var prop: Dictionary = _prop_records[id]
+	var pivot := reusable if reusable != null else Node3D.new()
+	var origin := Vector3(prop.position.x, 0, prop.position.z)
+	var base := origin + Vector3(_prop_offsets.get(id, Vector3.ZERO))
+	pivot.transform = Transform3D(Basis.IDENTITY, base)
+	var pieces: Array[Dictionary] = []
+	for part: Dictionary in prop.get("parts", []):
+		var source := source_world.get_child(int(part.mesh)) as MultiMeshInstance3D
+		if source == null:
+			continue
+		var pose := SourceModel._transform(part.matrix)
+		pose.origin -= origin
+		pieces.append({"mesh": source.multimesh.mesh, "transform": pose, "material": source.material_override})
+	for source: Node3D in prop.get("visual_nodes", []):
+		_clone_pieces(source, base, pieces)
+	for index in prop.get("meshes", []):
+		_clone_pieces(source_world.get_child(int(index)), base, pieces)
+	while pivot.get_child_count() < pieces.size():
+		pivot.add_child(MeshInstance3D.new())
+	for index in pivot.get_child_count():
+		var mesh: MeshInstance3D = pivot.get_child(index)
+		mesh.visible = index < pieces.size()
+		if mesh.visible:
+			mesh.mesh = pieces[index].mesh
+			mesh.material_override = pieces[index].material
+			mesh.transform = pieces[index].transform
+	pivot.visible = true
+	return pivot
+
+func _clone_pieces(node: Node3D, base: Vector3, pieces: Array[Dictionary]) -> void:
+	if node is MeshInstance3D and node.mesh != null:
+		var pose := node.global_transform
+		pose.origin -= base
+		pieces.append({"mesh": node.mesh, "transform": pose, "material": node.material_override})
+	for child: Node in node.get_children():
+		if child is Node3D:
+			_clone_pieces(child, base, pieces)
 
 
 func rebuild_from_context(context: RefCounted) -> bool:
@@ -155,6 +216,7 @@ func rebuild_from_context(context: RefCounted) -> bool:
 	_collision_nodes.clear()
 	_prop_records.clear()
 	_prop_colliders.clear()
+	_prop_offsets.clear()
 	source_world.free()
 	source_world = next_world
 	add_child(source_world)

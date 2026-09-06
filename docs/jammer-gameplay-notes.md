@@ -1,13 +1,23 @@
-# Jammer gameplay
+# Глушитель: механика и отображение
 
-A living hostile jammer affects the player within 48 metres in the XZ plane. Dead, suppressed/staggered, friendly and nonhostile emitters cannot jam. The nearest eligible emitter supplies the field position and ID; ties resolve by ID. Existing 55% weapon/radar range remains compatible.
+Сверено с кодом 2026-09-06. Правила: `modules/combat/jammer_rules.gd`. В обычных волнах `jammerTruck` появляется начиная со второй.
 
-Proximity strength is full within 24m and smoothly falls to zero at 48m. Entry uses a 0.45s exponential time constant; cosmetic exit uses 0.25s. Outside the field, or when its source dies/is staggered, gameplay effects stop immediately even while the visual strength finishes fading.
+Живой враждебный источник действует в радиусе 48 м по плоскости XZ. Мёртвый, оглушённый или дружественный источник исключается. Выбирается ближайший, при равенстве расстояния используется ID. Полная сила достигается в 24 м, затем плавно снижается к краю.
 
-Inputs are normally attenuated by at most 10%. After 1.6s exposure, a 0.5s pulse repeats every 3.2s. Its 0.12s smooth edges ramp the throttle/steering multiplier as low as -0.9 at full strength. Weak outer-zone interference never reverses controls. Handbrake remains usable. Only input is affected: velocity, body transforms, scale and suspension are not flipped or shaken.
+Вход сглаживается с постоянной 0.45 с, визуальный выход с 0.25 с. Игровое воздействие прекращается сразу при выходе или отключении источника. Дальность оружия уменьшается до 55%; разброс игрока достигает ±6° и не расходует боевой RNG.
 
-Player projectile aim receives deterministic horizontal dispersion up to ±6 degrees multiplied by strength. The shot-index/seed hash does not consume the existing combat RNG. Enemy aim is unchanged. Pause, result and restart clear interference; resuming starts a fresh warning interval.
+После 1.6 с воздействия начинается импульс на 0.5 с; период 3.2 с. Газ и руль могут получить множитель до -0.9 при полной силе. Слабая внешняя зона не инвертирует управление. Ручник остаётся доступным. Пауза, завершение и перезапуск очищают воздействие.
 
-Snapshot fields on player: `jammed`, `jammer_strength`, `jammer_reversed`, `jammer_pulse`, `jammer_source_id`, `jammer_source_position`, `jammer_radius`. Source metadata persists during the short cosmetic exit fade and clears afterward.
+## Единое состояние
 
-`jammer_gameplay_test.gd` passes 120 checks in headless Godot: 30/60/144Hz timing, proximity, all source-disable conditions, real projectile trajectories, real controller input, unchanged rigid transforms, runtime synchronization, pause and reset. Existing enemy AI, advanced combat, vehicle response, combat and session flow suites pass (5/5 strict suites). No graphical rendering or subjective driving-feel claim is made.
+Снимок игрока передаёт `jammed`, `jammer_strength`, `jammer_reversed`, `jammer_pulse`, `jammer_source_id`, `jammer_source_position`, `jammer_radius`. UI и эффекты читают эти поля и не рассчитывают свою игровую зону.
+
+- `presentation/combat/fx/jammer_field.gd`: три волны над источником и шесть искр у машины; объекты переиспользуются и учитывают глубину сцены.
+- `presentation/ui/jammer_overlay.gd`: индикатор сигнала и EN/RU-предупреждение. Текст инверсии зависит от `jammer_reversed`.
+- `presentation/ui/jammer_vhs.gd` и шейдер: экранные полосы, шум и смещение цвета под HUD. В активной зоне интенсивность не ниже 0.32. Слой пропускает ввод и прогревается при загрузке.
+
+Экранный слой также рисует погодную влагу: исчезновение помех не обязано скрыть его при дожде. Влажность нарастает за 1.8 с и спадает за 6 с; погода и ветер задают целевую силу.
+
+## Проверка
+
+Автоматические сценарии: `tests/jammer_gameplay_test.gd`, `jammer_feedback_test.gd`; захват: `tests/jammer_vhs_capture.tscn`. Старые примеры: [без помех](validation/jammer-vhs-clear.png), [внутри](validation/jammer-vhs-inside.png), [край](validation/jammer-vhs-edge.png), [снаружи](validation/jammer-vhs-outside.png). Они не подтверждают внешний вид всех последующих изменений UI или производительность боя. В этом обновлении документации повторный графический запуск не проводился.

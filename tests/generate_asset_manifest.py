@@ -3,10 +3,11 @@ import json
 from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent
+RUNTIME_EXTENSIONS = {".png", ".webp", ".wav", ".ogg", ".glb", ".gdshader", ".gdshaderinc", ".ttf", ".otf"}
 resources = [
     "res://" + str(path.relative_to(root))
     for path in (root / "assets").rglob("*")
-    if path.is_file() and path.suffix not in (".import", ".uid")
+    if path.is_file() and path.suffix in RUNTIME_EXTENSIONS and "models" not in path.relative_to(root / "assets").parts
 ]
 resources += ["res://" + str(path.relative_to(root)) for path in (root / "presentation").rglob("*") if path.suffix in (".gdshader", ".gdshaderinc")]
 data = [

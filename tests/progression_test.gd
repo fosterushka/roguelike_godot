@@ -2,6 +2,7 @@ extends SceneTree
 
 const Progression = preload("res://modules/progression/progression.gd")
 const Model = preload("res://modules/combat/combat_model.gd")
+const Expedition = preload("res://modules/meta/expedition.gd")
 const Rules = preload("res://modules/progression/upgrade_rules.gd")
 const Store = preload("res://infrastructure/persistence/profile_store.gd")
 var checks := 0
@@ -49,11 +50,13 @@ func run() -> void:
 	choices = progression.get_shop_state().choices
 	progression.buy_upgrade(choices[0].id)
 	check(model.player.pending_upgrades == 0, "second batch completes")
-	check(progression.buy_upgrade("trailer") and model.player.carriers.size() == 1, "first trailer unlocked LV2")
-	check(not progression.buy_upgrade("trailer"), "second trailer requires LV4")
+	check(not progression.buy_upgrade("trailer") and model.player.carriers.is_empty(), "Levels do not create free wagons")
 	model.player.level = 4
-	check(progression.buy_upgrade("trailer") and not progression.buy_upgrade("trailer"), "second trailer and hard cap2")
-	check(progression.buy_upgrade("module:counterDroneJammer") and model.player.modules[-1].mount.carrierId == "trailer-1", "new mount prefers trailer")
+	check(not progression.buy_upgrade("trailer"), "Raid armory never bypasses the paid garage")
+	var expedition := Expedition.new(progression)
+	progression.profile.expedition.credits = 1000
+	check(expedition.caravan.buy_wagon("cargo") and expedition.begin_run(model.player), "A bought selected wagon deploys from the persistent garage")
+	check(progression.buy_upgrade("module:counterDroneJammer") and model.player.modules[-1].mount.carrierId == expedition.caravan.wagons[0].id, "New module uses the actual purchased wagon identity")
 	check(Rules.apply_trait("expandedWeaponRack", model.player, model.weapons) and model.player.weapon_capacity == 5, "expanded rack adds fifth")
 	check(Rules.apply_trait("expandedWeaponRack", model.player, model.weapons) and model.player.weapon_capacity == 6 and not Rules.apply_trait("expandedWeaponRack", model.player, model.weapons), "rack max6")
 	var ids: Array = []

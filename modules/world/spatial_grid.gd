@@ -4,6 +4,14 @@ const CELL_SIZE := 32.0
 var buckets: Dictionary = {}
 var maximum_radius := 0.0
 
+func remove(record: Dictionary) -> void:
+	var point: Vector3 = record.position
+	var key := Vector2i(floori(point.x / CELL_SIZE), floori(point.z / CELL_SIZE))
+	if buckets.has(key):
+		buckets[key].erase(record)
+		if buckets[key].is_empty():
+			buckets.erase(key)
+
 func insert(record: Dictionary) -> void:
 	var point: Vector3 = record.position
 	var key := Vector2i(floori(point.x / CELL_SIZE), floori(point.z / CELL_SIZE))

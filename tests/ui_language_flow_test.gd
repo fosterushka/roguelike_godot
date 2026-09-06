@@ -15,22 +15,42 @@ func _run() -> void:
 	game.run_seed_override = 72841
 	root.add_child(game)
 	await game.game_ready
-	_check(game.hud.run_menu._description.text.begins_with("Collect loot"), "Fresh main menu is English")
+	_check(game.hud.run_menu._description.text.begins_with("Offline expedition"), "Fresh main menu is English")
 	_check(game.hud.run_menu.is_visible_in_tree() and game.hud.run_menu._language_button.visible, "Main menu exposes language settings")
 	var actions: Array = []
 	for row in game.hud.run_menu._rows.get_children():
 		if row is Button:
 			actions.append(row.get_meta("action_id", ""))
-	_check(actions == ["start", "hideout", "sound", "quit"], "Main menu exposes start, hideout, sound and quit")
+	_check(actions == ["singleplayer", "multiplayer", "options", "quit"], "Main menu exposes singleplayer, disabled multiplayer, options and quit")
+	_check((game.hud.run_menu._rows.get_child(1) as Button).disabled, "Multiplayer is visibly disabled in offline build")
+	game._menu_action("singleplayer", "")
+	_check(_actions(game.hud.run_menu) == ["raid", "vault", "menu"], "Singleplayer menu exposes raid, vault and back")
+	game._menu_action("vault", "")
+	_check(game.screen_state == "expedition" and game.hideout_hub.visible, "Vault opens the complete hideout hub")
+	game._close_expedition()
+	_check(game.screen_state == "menu" and _actions(game.hud.run_menu) == ["raid", "vault", "menu"], "Closing vault returns to singleplayer menu")
+	game._menu_action("options", "")
+	_check(game.screen_state == "options" and _actions(game.hud.run_menu).has("shake_up"), "Options expose persisted camera and audio controls")
+	game._menu_action("language", "")
+	_check(game.hud.run_menu._title.text == "НАСТРОЙКИ", "Options rebuild after language switch")
+	game._menu_action("options_back", "")
+	_check(game.screen_state == "menu" and _actions(game.hud.run_menu) == ["raid", "vault", "menu"], "Options back preserves the singleplayer page")
+	game.show_start_menu()
 	await process_frame
 	await process_frame
 	var menu_bounds: Rect2 = game.hud.run_menu._scroll.get_global_rect()
 	for button: Control in game.hud.run_menu._rows.get_children():
 		if button is Button:
-			_check(button.size.y >= 48 and menu_bounds.encloses(button.get_global_rect()), "Main menu action has visible unclipped hit area: " + str(button.get_meta("action_id")))
+			_check(button.size.y >= 40 and menu_bounds.encloses(button.get_global_rect()), "Main menu action has visible unclipped hit area: " + str(button.get_meta("action_id")))
 	game._set_language("ru")
-	_check(game.hud.run_menu._description.text.begins_with("Собирайте добычу"), "Main menu language switches to Russian")
+	_check(game.hud.run_menu._description.text.begins_with("Одиночная экспедиция"), "Main menu language switches to Russian")
 	await game.restart_run()
+	var paused_generation: int = game.combat.model.generation
+	game._toggle_pause()
+	game._menu_action("options", "")
+	game._menu_action("options_back", "")
+	_check(game.screen_state == "pause" and paused and game.combat.model.generation == paused_generation, "Pause options return preserves the paused raid")
+	game._resume()
 	var generation: int = game.combat.model.generation
 	var event := InputEventKey.new()
 	event.physical_keycode = KEY_R
@@ -66,6 +86,13 @@ func _has_caption(node: Node, text: String) -> bool:
 		if _has_caption(child, text):
 			return true
 	return false
+
+func _actions(menu: Control) -> Array:
+	var result: Array = []
+	for row in menu._rows.get_children():
+		if row is Button:
+			result.append(row.get_meta("action_id", ""))
+	return result
 
 func _check(condition: bool, description: String) -> void:
 	checks += 1

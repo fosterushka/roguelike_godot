@@ -43,7 +43,7 @@ static func _build(variant: int, small: bool) -> ArrayMesh:
 	var vertices := PackedVector3Array()
 	var normals := PackedVector3Array()
 	var colors := PackedColorArray()
-	var palette := [Color("777767"), Color("7c7b70"), Color("827c6c"), Color("71786b"), Color("898273"), Color("7c8073")]
+	var palette := [Color("706d60"), Color("746e5d"), Color("847b66"), Color("62685d"), Color("8b8370"), Color("72775f")]
 	var base: Color = palette[variant % palette.size()]
 	for level in rings.size() - 1:
 		for side in SIDES:
@@ -90,7 +90,7 @@ static func _triangle(a: Vector3, b: Vector3, c: Vector3, small: bool, base: Col
 		var swap := b
 		b = c
 		c = swap
-	var shade := base.lerp(Color("919777"), clampf(normal.y, 0.0, 1.0) * 0.3)
+	var shade := base.lerp(Color("a49572"), clampf(normal.y, 0.0, 1.0) * 0.24)
 	shade = shade.darkened(random.randf_range(0.0, 0.09))
 	for point: Vector3 in [a, b, c]:
 		vertices.append(Vector3(point.x * 0.68, (point.y - 0.46) * 0.98, point.z * 0.68) if small else point)

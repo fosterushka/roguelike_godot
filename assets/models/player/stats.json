@@ -1,0 +1,44 @@
+{
+  "origin": "authored_from_scratch",
+  "source": "no external mesh",
+  "style": "military_utility_pickup",
+  "output": {
+    "objects": 5,
+    "unique_meshes": 2,
+    "vertices": 1428,
+    "triangles": 1954,
+    "materials": 1,
+    "wheel_count": 4
+  },
+  "palette_pixels": [
+    32,
+    32
+  ],
+  "dimensions_blender_xyz": [
+    3.5872,
+    6.605,
+    2.544
+  ],
+  "wheel_centers": [
+    [
+      -1.4396,
+      -1.98,
+      0.71
+    ],
+    [
+      1.4396,
+      -1.98,
+      0.71
+    ],
+    [
+      -1.4396,
+      1.98,
+      0.71
+    ],
+    [
+      1.4396,
+      1.98,
+      0.71
+    ]
+  ]
+}

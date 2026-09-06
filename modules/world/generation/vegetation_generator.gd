@@ -54,6 +54,7 @@ func _grove(center: Vector2, radius: float, attempts: int, species: int, size: f
 		if not _open(point, CROWNS[variation] * scale):
 			continue
 		var rotation := Vector3(0, _random.between(0, TAU), _random.between(-0.025, 0.025))
+		rotation.z = 0.0 # Keep trunks upright while preserving the seeded random sequence.
 		var dimensions := Vector3(scale, scale * _random.between(0.88, 1.15), scale)
 		var part: Dictionary = _context.append(SPECIES[variation], Vector3(point.x, 0, point.y), rotation, dimensions)
 		if part.instance < 0:

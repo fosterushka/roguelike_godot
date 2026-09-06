@@ -16,7 +16,12 @@ func _run() -> void:
 	_check(paused and game.screen_state == "menu", "Preparation does not start simulation")
 	_check(game.preparation.completed == game.preparation.total, "Every manifest resource loaded")
 	_check(game.preparation.errors.is_empty(), "Resource preparation succeeds")
-	_check(game.preparation.procedural_models == ["ArmoredWheelVehicle", "SteeringWheelTrailer"], "Both procedural wheel rigs enter covered preparation")
+	_check(game.preparation.procedural_models.size() == 17 and game.preparation.procedural_models.has("ArmoredWheelVehicle"), "Pickup, all six wagon types and all ten attachments enter covered preparation")
+	for type: String in preload("res://modules/caravan/wagon_catalog.gd").TYPES:
+		_check(game.preparation.procedural_models.has("SteeringWheelTrailer_" + type), "Wagon material variant is prepared: " + type)
+	for type: String in preload("res://modules/caravan/wagon_catalog.gd").ATTACHMENTS:
+		_check(game.preparation.procedural_models.has("Attachment_" + type), "Attachment geometry and materials are prepared: " + type)
+	_check(game.preparation.manifest.data.has("res://data/destruction_rules.json"), "Destruction rules are validated before gameplay")
 	var stats: Dictionary = game.combat.model.player.duplicate(true)
 	var camera_transform: Transform3D = game.camera.global_transform
 	var size: float = game.camera.size

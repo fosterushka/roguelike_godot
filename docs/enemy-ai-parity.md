@@ -1,32 +1,73 @@
-# Enemy AI and managed-wave parity
+# Враги и волны
 
-The second combat pass implements the source behavior in focused modules:
+Сверено с кодом 2026-09-06. Источник характеристик: `modules/combat/enemy_catalog.gd`; очередь: `modules/combat/wave_rules.gd`.
 
-- `enemy_ai.gd`: infantry approach/retreat and heading smoothing, gated deployment interpolation, bomber contact detonation, bike/buggy steering and throttles, drone strafe/altitude/evasion, keep steering, exact shot origins/leading/cadence and contact damage. Ground AI consumes world steering before motion and collision resolution after motion.
-- `drone_evasion.gd`: source seeded dodge sampling, bullet threat prediction, vertical miss checks, per-kind chance/reaction/cooldown/duration, persistent dodge direction, same-projectile reroll prevention.
-- `priority_rules.gd`: source repair target selection, healing bounds and beam/pulse data, jammer radius/interruption semantics. Priority factories, one-per-kind cap and minelayer movement/drop logic exist for explicit callers. They are not injected into managed waves.
-- `spawn_rules.gd`: infantry 62..92, other mobile NPCs 85..260, Leviathan 180..650 distance bands; 48 random placement attempts, source radial fallback searches, safe-radius margin, 0.25-second failed placement retry, 84 soldier/12 drone/10 vehicle caps. Optional visibility query receives the point and returns whether it is outside the view; world collision validation remains separate.
-- `leviathan_rules.gd`: five individual component targets with exact source anchor transforms, radii, health and phases. Parent hull is untargetable and undamageable. Pod destruction exposes both drives; drives expose core; only core death rewards and kills the parent. Exposed components participate in auto-fire, direct projectile collision, splash, focus, and wet rail chains. Attacks use actual component origins. Core begins with 2.8-second cooldown, telegraphs for 0.9, then emits eight radial rockets and five aimed rockets only if the player is acquired.
-- Actual player muzzle origins come from `weapon_origin_query(weapon)` including source `world UP * 0.6`, and weapon range is measured from the mount. Double-shot offsets follow carrier heading. Aim heights are separate from collision-center heights.
+Машины поддержки участвуют в обычных волнах: глушитель с волны 2, ремонтник и минный заградитель с волны 3. Старое описание их как неактивных относится к раннему переносу и больше не действует. Обычный `keep` доступен через API, но не входит в очередь волн.
 
-## Active behavior versus dormant source code
+## Реестр: 16 `kind`, 7 классов `type`
 
-`src/client/contexts/combat/wave-lifecycle.ts:createWaveLifecycleState` unconditionally initializes `managed: true`. `director.ts:updateDirector` returns early for this mode, updating threat and boss flags without choosing pressure events. The managed queue explicitly contains infantry, drones, bikes/buggies and the final-wave Leviathan. Repository search found no assignment setting managed false. The migrated run therefore preserves these six managed waves and their threat calculation. It does not enable the legacy pressure/recovery director, mandatory crawler sequence or priority spawn selection on top of the active mode.
+Идентификатор для `spawn_enemy` находится в колонке `kind`. Названия берутся из локализации; HUD переводит их в верхний регистр.
 
-The priority vehicle constructors/support code remain callable and tested because they are part of the original catalog. Their natural pressure-director spawns and Jammer Rocket deflection/wobble/premature detonation are dormant in the active source mode. No new gameplay spawn path was invented to activate them.
+| kind | type | EN / RU в интерфейсе | HP | Поведение и атака | Обычное появление |
+|---|---|---|---:|---|---|
+| `rifleman` | `soldier` | Rifleman / Стрелок | 12 | Держит дистанцию, пули, урон 5 | Волны 1–6; охрана заводов; помощь поселению |
+| `ak` | `soldier` | AK gunner / Стрелок АК | 16 | Более быстрый стрелок, пули, урон 6 | Волны 2–6; охрана заводов может быть уже в начале |
+| `bazooka` | `soldier` | Bazooka soldier / Базучник | 24 | Ракеты, урон 24 | Волны 3–6 |
+| `bomber` | `soldier` | Bomber / Подрывник | 72 | Бежит к игроку, самоподрыв с уроном 46 при дистанции ≤3.4; получает 72% обычного урона | Волны 2–6 |
+| `shooter` | `drone` | Shooter drone / Боевой дрон | 48 | Летает, уклоняется и стреляет пулями с уроном 7 | Волны 2–6 |
+| `kamikaze` | `drone` | Kamikaze drone / Дрон-камикадзе | 38 | Преследует; самоподрыв с уроном 38 при дистанции ≤4.2; подавитель игрока блокирует подрыв | Волны 3–6 |
+| `bike` | `bike` | Raider bike / Мотоцикл рейдеров | 34 | Быстро таранит; контактный урон 7/с, огнестрельной атаки нет | Волны 1–6; конвой с первой волны |
+| `buggy` | `buggy` | Raider buggy / Багги рейдеров | 96 | Пули с уроном 15; контактный урон 12/с; отъезжает при сближении | Волны 2–6; конвой может появиться на первой волне |
+| `keep` | `keep` | Raider crawler / Краулер рейдеров | 320 | Обычный тяжёлый краулер: ракеты с уроном 23, контактный урон 16/с | В активной очереди/активностях отсутствует; доступен через API |
+| `garrison_1` | `garrison` | Raider foundry I / Завод рейдеров I | 370 | Неподвижный завод, пули с уроном 9; усиливает соседних врагов | Сеть мира с начала заезда |
+| `garrison_2` | `garrison` | Raider foundry II / Завод рейдеров II | 480 | Завод II, пули с уроном 11, стреляет чаще | Сеть мира с начала заезда |
+| `garrison_3` | `garrison` | Raider foundry III / Завод рейдеров III | 590 | Завод III, пули с уроном 13, стреляет ещё чаще | Сеть мира с начала заезда |
+| `jammerTruck` | `priorityVehicle` | Jammer truck / Грузовик помех | 150 | Пули с уроном 10; подавляет игрока в радиусе 48 м, ухудшает точность, кратко инвертирует управление | Волны 2–6, по одному |
+| `repairCrawler` | `priorityVehicle` | Repair crawler / Ремонтный краулер | 185 | Не стреляет; ремонтирует подходящую повреждённую цель на 12 HP/с в пределах 36 м | Волны 3–6, по одному |
+| `minelayer` | `priorityVehicle` | Minelayer / Минный заградитель | 165 | Пули с уроном 9; при движении оставляет мину каждые 4 с | Волны 3–6, по одному |
+| `leviathan` | `keep` | Leviathan / Левиафан | 1270 | Босс из пяти поражаемых частей, три фазы, ракеты/пулемёт/залпы; контактный урон 28/с | Волна 6 |
 
-## Verification
+Урон приведён до брони игрока и временных множителей. Лимит обычного спавна не означает, что враг недоступен через тестовый/API-вызов.
 
-Godot 4.7.2 headless, clean logs:
+Источники: `modules/combat/enemy_catalog.gd:4`, `enemy_ai.gd:97`, `priority_rules.gd:3`, `wave_rules.gd:11`, `modules/world/activities/foundry_system.gd:85`, `activity_system.gd:212`, `presentation/ui/ui_locale.gd:3` и `data/localization/ui.json`.
 
-- `tests/enemy_ai_test.gd`: 46/46 assertions, including exact movement/throttle numbers, steering callback, fog/contact behavior, predictive dodge, repair selection/rate, minelayer drops, jammer suppression, component gates/anchors/attacks/rewards, spawn bands/retry/caps, muzzle-range integration and pause.
-- `tests/advanced_combat_test.gd`: 103/103.
-- `tests/combat_test.gd`: 35/35; the old parent-damage test now explicitly rejects hull damage and destroys individual components.
-- `tests/integration_test.gd`: 16/16.
-- `tests/world_gameplay_test.gd`: 39/39.
+## Фактическая очередь волн
 
-This validates the model and integration. Rendered animation, component mesh visibility and audio matching belong to the presentation checks.
+| kind | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---:|---:|---:|---:|---:|---:|
+| rifleman | 8 | 10 | 12 | 14 | 16 | 18 |
+| ak | 0 | 3 | 4 | 5 | 6 | 7 |
+| bazooka | 0 | 0 | 1 | 2 | 2 | 3 |
+| bomber | 0 | 1 | 2 | 3 | 4 | 5 |
+| shooter | 0 | 1 | 1 | 2 | 2 | 3 |
+| kamikaze | 0 | 0 | 1 | 1 | 2 | 2 |
+| bike | 1 | 1 | 1 | 2 | 2 | 2 |
+| buggy | 0 | 1 | 1 | 1 | 1 | 2 |
+| leviathan | 0 | 0 | 0 | 0 | 0 | 1 |
+| jammerTruck | 0 | 1 | 1 | 1 | 1 | 1 |
+| repairCrawler | 0 | 0 | 1 | 1 | 1 | 1 |
+| minelayer | 0 | 0 | 1 | 1 | 1 | 1 |
+| **Всего** | **9** | **18** | **26** | **33** | **38** | **46** |
 
-## Remaining exactness boundaries
+Источник: `modules/combat/wave_rules.gd:11`. В JSON используются композиционные ключи `shooterDrone`, `kamikazeDrone`, `vehicles`; это не дополнительные `kind` фабрики.
 
-The optional offscreen spawn visibility query is not intrinsically a camera projection in the model; a presentation caller must supply it. The injected random generator is Godot's generator, not a source-JavaScript random-stream replay. Aggregate entity/projectile/pickup limits remain bounded by the existing Godot pool budgets. Source screen-space focus picking remains different from ground-point selection unless presentation supplies that behavior. Protocol status cleanup after removing and re-adding prerequisite modules within a mark lifetime remains a reconciliation task. Dormant Jammer Rocket interference and the legacy pressure director are recorded above rather than enabled in the active run.
+## Не отдельные типы врагов
+
+- Части Левиафана имеют `type=bossComponent`: `missilePod` (220 HP, ракеты 34), `gunPod` (190 HP, пули 13), `leftDrive`/`rightDrive` (по 250 HP), `core` (360 HP, круговой залп из 8 ракет и при захвате цели дополнительный веер из 5). Первые две части доступны в фазе 0, приводы в фазе 1, ядро в фазе 2. Источник: `leviathan_rules.gd:7,59,88`.
+- Охрана заводов: существующие `rifleman`/`ak`, всего до2+tier около каждого завода. Задание помощи поселению создаёт трёх `rifleman`. Конвой использует `buggy`+`bike`. У этих экземпляров `counts_toward_wave=false`, это варианты происхождения, а не новые типы.
+- `scavengerRoute` является нейтральной активностью, не создаёт враждебный `kind`.
+- Мины создаются отдельно через `mine_rules.gd:15`: урон30, радиус2.35, вооружение0.9с, жизнь25с, до6 на владельца/36 всего; могут перейти на сторону игрока после взлома. Это опасные объекты, не враги фабрики.
+- Молнии, торнадо, грязь, граница мира и снаряды также не являются типами врагов.
+- `drone`, `raider`, `boss` — имена визуальных моделей. Визуальный alias `fortress` поддержан рендерером, но отсутствует среди разрешённых `spawn_enemy(kind)`.
+
+## AI и интеграция
+
+- `enemy_ai.gd`: дистанция пехоты, подрывники, движение машин, стрельба и контактный урон. Направление обхода препятствий и разрешение столкновений передаются через callbacks мира.
+- `drone_evasion.gd`: прогноз угрозы от снарядов, высота, уклонение и запрет повторной попытки против того же снаряда.
+- `priority_rules.gd`: ремонт подходящей цели в пределах 36 м, размещение мин при движении; поле глушителя описано в [справочнике помех](jammer-gameplay-notes.md).
+- `spawn_rules.gd`: безопасное размещение и лимиты. `spawn_visibility_query` сообщает, находится ли точка вне камеры; это внешний callback, а не встроенная проекция модели.
+- `leviathan_rules.gd`: отдельно выбираемые части босса. Корпус не получает урон; уничтожение ядра завершает босса и выдаёт награду один раз.
+
+Лимиты всей модели: 110 врагов, 140 снарядов, 72 подбираемых объекта. Мировые охранники с `counts_toward_wave=false` не задерживают завершение волны. Маршрутные враги с `activity_route_controlled=true` обходят обычный AI.
+
+Как расширить каталог: [enemy-factory.md](enemy-factory.md). Проверки поведения находятся в `tests/enemy_ai_test.gd`, `enemy_factory_test.gd`, `advanced_combat_test.gd`. Обновление документации не является новым прогоном тестов. Читаемость моделей и анимаций проверяется отдельно в графическом запуске.

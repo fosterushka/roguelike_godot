@@ -1,9 +1,10 @@
 extends RefCounted
 
 const Terrain = preload("res://modules/caravan/terrain_surface.gd")
-const FRONT_Z := 2.35
-const REAR_Z := -2.35
-const HALF_TRACK := 2.4
+const Dimensions = preload("res://modules/caravan/player_dimensions.gd")
+const FRONT_Z := Dimensions.WHEEL_FRONT_Z
+const REAR_Z := -Dimensions.WHEEL_FRONT_Z
+const HALF_TRACK := Dimensions.WHEEL_HALF_TRACK
 const RADIUS := 0.88
 const ANCHORS := [Vector3(-HALF_TRACK, 0, FRONT_Z), Vector3(HALF_TRACK, 0, FRONT_Z), Vector3(-HALF_TRACK, 0, REAR_Z), Vector3(HALF_TRACK, 0, REAR_Z)]
 const TRAVEL := 0.48

@@ -178,7 +178,7 @@ func _update(record: Dictionary, delta: float) -> void:
 		return
 	if record.type in ["settlementDistress", "foundryDispatch"]:
 		if not record.participant_ids.is_empty() and _living(record).is_empty():
-			finish(record, "completed", "Raiders cleared")
+			_finish_combat_activity(record, "Raiders cleared")
 		elif record.type == "foundryDispatch" and not _living(record).is_empty():
 			record.position = _living(record)[0].position
 		return
@@ -187,10 +187,10 @@ func _update(record: Dictionary, delta: float) -> void:
 	if record.type == "raiderSupplyConvoy":
 		var living := _living(record)
 		if living.is_empty():
-			finish(record, "completed", "Convoy destroyed")
+			_finish_combat_activity(record, "Convoy destroyed")
 			return
 		for enemy in living:
-			if float(enemy.get("stagger_remaining", 0.0)) > 0.0:
+			if float(enemy.get("stagger_remaining", 0.0)) > 0.0 or enemy.get("airborne", false) or float(enemy.get("tornado_recovery", 0.0)) > 0.0:
 				return
 		record.route_progress = minf(total, record.route_progress + 6.2 * delta)
 		for index in record.participant_ids.size():
@@ -296,6 +296,13 @@ func _living(record: Dictionary) -> Array:
 		if not enemy.is_empty() and not enemy.dead:
 			result.append(enemy)
 	return result
+
+func _finish_combat_activity(record: Dictionary, reason: String) -> void:
+	var natural_only: bool = not record.participant_ids.is_empty()
+	for id in record.participant_ids:
+		var enemy: Dictionary = participants.get(id, {})
+		natural_only = natural_only and not enemy.get("death_rewarded", true)
+	finish(record, "failed" if natural_only else "completed", "Storm destroyed the target" if natural_only else reason)
 
 func finish(record: Dictionary, outcome: String, reason: String = "") -> bool:
 	if record.is_empty() or record.state not in Rules.LIVE:

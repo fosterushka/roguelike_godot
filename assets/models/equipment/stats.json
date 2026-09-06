@@ -1,0 +1,127 @@
+{
+  "turret": {
+    "triangles": 412,
+    "meshes": 2,
+    "materials": 1
+  },
+  "repair_station": {
+    "triangles": 288,
+    "meshes": 1,
+    "materials": 1
+  },
+  "ammo_feed": {
+    "triangles": 176,
+    "meshes": 1,
+    "materials": 1
+  },
+  "cargo_rack": {
+    "triangles": 200,
+    "meshes": 1,
+    "materials": 1
+  },
+  "salvage_arm": {
+    "triangles": 212,
+    "meshes": 1,
+    "materials": 1
+  },
+  "fuel_pump": {
+    "triangles": 312,
+    "meshes": 1,
+    "materials": 1
+  },
+  "anti_tank_station": {
+    "triangles": 412,
+    "meshes": 2,
+    "materials": 1
+  },
+  "anti_air_station": {
+    "triangles": 520,
+    "meshes": 2,
+    "materials": 1
+  },
+  "armor_panels": {
+    "triangles": 284,
+    "meshes": 1,
+    "materials": 1
+  },
+  "reinforced_hitch": {
+    "triangles": 192,
+    "meshes": 1,
+    "materials": 1
+  },
+  "akTurret": {
+    "triangles": 412,
+    "meshes": 2,
+    "materials": 1
+  },
+  "armor": {
+    "triangles": 284,
+    "meshes": 1,
+    "materials": 1
+  },
+  "assaultRifle": {
+    "triangles": 412,
+    "meshes": 2,
+    "materials": 1
+  },
+  "bazooka": {
+    "triangles": 412,
+    "meshes": 2,
+    "materials": 1
+  },
+  "bumper": {
+    "triangles": 104,
+    "meshes": 1,
+    "materials": 1
+  },
+  "counterDroneJammer": {
+    "triangles": 388,
+    "meshes": 1,
+    "materials": 1
+  },
+  "flamethrower": {
+    "triangles": 400,
+    "meshes": 2,
+    "materials": 1
+  },
+  "grenadeLauncher": {
+    "triangles": 412,
+    "meshes": 2,
+    "materials": 1
+  },
+  "mineHacker": {
+    "triangles": 388,
+    "meshes": 1,
+    "materials": 1
+  },
+  "minigun": {
+    "triangles": 952,
+    "meshes": 2,
+    "materials": 1
+  },
+  "missileRack": {
+    "triangles": 420,
+    "meshes": 2,
+    "materials": 1
+  },
+  "radar": {
+    "triangles": 332,
+    "meshes": 1,
+    "materials": 1
+  },
+  "railgun": {
+    "triangles": 436,
+    "meshes": 2,
+    "materials": 1
+  },
+  "treasury": {
+    "triangles": 216,
+    "meshes": 1,
+    "materials": 1
+  },
+  "workshop": {
+    "triangles": 288,
+    "meshes": 1,
+    "materials": 1
+  }
+}

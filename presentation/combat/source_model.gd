@@ -1,5 +1,8 @@
 extends RefCounted
 
+const MilitaryEnemies = preload("res://presentation/combat/military_enemies.gd")
+const MilitaryPeople = preload("res://presentation/combat/military_people.gd")
+const MilitaryFieldProps = preload("res://presentation/combat/military_field_props.gd")
 const PaintedMaterials = preload("res://presentation/style/painted_materials.gd")
 const SourceAnimation = preload("res://presentation/combat/source_animation.gd")
 
@@ -44,6 +47,28 @@ static func instantiate(model_name: String) -> Node3D:
 
 
 static func _prepare(model_name: String) -> void:
+	if _templates.has(model_name):
+		return
+	if MilitaryEnemies.has_model(model_name):
+		_templates[model_name] = MilitaryEnemies.templates(model_name)
+		return
+	if MilitaryPeople.has_model(model_name):
+		_templates[model_name] = MilitaryPeople.templates(model_name)
+		return
+	if MilitaryFieldProps.has_model(model_name):
+		var parts: Array = MilitaryFieldProps.templates(model_name).duplicate()
+		# Keep only the existing support signal effects, not the legacy solid model.
+		if model_name in ["airdrop", "heal_cart"]:
+			_prepare_legacy(model_name)
+			for old: Dictionary in _templates[model_name]:
+				if old.bindings.any(func(binding: Dictionary) -> bool: return binding.role in ["airdrop_aura", "airdrop_flareRoot", "airdrop_flareCore", "airdrop_flareGlow", "airdrop_signalBeam", "heal_cart_aura"]):
+					parts.append(old)
+		_templates[model_name] = parts
+		return
+	_prepare_legacy(model_name)
+
+
+static func _prepare_legacy(model_name: String) -> void:
 	if _templates.has(model_name):
 		return
 	var file := "res://data/visual_models/%s.json" % model_name

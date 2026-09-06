@@ -1,6 +1,8 @@
 shader_type spatial;
 render_mode unshaded, cull_disabled, depth_draw_always;
 uniform vec3 base_color : source_color = vec3(.35);
+uniform sampler2D base_texture : source_color, filter_nearest;
+uniform bool has_base_texture = false;
 uniform float elapsed = 0.0;
 uniform float burn = 0.0;
 uniform float opacity = 1.0;
@@ -20,7 +22,9 @@ void fragment(){
  float cracks=smoothstep(.91,.995,wave)*smoothstep(.05,.42,burn)*(1.0-smoothstep(.72,1.0,burn));
  float light=.34+max(0.0,dot(normalize(view_normal),normalize(vec3(.3,.8,.45))))*.66;
  vec3 char_color=mix(vec3(.055,.047,.042),vec3(.13,.075,.035),noise*.55);
- vec3 color=mix(base_color*light,char_color,char_amount);
+ vec3 surface_color=base_color;
+ if(has_base_texture){surface_color*=texture(base_texture,UV).rgb;}
+ vec3 color=mix(surface_color*light,char_color,char_amount);
  color+=vec3(2.3,.34,.025)*cracks*(.75+sin(elapsed*14.0+noise*8.0)*.25);
  ALBEDO=color;
  ALPHA=opacity;

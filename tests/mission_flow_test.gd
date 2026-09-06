@@ -23,7 +23,7 @@ func _run() -> void:
 	await game.game_ready
 	for node: Node in [game, game.session_flow, game.combat, game.world, game.vehicle]:
 		node.set_physics_process(false)
-	check(game.expedition.snapshot().quests.size() == 120, "Actual Main loads all 120 contracts")
+	check(game.expedition.snapshot().quests.size() == 126, "Actual Main loads all 126 contracts")
 	check(game.expedition.action("accept", "road_keeper"), "Accept persistent hunting contract before raid")
 	check(game.expedition.action("accept", "first_delivery"), "Accept persistent delivery contract before raid")
 	game._menu_action("start", "")

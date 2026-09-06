@@ -4,6 +4,12 @@ const PATH := "res://data/missions.json"
 const CATEGORIES := ["salvage", "hunting", "rescue", "convoy", "driving", "arsenal", "exploration", "survival", "extraction", "elite"]
 const ITEMS := {"scrap": 1, "circuit": 1, "relic": 2, "repair_kit": 1, "fuel_cell": 1, "weapon_parts": 2}
 const METRICS := {
+	"crew_rescued": {"ru": "Люди спасены в рейде", "en": "People rescued in raid"},
+	"crew_repair_hp": {"ru": "Прочность восстановлена экипажем", "en": "Hull repaired by crew"},
+	"crew_extracted": {"ru": "Живые сотрудники вывезены", "en": "Living crew extracted"},
+	"rescued_crew_extracted": {"ru": "Новые спасённые вывезены живыми", "en": "New survivors extracted alive"},
+	"wagons_extracted": {"ru": "Целые прицепы вывезены", "en": "Surviving wagons extracted"},
+	"crew_lost": {"ru": "Сотрудники погибли или остались в рейде", "en": "Crew killed or left behind"},
 	"kills": {
 		"ru": "Враги уничтожены",
 		"en": "Enemies defeated"

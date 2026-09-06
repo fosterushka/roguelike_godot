@@ -1,5 +1,6 @@
 extends RefCounted
 
+const Support = preload("res://modules/progression/support_effects.gd")
 const RadarRules = preload("res://modules/progression/radar_rules.gd")
 const Rules = preload("res://modules/progression/upgrade_rules.gd")
 const Store = preload("res://infrastructure/persistence/profile_store.gd")
@@ -43,6 +44,8 @@ func reset_run() -> void:
 	var defaults := {"weight": 12.0, "modules": [], "carriers": [], "core_upgrades": {"motor": 0, "armor": 0, "fuel": 0}, "speed_mult": 1.0, "motor_speed_mult": 1.0, "motor_acceleration_mult": 1.0, "fuel_burn_mult": 1.0, "weapon_capacity": 4, "base_weapon_capacity": 4, "replacement_cursor": 0, "unlocked_weapons": ["assaultRifle", "bazooka"], "protocols": [], "active_protocols": [], "selected_sidegrades": _selected_sidegrades.duplicate(), "pending_upgrades": 0, "mobility_upgrades": 0, "momentum_decay_mult": 1.0, "evolution_tier": 1, "radar_range": 0.0, "radar_level": 0, "growth_total": 0}
 	for key: String in defaults:
 		p[key] = defaults[key]
+	for key: String in ["convoy_mass", "inactive_module_mass", "convoy_fuel_factor", "convoy_weapon_slots"]:
+		p.erase(key)
 	for weapon: Dictionary in model.weapons:
 		weapon.mount = _next_mount(weapon.type)
 		p.modules.append(weapon)
@@ -75,10 +78,17 @@ func step(delta: float) -> void:
 	_passive_timer += maxf(delta, 0)
 	if _passive_timer >= 4:
 		_passive_timer = 0
-		var workshops := 0
 		for module: Dictionary in p.modules:
-			workshops += int(module.type == "workshop")
-		p.hp = minf(p.max_hp, p.hp + workshops * 2)
+			if module.type != "workshop" or module.get("disabled", false):
+				continue
+			var target: Dictionary = p
+			var id := str(module.get("mount", {}).get("carrierId", "crawler"))
+			if id != "crawler":
+				for carrier: Dictionary in p.carriers:
+					if carrier.id == id:
+						target = carrier
+			if not target.get("dead", false):
+				target.hp = minf(target.max_hp, target.hp + 2)
 	_refresh_protocols()
 
 func _mark_dirty() -> void:
@@ -104,10 +114,14 @@ func _next_mount(type: String) -> Dictionary:
 	var carriers: Array = p.carriers.duplicate()
 	carriers.append({"id": "crawler", "slotCount": 12})
 	for carrier: Dictionary in carriers:
+		if carrier.get("dead", false) or not carrier.get("attached", true):
+			continue
 		for slot: int in int(carrier.slotCount):
 			var occupied := false
 			for module: Dictionary in p.modules:
 				occupied = occupied or module.get("mount", {}) == {"carrierId": carrier.id, "slot": slot}
+			for attachment: Dictionary in carrier.get("attachments", []):
+				occupied = occupied or int(attachment.slot) == slot
 			if not occupied:
 				return {"carrierId": carrier.id, "slot": slot}
 	return {}
@@ -128,6 +142,11 @@ func _valid_mount(type: String, mount: Dictionary, replacing: Dictionary = {}) -
 	var slots := 12 if carrier_id == "crawler" else 0
 	for carrier: Dictionary in model.player.carriers:
 		if str(carrier.id) == carrier_id:
+			if carrier.get("dead", false) or not carrier.get("attached", true):
+				return false
+			for attachment: Dictionary in carrier.get("attachments", []):
+				if int(attachment.slot) == slot:
+					return false
 			slots = int(carrier.slotCount)
 	if slot < 0 or slot >= slots:
 		return false
@@ -152,41 +171,45 @@ func _add_module(type: String, requested_mount: Dictionary = {}) -> bool:
 		model.weapons.append(module)
 		if not model.player.unlocked_weapons.has(type):
 			model.player.unlocked_weapons.append(type)
-	match type:
-		"armor":
-			model.player.max_hp += 55
-			model.player.hp += 55
-			model.player.armor = minf(0.6, model.player.armor + 0.05)
-		"bumper": model.player.has_bumper = true
-		"radar":
-			model.player.radar_level = 1
-			model.player.radar_range = RadarRules.range_at(1)
-			module.def.range = model.player.radar_range
-		"counterDroneJammer": model.player.counter_drone_jammer = true
+	Support.install(model.player, module)
 	_refresh_protocols()
 	return true
 
 func _equip(type: String, requested_mount: Dictionary = {}) -> bool:
 	var definition: Dictionary = catalog.modules.get(type, {})
 	var p: Dictionary = model.player
-	if not definition.has("projectile") or not p.unlocked_weapons.has(type) or _installed(type):
+	if not definition.has("projectile") or not p.unlocked_weapons.has(type) or (_installed(type) and requested_mount.is_empty()):
 		return false
 	var cost := 18 + roundi(definition.weight * 4)
 	if p.coins < cost:
 		return false
 	var mount := _next_mount(type) if requested_mount.is_empty() else requested_mount
-	if model.weapons.size() < p.weapon_capacity and not mount.is_empty():
-		if not _add_module(type, mount):
+	var index := -1
+	if not requested_mount.is_empty():
+		for candidate in model.weapons.size():
+			if model.weapons[candidate].get("mount", {}) == requested_mount:
+				index = candidate
+		# An empty explicit slot cannot displace a weapon on another vehicle.
+		if index < 0 and model.weapons.size() >= p.weapon_capacity:
+			return false
+	elif model.weapons.size() >= p.weapon_capacity or mount.is_empty():
+		for offset in model.weapons.size():
+			var candidate := posmod(int(p.replacement_cursor) + offset, model.weapons.size())
+			if not model.weapons[candidate].get("disabled", false):
+				index = candidate
+				break
+		if index < 0:
+			return false
+	if index < 0:
+		if mount.is_empty() or not _add_module(type, mount):
 			return false
 	else:
-		if model.weapons.is_empty():
-			return false
-		var index := posmod(int(p.replacement_cursor), model.weapons.size())
 		var old: Dictionary = model.weapons[index]
-		if not requested_mount.is_empty() and not _valid_mount(type, requested_mount, old):
+		mount = old.mount if requested_mount.is_empty() else requested_mount
+		if not _valid_mount(type, mount, old):
 			return false
 		var module_index: int = p.modules.find(old)
-		var next := {"type": type, "level": 1, "cooldown": 0.1, "def": definition.duplicate(true), "mount": old.mount.duplicate() if requested_mount.is_empty() else requested_mount.duplicate()}
+		var next := {"type": type, "level": 1, "cooldown": 0.1, "def": definition.duplicate(true), "mount": mount.duplicate()}
 		p.modules[module_index] = next
 		model.weapons[index] = next
 		p.weight += definition.weight - old.def.weight
@@ -199,6 +222,8 @@ func _remove(index: int) -> bool:
 	if index < 0 or index >= model.weapons.size() or model.weapons.size() <= 1:
 		return false
 	var weapon: Dictionary = model.weapons[index]
+	if weapon.get("disabled", false):
+		return false
 	model.player.modules.erase(weapon)
 	model.weapons.remove_at(index)
 	model.player.weight = maxf(1, model.player.weight - weapon.def.weight)
@@ -207,12 +232,30 @@ func _remove(index: int) -> bool:
 	_refresh_protocols()
 	return true
 
+func _remove_support(index: int) -> bool:
+	var player: Dictionary = model.player
+	if index < 0 or index >= player.modules.size():
+		return false
+	var module: Dictionary = player.modules[index]
+	if module.def.has("projectile") or module.get("disabled", false):
+		return false
+	module.disabled = true
+	Support.refresh(player)
+	player.modules.remove_at(index)
+	player.weight = maxf(1, player.weight - float(module.def.weight))
+	player.coins += maxi(4, roundi(float(module.def.get("cost", 20)) * 0.4))
+	_refresh_protocols()
+	return true
+
 func _refresh_protocols() -> void:
+	Support.refresh(model.player)
 	model.player.active_protocols = []
+	var active_modules: Array = model.player.modules.filter(func(module: Dictionary) -> bool: return not module.get("disabled", false))
 	for id: String in model.player.protocols:
-		if Rules.protocol_available(catalog.protocols[id], model.player.modules, catalog.moduleBuildProfiles):
+		if Rules.protocol_available(catalog.protocols[id], active_modules, catalog.moduleBuildProfiles):
 			model.player.active_protocols.append(id)
-	model.player.treasury_count = model.player.modules.filter(func(module: Dictionary) -> bool: return module.type == "treasury").size()
+	model.player.treasury_count = active_modules.filter(func(module: Dictionary) -> bool: return module.type == "treasury").size()
+	model.player.counter_drone_jammer = active_modules.any(func(module: Dictionary) -> bool: return module.type == "counterDroneJammer")
 
 func _row(id: String, label: String, description: String, cost: int, reason: String = "") -> Dictionary:
 	return {"id": id, "label": label, "title": label, "description": description, "cost": cost, "enabled": reason.is_empty(), "disabled_reason": reason}
@@ -249,7 +292,7 @@ func _ensure_draft() -> void:
 			break
 	for index: int in _shuffle(range(model.weapons.size())):
 		var weapon: Dictionary = model.weapons[index]
-		if weapon.level < weapon.def.get("maxLevel", 5) and _draft.size() < 3:
+		if not weapon.get("disabled", false) and weapon.level < weapon.def.get("maxLevel", 5) and _draft.size() < 3:
 			_draft_row("draft_weapon:" + str(index), weapon.def.name + " MK " + str(weapon.level + 1), "Raise damage and range while reducing reload time.")
 			break
 	var traits: Array = _shuffle(catalog.levelUpgrades)
@@ -302,7 +345,10 @@ func buy_upgrade(id: String) -> bool:
 				p.unlocked_weapons.append(value)
 				applied = true
 			"draft_module": applied = _add_module(value)
-			"draft_weapon": applied = Rules.upgrade_weapon(model.weapons[int(value)])
+			"draft_weapon":
+				var index := int(value)
+				if index >= 0 and index < model.weapons.size() and not model.weapons[index].get("disabled", false):
+					applied = Rules.upgrade_weapon(model.weapons[index])
 		if not applied:
 			return false
 		if kind == "core":
@@ -316,6 +362,8 @@ func buy_upgrade(id: String) -> bool:
 	if p.pending_upgrades > 0:
 		return false
 	if kind == "radar":
+		if not model.player.modules.any(func(module: Dictionary) -> bool: return module.type == "radar" and not module.get("disabled", false)):
+			return false
 		return value.is_valid_int() and RadarRules.upgrade(p, int(value))
 	if kind == "module":
 		var mount: Dictionary = {}
@@ -330,26 +378,22 @@ func buy_upgrade(id: String) -> bool:
 		var definition: Dictionary = catalog.modules[value]
 		if definition.has("projectile"):
 			return _equip(value, mount)
-		if not definition.get("purchasable", false) or _installed(value) or p.coins < definition.get("cost", 0):
+		if not definition.get("purchasable", false) or (definition.get("unique", false) and _installed(value)) or p.coins < definition.get("cost", 0):
 			return false
 		if _add_module(value, mount):
 			p.coins -= definition.cost
 			return true
 	if kind == "weapon" and value.is_valid_int():
 		var index := int(value)
-		if index >= 0 and index < model.weapons.size():
+		if index >= 0 and index < model.weapons.size() and not model.weapons[index].get("disabled", false):
 			var cost := 22 + int(model.weapons[index].level) * 18
 			if p.coins >= cost and Rules.upgrade_weapon(model.weapons[index]):
 				p.coins -= cost
 				return true
 	if kind == "remove" and value.is_valid_int():
 		return _remove(int(value))
-	if kind == "trailer" and p.carriers.size() < 2 and p.level >= (2 if p.carriers.is_empty() else 4) and p.coins >= 90:
-		p.carriers.append({"id": "trailer-" + str(p.carriers.size() + 1), "type": "walkerTrailer", "slotCount": 3})
-		p.weight += 8
-		p.fuel_burn_mult *= 1.12
-		p.coins -= 90
-		return true
+	if kind == "remove_module" and value.is_valid_int():
+		return _remove_support(int(value))
 	return false
 
 func set_sound_enabled(enabled: bool) -> void:
@@ -406,11 +450,9 @@ func get_shop_state() -> Dictionary:
 			cost = 18 + roundi(definition.weight * 4)
 			if not p.unlocked_weapons.has(type):
 				reason = "Find a blueprint in supplies or level-up choices"
-			elif _installed(type):
-				reason = "Already equipped"
 		elif not definition.get("purchasable", false):
 			reason = "Available as a level-up choice"
-		elif _installed(type):
+		elif definition.get("unique", false) and _installed(type):
 			reason = "Already installed"
 		elif _next_mount(type).is_empty():
 			reason = "No open module mount"
@@ -432,15 +474,17 @@ func get_shop_state() -> Dictionary:
 		row.refund = maxi(4, roundi((18 + weapon.level * 9) * 0.4))
 		row.mount = weapon.mount.duplicate()
 		weapons.append(row)
-	var trailer_reason := ""
-	if p.carriers.size() >= 2:
-		trailer_reason = "Maximum two trailers"
-	elif p.level < (2 if p.carriers.is_empty() else 4):
-		trailer_reason = "Requires level " + str(2 if p.carriers.is_empty() else 4)
-	elif p.coins < 90:
-		trailer_reason = "Need 90 salvage"
-	if p.pending_upgrades > 0:
-		trailer_reason = "Finish the level-up choices"
+	for index in p.modules.size():
+		var module: Dictionary = p.modules[index]
+		if module.def.has("projectile"):
+			continue
+		var row := _row("support:" + str(index), module.def.name, module.def.desc, 0, "")
+		row.remove_id = "remove_module:" + str(index)
+		row.remove_enabled = p.pending_upgrades == 0 and not module.get("disabled", false)
+		row.refund = maxi(4, roundi(float(module.def.get("cost", 20)) * 0.4))
+		row.mount = module.mount.duplicate()
+		weapons.append(row)
+	var trailer_reason := "Buy each wagon in the hideout garage"
 	var protocols: Array = []
 	for id: String in catalog.protocols:
 		var definition: Dictionary = catalog.protocols[id]

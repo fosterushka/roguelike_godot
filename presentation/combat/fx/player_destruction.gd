@@ -52,6 +52,9 @@ func _copy(node: Node3D, inverse: Transform3D, source: Node3D) -> void:
 		part.transform = inverse * node.global_transform
 		part.visible = true
 		part.material_override.set_shader_parameter("base_color", Vector3(color.r, color.g, color.b))
+		var texture: Texture2D = material.albedo_texture if material is StandardMaterial3D else null
+		part.material_override.set_shader_parameter("has_base_texture", texture != null)
+		part.material_override.set_shader_parameter("base_texture", texture)
 		_count += 1
 	for child in node.get_children():
 		if child is Node3D:

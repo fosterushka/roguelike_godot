@@ -1,7 +1,10 @@
 extends RefCounted
 const RandomSource = preload("res://modules/world/activities/source_random.gd")
+const CaseRewards = preload("res://modules/world/activities/case_rewards.gd")
 var world: Node3D
 var random := RandomSource.new()
+var case_random := RandomSource.new()
+var case_generation := 0
 var airdrops: Array[Dictionary] = []
 var heal_carts: Array[Dictionary] = []
 var airdrop_timer := 28.0
@@ -14,6 +17,8 @@ func setup(runtime: Node3D) -> void:
 
 func reset(seed_value: int) -> void:
 	random.seed_run(seed_value ^ 0x44ab7c)
+	case_random.seed_run(seed_value ^ 0x6cc819)
+	case_generation += 1
 	airdrops.clear()
 	heal_carts.clear()
 	events.clear()
@@ -80,17 +85,11 @@ func _update_airdrops(delta: float) -> void:
 			var previous_fuel: float = world.vehicle.fuel
 			world.vehicle.fuel = minf(world.vehicle.max_fuel, world.vehicle.fuel + 32 + player.level * 3)
 			player.fuel = world.vehicle.fuel
-			var locked: Array = []
-			for type: String in world.combat.model._catalog:
-				if world.combat.model._catalog[type].has("projectile") and not player.get("unlocked_weapons", []).has(type):
-					locked.append(type)
-			var blueprint := ""
-			if not locked.is_empty():
-				if not player.has("unlocked_weapons"):
-					player.unlocked_weapons = []
-				blueprint = locked[random.integer(0, locked.size() - 1)]
-				player.unlocked_weapons.append(blueprint)
-			events.append({"kind": "airdrop_claimed", "id": drop.id, "position": drop.position, "target_position": world.vehicle.global_position, "yaw": drop.yaw, "salvage": salvage, "xp": xp, "fuel": world.vehicle.fuel - previous_fuel, "blueprint": blueprint, "blueprint_name": str(world.combat.model._catalog.get(blueprint, {}).get("name", blueprint))})
+			var guaranteed := {"salvage": salvage, "xp": xp, "fuel": world.vehicle.fuel - previous_fuel, "repair": 0.0}
+			var receipt := CaseRewards.award(player, world.combat.model._catalog, world.vehicle, "airdrop", "airdrop:%d:%d" % [case_generation, drop.id], case_random, guaranteed)
+			var winner: Dictionary = receipt.selected
+			var blueprint: String = str(winner.get("type", "")) if winner.kind == "blueprint" else ""
+			events.append({"kind": "airdrop_claimed", "id": drop.id, "position": drop.position, "target_position": world.vehicle.global_position, "yaw": drop.yaw, "salvage": salvage + (int(winner.amount) if winner.kind == "salvage" else 0), "xp": xp + (int(winner.amount) if winner.kind == "xp" else 0), "fuel": world.vehicle.fuel - previous_fuel, "blueprint": blueprint, "blueprint_name": str(winner.get("name", "")) if not blueprint.is_empty() else "", "case": receipt})
 		drop.dead = drop.dead or drop.life <= 0.0
 	airdrops = airdrops.filter(func(drop: Dictionary) -> bool: return not drop.dead)
 
@@ -107,15 +106,16 @@ func _update_healers(delta: float) -> void:
 		cart.position += Vector3(sin(cart.yaw), 0, cos(cart.yaw)) * cart.speed * delta
 		cart.position = cart.position.limit_length(world.PLAYABLE_RADIUS - 3)
 		if cart.position.distance_to(world.vehicle.global_position) < cart.radius + 3.0 and not cart.claimed:
-			var missing: float = world.vehicle.max_health - world.vehicle.health
-			if missing > 0:
-				var amount := minf(missing, cart.heal + world.combat.model.player.level * 5)
-				world.vehicle.health += amount
-				world.combat.model.player.hp = world.vehicle.health
-				cart.claimed = true
-				cart.dead = true
-				healer_timer = random.between(34, 46)
-				events.append({"kind": "healer_claimed", "id": cart.id, "position": cart.position, "target_position": world.vehicle.global_position, "yaw": cart.yaw, "amount": amount})
+			var player: Dictionary = world.combat.model.player
+			var missing: float = maxf(0.0, world.vehicle.max_health - world.vehicle.health)
+			var amount := minf(missing, cart.heal + player.level * 5)
+			world.vehicle.health += amount
+			player.hp = world.vehicle.health
+			cart.claimed = true
+			cart.dead = true
+			healer_timer = random.between(34, 46)
+			var receipt := CaseRewards.award(player, world.combat.model._catalog, world.vehicle, "resource_car", "healer:%d:%d" % [case_generation, cart.id], case_random, {"salvage": 0, "xp": 0, "fuel": 0.0, "repair": amount})
+			events.append({"kind": "healer_claimed", "id": cart.id, "position": cart.position, "target_position": world.vehicle.global_position, "yaw": cart.yaw, "amount": amount, "case": receipt})
 		if cart.life <= 0:
 			cart.dead = true
 			healer_timer = minf(healer_timer, 8)

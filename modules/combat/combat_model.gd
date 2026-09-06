@@ -41,6 +41,9 @@ var enemy_steering_query: Callable
 var weapon_origin_query: Callable
 var spawn_validity_query: Callable
 var spawn_visibility_query: Callable
+var friendly_targets_query: Callable
+var friendly_damage_query: Callable
+var enemy_target_query: Callable
 var elapsed := 0.0
 var intermission := 0.0
 var running := false
@@ -175,6 +178,8 @@ func _update_enemies(delta: float) -> void:
 	for enemy: Dictionary in enemies:
 		if enemy.dead:
 			continue
+		if enemy.get("airborne", false) or float(enemy.get("tornado_recovery", 0.0)) > 0.0:
+			continue
 		var offset: Vector3 = player.position - enemy.position
 		offset.y = 0.0
 		var distance := offset.length()
@@ -207,6 +212,8 @@ func _update_enemies(delta: float) -> void:
 func _update_weapons(delta: float) -> void:
 	jammer.step(player, enemies, delta)
 	for weapon: Dictionary in weapons:
+		if weapon.get("disabled", false):
+			continue
 		weapon.cooldown -= delta * player.fire_rate * (1.45 if road_fury.overdrive_remaining > 0.0 else 1.0) * (1.16 if player.overdrive_feed and absf(player.speed) > 4.0 else 1.0)
 		if weapon.cooldown > 0.0:
 			continue
@@ -297,6 +304,7 @@ func fire_projectile(kind: String, team: String, origin: Vector3, aim: Vector3, 
 func _update_projectiles(delta: float) -> void:
 	for shot: Dictionary in projectiles:
 		shot.previous = shot.position
+		var trace_start: Vector3 = shot.position
 		shot.life -= delta
 		shot.velocity.y -= shot.gravity * delta
 		if shot.kind == "rocket":
@@ -315,6 +323,8 @@ func _update_projectiles(delta: float) -> void:
 		shot.x = shot.position.x
 		shot.z = shot.position.z
 		shot.dead = hit or shot.life <= 0.0
+		if shot.kind == "bullet" and trace_start.distance_squared_to(shot.position) > 0.000001:
+			_emit("bullet_segment", {"id": shot.id, "from": trace_start, "to": shot.position, "team": shot.team})
 		if status == "dead":
 			break
 	projectiles = projectiles.filter(func(shot: Dictionary) -> bool: return not shot.dead)
@@ -335,6 +345,11 @@ func _resolve_projectile_segment(shot: Dictionary) -> bool:
 		var fraction := Shots.hit_fraction(start, end, player.position + Vector3.UP * 2.2, player_radius + shot.radius)
 		if fraction >= 0.0:
 			hits.append({"fraction": fraction})
+		if friendly_targets_query.is_valid():
+			for target: Dictionary in friendly_targets_query.call():
+				var ally_fraction := Shots.hit_fraction(start, end, target.position, float(target.radius) + float(shot.radius))
+				if ally_fraction >= 0:
+					hits.append({"fraction": ally_fraction, "ally_id": str(target.id)})
 	hits.sort_custom(func(left: Dictionary, right: Dictionary) -> bool: return left.fraction < right.fraction)
 	var segment_start := start
 	for entry: Dictionary in hits:
@@ -353,10 +368,16 @@ func _resolve_projectile_segment(shot: Dictionary) -> bool:
 				return true
 			shot.pierce_remaining -= 1
 		else:
-			damage_player(shot.damage)
-			_emit("hit", {"position": shot.position, "team": "player", "damage": shot.damage, "projectile_kind": shot.kind})
 			if Shots.blast_radius(shot.kind) > 0.0:
-				_emit("explosion", {"position": shot.position, "radius": Shots.blast_radius(shot.kind), "projectile_kind": shot.kind, "damage": shot.damage, "team": shot.team})
+				shot.direct_ally = str(entry.get("ally_id", "crawler"))
+				_explode(shot)
+				return true
+			if entry.has("ally_id"):
+				if friendly_damage_query.is_valid():
+					friendly_damage_query.call(entry.ally_id, shot.damage, "projectile")
+			else:
+				damage_player(shot.damage)
+			_emit("hit", {"position": shot.position, "team": "player", "damage": shot.damage, "projectile_kind": shot.kind})
 			return true
 		segment_start = shot.position
 	shot.previous = segment_start
@@ -379,9 +400,14 @@ func _explode(shot: Dictionary, direct_id: int = -1, ground: bool = false) -> vo
 			if not enemy.dead and distance < radius:
 				_projectile_damage(enemy, shot, shot.damage * (1.0 - distance / radius * 0.35), enemy.id == direct_id)
 	else:
-		var distance: float = player.position.distance_to(shot.position)
+		var distance: float = 0.0 if shot.get("direct_ally", "") == "crawler" else player.position.distance_to(shot.position)
 		if distance < radius:
 			damage_player(shot.damage * (1.0 - distance / radius * 0.35))
+		if friendly_targets_query.is_valid() and friendly_damage_query.is_valid():
+			for target: Dictionary in friendly_targets_query.call():
+				var offset: float = 0.0 if shot.get("direct_ally", "") == str(target.id) else Vector3(target.position).distance_to(shot.position)
+				if offset < radius + float(target.radius):
+					friendly_damage_query.call(str(target.id), shot.damage * maxf(0.2, 1.0 - offset / maxf(radius, 0.1) * 0.35), "explosion")
 	_emit("explosion", {"position": shot.position, "radius": radius, "projectile_kind": shot.kind, "damage": shot.damage, "team": shot.team, "visual_scale": (1.0 if ground else 1.1) if shot.kind == "grenade" else (0.86 if ground else 0.9)})
 
 func _projectile_damage(enemy: Dictionary, shot: Dictionary, amount: float, direct: bool) -> void:
@@ -422,10 +448,25 @@ func damage_enemy(id: int, amount: float, lethal: bool = true) -> bool:
 func damage_enemy_nonlethal(id: int, amount: float) -> bool:
 	return damage_enemy(id, amount, false)
 
+func damage_enemy_natural(id: int, amount: float, cause: String) -> bool:
+	for enemy: Dictionary in enemies:
+		if enemy.id != id or enemy.dead or enemy.get("boss", false) or not enemy.get("damageable", true):
+			continue
+		amount = maxf(0.0, amount)
+		enemy.hp = maxf(0.0, enemy.hp - amount)
+		enemy.hit_time = 1.0 / 6.0
+		_emit("hit", {"id": id, "type": enemy.type, "position": _aim_center(enemy), "damage": amount, "cause": cause})
+		if enemy.hp <= 0.0:
+			kill_enemy(enemy, {"grant_rewards": false, "cause": cause})
+		return true
+	return false
+
 func kill_enemy(enemy: Dictionary, options: Dictionary = {}) -> void:
 	if enemy.dead:
 		return
 	enemy.dead = true
+	enemy.death_rewarded = bool(options.get("grant_rewards", true))
+	enemy.death_cause = str(options.get("cause", ""))
 	if not options.get("grant_rewards", true):
 		if focus_id == enemy.id:
 			focus_id = -1
@@ -604,13 +645,13 @@ func _target_aim(enemy: Dictionary) -> Vector3:
 	if enemy.get("is_component", false):
 		return enemy.position
 	var height: float = enemy.height if enemy.type in ["drone", "garrison"] else 2.8 if enemy.type == "keep" else 1.05
-	return enemy.position + Vector3.UP * (height + Terrain.height_at(enemy.position.x, enemy.position.z))
+	return enemy.position + Vector3.UP * (height + Terrain.height_at(enemy.position.x, enemy.position.z) + float(enemy.get("lift_height", 0.0)))
 
 func _aim_center(enemy: Dictionary) -> Vector3:
 	if enemy.get("is_component", false):
 		return enemy.position
 	var height: float = enemy.height if enemy.type in ["drone", "garrison"] else 2.5 if enemy.type == "keep" else 1.5 if enemy.type == "buggy" else 1.0 if enemy.type == "bike" else 1.05
-	return enemy.position + Vector3.UP * (height + Terrain.height_at(enemy.position.x, enemy.position.z))
+	return enemy.position + Vector3.UP * (height + Terrain.height_at(enemy.position.x, enemy.position.z) + float(enemy.get("lift_height", 0.0)))
 
 func _id() -> int:
 	var result := _next_id

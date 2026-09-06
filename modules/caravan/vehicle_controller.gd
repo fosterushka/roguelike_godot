@@ -18,6 +18,7 @@ var obstacle_impact_query: Callable
 var clock_delta: Callable
 var player_stats: Dictionary = {}
 var surface_effects: Dictionary = {"traction": 1.0, "movement": 1.0, "turn": 1.0}
+var tornado_effect: Dictionary = {}
 
 var motion: MotionState = MotionState.new()
 var max_health: float = 250.0
@@ -62,15 +63,17 @@ func _physics_process(delta: float) -> void:
 	var tuning := Fuel.drive_tuning(fuel, player_stats)
 	tuning.traction *= float(surface_effects.get("traction", 1.0)) * float(suspension.grip)
 	tuning.wheeled = true
-	tuning.wheelbase = 4.7 * float(player_stats.get("visual_scale", Dimensions.BASE_SCALE))
+	tuning.wheelbase = (Suspension.FRONT_Z - Suspension.REAR_Z) * float(player_stats.get("visual_scale", Dimensions.BASE_SCALE))
 	tuning.acceleration *= clampf(1.0 - float(suspension.slope) * signf(motion.speed) * 1.6, 0.65, 1.25)
 	tuning.maximum_speed *= float(surface_effects.get("movement", 1.0)) * RoadSurface.speed_multiplier_at(global_position)
 	tuning.acceleration *= float(surface_effects.get("movement", 1.0))
+	tuning.maximum_speed *= float(tornado_effect.get("movement", 1.0))
+	tuning.acceleration *= float(tornado_effect.get("movement", 1.0))
 	controls.steer *= float(surface_effects.get("turn", 1.0))
 	controls = Jammer.controls(controls, player_stats)
 	Motion.step(motion, controls, tuning, delta)
 	var previous_position := position
-	var requested := Vector3(motion.x - position.x, 0.0, motion.z - position.z)
+	var requested := Vector3(motion.x - position.x, 0.0, motion.z - position.z) + Vector3(tornado_effect.get("force", Vector3.ZERO)) * delta
 	var collision: KinematicCollision3D = move_and_collide(requested)
 	if collision:
 		var breached: bool = obstacle_impact_query.is_valid() and bool(obstacle_impact_query.call(collision.get_collider(), motion.speed))
@@ -81,7 +84,7 @@ func _physics_process(delta: float) -> void:
 	motion.z = position.z
 	rotation.y = motion.heading
 	Suspension.step(suspension, global_position, motion.heading, motion.speed, motion.yaw_velocity, delta, float(player_stats.get("visual_scale", Dimensions.BASE_SCALE)))
-	position.y = float(suspension.height)
+	position.y = float(suspension.height) + float(tornado_effect.get("lift", 0.0))
 	velocity = (position - previous_position) / maxf(delta, 0.000001)
 	fuel = Fuel.consume(fuel, max_fuel, motion.speed, controls["throttle"], delta, float(player_stats.get("fuel_burn_mult", 1.0)))
 	wheel_angle += Vector2(position.x - previous_position.x, position.z - previous_position.z).length() * signf(motion.speed) / (Suspension.RADIUS * maxf(0.1, float(player_stats.get("visual_scale", Dimensions.BASE_SCALE))))
@@ -89,6 +92,7 @@ func _physics_process(delta: float) -> void:
 	physics_pose_advanced.emit(delta)
 
 func reset_vehicle() -> void:
+	tornado_effect.clear()
 	Jammer.clear_player(player_stats)
 	position = _spawn_position
 	rotation.y = _spawn_heading
@@ -130,4 +134,9 @@ func sync_collision_dimensions() -> void:
 			collider.shape.radius = radius
 
 func current_render_pose() -> Dictionary:
-	return Pose.capture(global_position, motion.heading, float(player_stats.get("visual_scale", Dimensions.BASE_SCALE)), motion.speed, motion.steer, wheel_angle, suspension)
+	var pose := Pose.capture(global_position, motion.heading, float(player_stats.get("visual_scale", Dimensions.BASE_SCALE)), motion.speed, motion.steer, wheel_angle, suspension)
+	pose.wind_roll = float(tornado_effect.get("roll", 0.0))
+	if float(tornado_effect.get("lift", 0.0)) > 0.25:
+		pose.suspension.wheel_contacts = [false, false, false, false]
+		pose.suspension.contacts = 0
+	return pose
