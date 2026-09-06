@@ -4,6 +4,7 @@ const Locale = preload("res://presentation/ui/ui_locale.gd")
 
 const SourceModel = preload("res://presentation/combat/source_model.gd")
 const WheeledRig = preload("res://presentation/vehicles/wheeled_rig.gd")
+const NaturalMeshes = preload("res://presentation/world/natural_meshes.gd")
 var procedural_models: Array[String] = []
 var retained_resources: Array[Resource] = []
 var warmup_root: Node3D
@@ -52,6 +53,12 @@ func prepare(parent: Node3D, point: Vector3, progress: Callable) -> bool:
 	warmup_root.name = "CoveredAssetWarmup"
 	warmup_root.process_mode = Node.PROCESS_MODE_DISABLED
 	parent.add_child(warmup_root)
+	var screen_layer := CanvasLayer.new()
+	screen_layer.layer = 0
+	warmup_root.add_child(screen_layer)
+	var interference := preload("res://presentation/ui/jammer_vhs.gd").new()
+	screen_layer.add_child(interference)
+	interference.update_state({"player": {"hp": 100, "jammed": true, "jammer_strength": 1.0}})
 	var catalog: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/visual_models/catalog.json"))
 	var index := 0
 	for entry: Dictionary in catalog.models:
@@ -73,6 +80,17 @@ func prepare(parent: Node3D, point: Vector3, progress: Callable) -> bool:
 	var primitives := SourceModel.instantiate("world_primitives")
 	primitives.position = point
 	warmup_root.add_child(primitives)
+	for pool: String in NaturalMeshes.all():
+		var batch := MultiMeshInstance3D.new()
+		batch.name = pool
+		batch.position = point
+		batch.multimesh = MultiMesh.new()
+		batch.multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		batch.multimesh.mesh = NaturalMeshes.mesh_for(pool)
+		batch.multimesh.instance_count = 1
+		batch.multimesh.set_instance_transform(0, Transform3D.IDENTITY)
+		batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if pool.begins_with("rockMass") else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		warmup_root.add_child(batch)
 	return true
 
 func finish() -> void:

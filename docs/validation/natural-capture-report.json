@@ -1,0 +1,29 @@
+{
+  "script_errors": 0,
+  "engine_errors": 0,
+  "renderer": "Metal Forward+, Apple M4 Pro",
+  "gpu_assertions": [
+    "rock mesh present",
+    "rock disappears on destruction",
+    "identical mesh transform restored on reset",
+    "legacy tree uses one birch or spruce mesh",
+    "legacy replacement disappears on destruction",
+    "legacy replacement restores exact transform on reset"
+  ],
+  "evidence": [
+    "OFFLINE_READY: loaded world, vehicle, weapons, enemy pools, effects and HUD; waiting for start",
+    "NATURAL_CAPTURE rock-close status=0",
+    "NATURAL_CAPTURE rock-landscape status=0",
+    "NATURAL_CAPTURE start-groves status=0",
+    "NATURAL_CAPTURE forest status=0",
+    "NATURAL_CAPTURE rock-destroyed status=0",
+    "NATURAL_CAPTURE rock-restored status=0",
+    "NATURAL_CAPTURE legacy-tree status=0",
+    "NATURAL_CAPTURE legacy-tree-destroyed status=0",
+    "NATURAL_WORLD_CAPTURE_COMPLETE: 8 images seed=0 trees=1800 dense_grove=22"
+  ],
+  "visible_tree_species": [
+    "spruceTrees",
+    "birchTrees"
+  ]
+}

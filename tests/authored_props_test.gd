@@ -4,6 +4,7 @@ const Natural = preload("res://modules/world/generation/natural_props.gd")
 const Authored = preload("res://modules/world/generation/authored_props.gd")
 const Primitives = preload("res://presentation/world/world_primitive_catalog.gd")
 const Renderer = preload("res://presentation/world/generated_world_view.gd")
+const Trees = preload("res://presentation/world/tree_meshes.gd")
 
 func _initialize() -> void:
 	_run.call_deferred()
@@ -48,6 +49,9 @@ func _run() -> void:
 		compare(context.activity_blockers, fixture.activityBlockers, label + " activity blockers")
 		var pool_counts := []
 		for pool: String in context.POOLS:
+			if pool.begins_with("rockMass") or Trees.POOLS.has(pool):
+				compare(context.instances[pool].is_empty(), true, label + " additional landscape pool remains unused by authored factories")
+				continue
 			if pool in ["trenches", "bowls", "rims", "decals", "char"]:
 				continue
 			pool_counts.append(context.instances[pool].size())

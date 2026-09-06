@@ -260,20 +260,29 @@ func _draw_boundary() -> void:
 		if clipped.size() == 2:
 			draw_line(clipped[0], clipped[1], Color("db9367"), 1.5)
 
+func extraction_sites() -> Array:
+	var extraction: Dictionary = world_state.get("extraction", {})
+	var sites: Array = extraction.get("sites", [])
+	if sites.is_empty() and extraction.get("visible", false):
+		sites = [{"id": "", "position": extraction.get("position", Vector3.ZERO)}]
+	return sites
+
 func _draw_extraction() -> void:
 	var extraction: Dictionary = world_state.get("extraction", {})
-	if not extraction.get("visible", false):
-		return
-	var target := _point(_vector(extraction.get("position", Vector3.ZERO)))
-	var point := Geometry.edge_point(target, _map_rect.grow(-7))
-	var color := Color("e9b066") if extraction.get("mode", "") == "contested" else Color("8ee3ad")
-	if not _map_rect.grow(-7).has_point(target):
-		var direction := (target - _map_rect.get_center()).normalized()
-		var side := Vector2(-direction.y, direction.x) * 3
-		draw_colored_polygon(PackedVector2Array([point, point - direction * 8 + side, point - direction * 8 - side]), color)
-	else:
-		draw_rect(Rect2(point - Vector2(4, 4), Vector2(8, 8)), color, false, 1.5)
-		draw_line(point - Vector2(2, 0), point + Vector2(2, 0), color, 1.5)
+	for site: Dictionary in extraction_sites():
+		var target := _point(_vector(site.position))
+		var point := Geometry.edge_point(target, _map_rect.grow(-11))
+		var active := bool(extraction.get("active", false)) and str(site.get("id", "")) == str(extraction.get("site_id", extraction.get("zone_id", "")))
+		var color := Color("ee7257") if active and extraction.get("mode", "") == "leaving" else Color("ffc064") if active else Color("7bdc9a")
+		if not _map_rect.grow(-11).has_point(target):
+			var direction := (target - _map_rect.get_center()).normalized()
+			var side := Vector2(-direction.y, direction.x) * 4
+			draw_colored_polygon(PackedVector2Array([point + direction * 4, point - direction * 5 + side, point - direction * 5 - side]), color)
+			point -= direction * 10
+		else:
+			draw_rect(Rect2(point - Vector2(7, 7), Vector2(14, 14)), Color("142723"))
+			draw_rect(Rect2(point - Vector2(7, 7), Vector2(14, 14)), color, false, 1.5)
+		draw_string(ThemeDB.fallback_font, point + Vector2(-4, 5), "E", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, color)
 
 func explored_strips(center: Vector2i, reach: int) -> Array[Rect2i]:
 	var strips: Array[Rect2i] = []

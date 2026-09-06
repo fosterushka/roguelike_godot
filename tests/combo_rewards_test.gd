@@ -88,7 +88,7 @@ func _initialize() -> void:
 	foundries.step(0.1)
 	var foundry_events: Array = model.drain_events().filter(func(event: Dictionary) -> bool: return event.kind == "activity_completed" and event.get("loot_source") == "foundry")
 	check(foundry_events.size() == 1 and foundry_events[0].position == fortress.position, "Destroyed fortress drops rare cargo exactly once")
-	check(activities.credits == credits_before + 1 and model.player.activity_credits == activities.credits, "Destroying a fortress earns one extraction credit")
+	check(activities.credits == credits_before + 1 and model.player.activity_credits == activities.credits, "Destroying a fortress records one completed activity")
 	collider.free()
 	world.free()
 	print("COMBO_REWARDS: %d checks, %d failures" % [checks, failures])

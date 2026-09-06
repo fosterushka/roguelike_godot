@@ -51,7 +51,7 @@ func _run() -> void:
 	vehicle.motion.speed = 2.21
 	world._consume_nearby_village()
 	check(village.consumed and not village.intact and combat.model.pickups.size() == 5, "Driving through settlement scatters exactly5tribute drops")
-	check(not world.activities.village_eligible(village.id), "Consumed settlement loses extraction/activity eligibility")
+	check(not world.activities.village_eligible(village.id), "Consumed settlement loses settlement activity eligibility")
 	check(not world.consume_village(village) and combat.model.pickups.size() == 5, "Tribute cannot duplicate")
 	check(world.props.events.is_empty(), "Village tribute bypasses individual prop salvage")
 	world.reset_run()

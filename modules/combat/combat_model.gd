@@ -116,8 +116,8 @@ func step(delta: float) -> void:
 	if road_fury.step(player, delta):
 		_emit("overdrive_started", {"position": player.position, "duration": Fury.OVERDRIVE_DURATION})
 	if status == "intermission":
-		intermission = maxf(0.0, intermission - delta)
-		if intermission == 0.0:
+		intermission = maxf(0.0, intermission - (0.0 if player.get("extraction_active", false) else delta))
+		if intermission == 0.0 and not player.get("extraction_active", false):
 			wave += 1
 			status = "combat"
 			spawn_queue = Waves.queue_for(wave)
@@ -127,7 +127,7 @@ func step(delta: float) -> void:
 	else:
 		_wave_age += delta
 		_spawn_remaining -= delta
-		if not spawn_queue.is_empty() and _spawn_remaining <= 0.0 and enemies.size() < MAX_ENEMIES:
+		if not player.get("extraction_active", false) and not spawn_queue.is_empty() and _spawn_remaining <= 0.0 and enemies.size() < MAX_ENEMIES:
 			var position: Variant = Spawning.wave_position(self, spawn_queue.front())
 			var spawned: Dictionary = {}
 			if position is Vector3:
@@ -147,7 +147,7 @@ func step(delta: float) -> void:
 	hazards.step(self, delta)
 	jammer.step(player, enemies, 0.0)
 	enemies = enemies.filter(func(enemy: Dictionary) -> bool: return not enemy.dead)
-	if status == "combat" and spawn_queue.is_empty() and _wave_remaining() == 0 and _wave_age >= 1.0:
+	if not player.get("extraction_active", false) and status == "combat" and spawn_queue.is_empty() and _wave_remaining() == 0 and _wave_age >= 1.0:
 		projectiles.clear()
 		if wave == Waves.FINAL_WAVE:
 			_finish(true)

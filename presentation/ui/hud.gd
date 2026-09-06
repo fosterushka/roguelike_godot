@@ -66,6 +66,7 @@ var reward_notice: PanelContainer
 var _status_label: Label
 var fury_meter: Control
 var jammer_overlay: Control
+var jammer_vhs: ColorRect
 
 
 func _ready() -> void:
@@ -81,6 +82,8 @@ func _ready() -> void:
 	_gameplay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_gameplay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	screen.add_child(_gameplay)
+	jammer_vhs = preload("res://presentation/ui/jammer_vhs.gd").new()
+	_gameplay.add_child(jammer_vhs)
 	markers = WorldMarkers.new()
 	_gameplay.add_child(markers)
 	_build_telemetry(_gameplay)
@@ -406,6 +409,7 @@ func _build_run_info(screen: Control) -> void:
 func update_run(data: Dictionary, camera: Camera3D, selected: int) -> void:
 	fury_meter.update_player(data.get("player", {}))
 	jammer_overlay.update_state(data)
+	jammer_vhs.update_state(data)
 	markers.update_state(data, camera)
 	var hack: Dictionary = data.get("hack_status", {})
 	_hack_label.text = Locale.text("НУЖЕН МОДУЛЬ ВЗЛОМА МИН") if hack.get("requires_module", false) else Locale.text("[E] УДЕРЖИВАЙТЕ · ВЗЛОМ %.1f/3 с") % (float(hack.get("progress", 0.0)) * 3.0) if hack.get("available", false) else ""
@@ -453,13 +457,17 @@ func update_world(data: Dictionary) -> void:
 		if not str(activity.get("reward_label", "")).is_empty():
 			lines.append(Locale.text(str(activity.reward_label)))
 	if extraction.get("visible", false):
-		lines.append(Locale.text("ЭВАКУАЦИЯ · ЗАДАЧИ %d/%d") % [extraction.get("credits", 0), extraction.get("required_credits", 2)])
+		var ru := Locale.language == "ru"
 		if extraction.get("active", false):
-			lines.append(Locale.text("%d%% · %.1f с · ПРОТИВНИКИ %d") % [extraction.get("progress_percent", 0), extraction.get("remaining_seconds", 30), extraction.get("hostile_count", 0)])
+			lines.append(("ЗАЩИЩАЙТЕ ЗОНУ · %.1f с" if ru else "DEFEND ZONE · %.1fs") % extraction.get("remaining_seconds", 20.0))
+			if extraction.get("mode", "") == "leaving":
+				lines.append(("ВЕРНИТЕСЬ: %.1f с" if ru else "RETURN TO ZONE: %.1fs") % extraction.get("leave_remaining", 3.0))
+			else:
+				lines.append(("АТАКУЮЩИЕ: %d" if ru else "ATTACKERS: %d") % extraction.get("hostile_count", 0))
 		elif extraction.get("can_request", false):
-			lines.append(Locale.text("[E] ВЫЗВАТЬ ЭВАКУАЦИЮ"))
+			lines.append("[E] ЭВАКУАЦИЯ · ЗАЩИТА 20 с" if ru else "[E] EXTRACT · DEFEND 20s")
 		else:
-			lines.append(Locale.text("ДО ТОЧКИ: %d м") % extraction.get("distance", 0))
+			lines.append(("ЗОНА ЭВАКУАЦИИ · %d м" if ru else "EXTRACTION ZONE · %dm") % extraction.get("distance", 0))
 	_objective_label.text = "\n".join(lines)
 	_objective_label.visible = not lines.is_empty()
 	var boundary: Dictionary = data.get("boundary", {})

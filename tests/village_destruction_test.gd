@@ -79,16 +79,26 @@ func _run() -> void:
 	var rock: Dictionary = world.props.records.values().filter(func(prop: Dictionary) -> bool: return prop.get("rock_obstacle", false))[0]
 	check(rock.kind == "boulder" and is_finite(rock.hp) and rock.solid, "Rock collision record keeps finite destructible definition")
 	check(arena._collision_nodes.size() == arena._prop_colliders.size(), "Rock sections have no duplicate indestructible collider")
-	check(arena._prop_records[rock.id].parts.size() >= 9, "Rock record includes face, shelves, cap and shards")
+	check(arena._prop_records[rock.id].parts.size() == 1, "Rock record owns one monolithic mesh with no separate cap or shelves")
+	var rock_part: Dictionary = arena._prop_records[rock.id].parts[0]
+	var rock_view: MultiMeshInstance3D = arena.source_world.get_child(int(rock_part.mesh))
+	check(str(rock_view.name).begins_with("rockMass") and rock_view.multimesh.mesh is ArrayMesh, "Physical rock binds to the rendered natural rock mesh pool")
+	var initial_transform: Transform3D = preload("res://presentation/combat/source_model.gd")._transform(rock_part.matrix)
+	if DisplayServer.get_name() != "headless":
+		check(rock_view.multimesh.get_instance_transform(int(rock_part.instance)).is_equal_approx(initial_transform), "Actual monolith renders at its registered collision location")
 	var rock_hp: float = rock.hp
 	for frame in 30:
 		world.props.ram(rock.position, 10.0, true, 1.0 / 60.0)
 	check(rock.hp == rock_hp, "Solid rocks receive contact damage once, not per-frame proximity damage")
 	world.damage_props(rock.position, 0.1, 10000)
 	check(rock.destroyed and arena._prop_colliders[rock.id].collision_layer == 0, "Explosion removes rock collision")
+	if DisplayServer.get_name() != "headless":
+		check(is_zero_approx(rock_view.multimesh.get_instance_transform(int(rock_part.instance)).basis.determinant()), "Explosion hides the entire rendered monolith instance")
 	check(not world.rock_steering.grid.nearby(rock.position, 1).any(func(item: Dictionary) -> bool: return item.id == rock.id), "Enemies stop steering around destroyed rock")
 	world.reset_run()
 	check(not rock.destroyed and arena._prop_colliders[rock.id].collision_layer == 1, "Restart restores rock HP and physical collision")
+	if DisplayServer.get_name() != "headless":
+		check(rock_view.multimesh.get_instance_transform(int(rock_part.instance)).is_equal_approx(initial_transform), "Restart restores the complete monolith instance at its original pose")
 	check(world.rock_steering.grid.nearby(rock.position, 1).any(func(item: Dictionary) -> bool: return item.id == rock.id), "Restart restores rock navigation")
 	for node in [world, combat, vehicle, arena]:
 		node.queue_free()

@@ -1,6 +1,8 @@
 extends RefCounted
 
 const Catalog = preload("res://modules/meta/expedition_catalog.gd")
+const MissionProgress = preload("res://modules/meta/mission_progress.gd")
+const MissionTracker = preload("res://modules/meta/mission_tracker.gd")
 var progression: RefCounted
 var active := false
 var backpack: Dictionary = {}
@@ -8,7 +10,9 @@ var last_result: Dictionary = {}
 var notice := ""
 var _seen: Dictionary = {}
 var _raid_xp := 0
-var _raid_progress: Dictionary = {}
+var missions := MissionTracker.new()
+var _mission_result: Dictionary = {}
+var _player: Dictionary = {}
 var _loot_index := 0
 var _weapon_improved := false
 var _pending_result: Variant = null
@@ -44,7 +48,8 @@ func begin_run(player: Dictionary) -> bool:
 	active = true
 	last_result.clear()
 	_seen.clear()
-	_raid_progress.clear()
+	_mission_result.clear()
+	_player = player
 	_raid_xp = 0
 	_loot_index = 0
 	_weapon_improved = false
@@ -53,6 +58,7 @@ func begin_run(player: Dictionary) -> bool:
 	player.max_hp = float(player.get("max_hp", 250)) + armor
 	player.hp = minf(player.max_hp, float(player.get("hp", player.max_hp)) + armor)
 	player.motor_speed_mult = float(player.get("motor_speed_mult", 1.0)) * (1.0 + 0.03 * int(_data().upgrades.engine))
+	missions.reset(player)
 	notice = "Добыча останется с вами только после эвакуации."
 	return true
 
@@ -73,16 +79,13 @@ func collect_loot(source: String, count: int = 1) -> bool:
 	backpack[id] = int(backpack.get(id, 0)) + accepted
 	_loot_index += 1
 	_raid_xp += accepted * (12 if id == "relic" else 5)
-	_progress("scrap", accepted if id == "scrap" else 0)
+	missions.loot(id, accepted)
 	notice = "+%d %s" % [accepted, Catalog.ITEMS[id].name]
 	return true
 
-func _progress(event: String, amount: int) -> void:
-	if amount <= 0:
-		return
-	for id: String in _data().quests:
-		if _data().quests[id].status == "active" and Catalog.QUESTS[id].event == event:
-			_raid_progress[id] = int(_raid_progress.get(id, 0)) + amount
+func sample_run(player: Dictionary, delta: float, weather: String) -> void:
+	if active and _pending_result == null:
+		missions.sample(player, delta, weather)
 
 func record_event(event: Dictionary) -> void:
 	if not active or _pending_result != null:
@@ -91,8 +94,10 @@ func record_event(event: Dictionary) -> void:
 		return
 	var kind: String = event.get("kind", "")
 	if kind == "result":
+		_mission_result = event.duplicate(true)
 		finish_run(bool(event.get("won", false)) or bool(event.get("extracted", false)) or event.get("outcome", "") == "extracted")
 		return
+	missions.record(event)
 	if kind not in ["death", "activity_completed"] or not event.has("id"):
 		return
 	var key := kind + ":" + str(event.id)
@@ -101,17 +106,15 @@ func record_event(event: Dictionary) -> void:
 	_seen[key] = true
 	if kind == "death" and event.get("rewarded", true):
 		_raid_xp += 3
-		_progress("kills", 1)
 	elif kind == "activity_completed":
 		_raid_xp += 30
-		if event.get("activity_type", "") == "settlementDistress":
-			_progress("rescues", 1)
 
 func finish_run(success: bool) -> bool:
 	if not active:
 		return false
 	if _pending_result != null:
 		success = bool(_pending_result)
+	missions.finalize(_player, backpack, Catalog.ITEMS, _mission_result if not _mission_result.is_empty() else {"extracted": success})
 	var before := _data().duplicate(true)
 	var gained_xp := 60 + _raid_xp if success else int(_raid_xp / 4)
 	var overflow := 0
@@ -121,11 +124,7 @@ func finish_run(success: bool) -> bool:
 			var stored := mini(amount, 9999 - int(_data().stash.get(id, 0)))
 			_data().stash[id] = int(_data().stash.get(id, 0)) + stored
 			overflow += (amount - stored) * int(Catalog.ITEMS[id].sell)
-		for id: String in _raid_progress:
-			var amount: int = _raid_progress[id]
-			if id == "first_delivery":
-				amount = mini(amount, int(backpack.get("scrap", 0)))
-			_data().quests[id].progress = mini(Catalog.QUESTS[id].target, int(_data().quests[id].progress) + amount)
+		MissionProgress.commit(_data().quests, Catalog.quests(), missions.metrics)
 	_data().credits = mini(1000000000, int(_data().credits) + overflow)
 	_data().xp = mini(1000000000, int(_data().xp) + gained_xp)
 	if not _commit(before):
@@ -165,8 +164,13 @@ func action(kind: String, id: String) -> bool:
 	match kind:
 		"buy", "sell", "equip", "unequip": changed = _item_action(kind, id)
 		"accept":
-			if Catalog.QUESTS.has(id) and not _data().quests.has(id):
-				_data().quests[id] = {"status": "active", "progress": 0}
+			var definitions := Catalog.quests()
+			if definitions.has(id) and not _data().quests.has(id) and MissionProgress.active_count(_data().quests) < MissionProgress.LIMIT and Catalog.account(_data().xp).level >= int(definitions[id].min_level):
+				_data().quests[id] = {"status": "active", "progress": 0.0, "counts": MissionProgress.counts({}, definitions[id])}
+				changed = true
+		"abandon", "abandon_quest":
+			if _data().quests.has(id) and _data().quests[id].status == "active":
+				_data().quests.erase(id)
 				changed = true
 		"claim": changed = _claim(id)
 		"upgrade": changed = _upgrade(id)
@@ -212,19 +216,18 @@ func _item_action(kind: String, id: String) -> bool:
 	return false
 
 func _claim(id: String) -> bool:
-	if not Catalog.QUESTS.has(id) or not _data().quests.has(id):
+	var definitions := Catalog.quests()
+	if not definitions.has(id) or not _data().quests.has(id):
 		return false
 	var quest: Dictionary = _data().quests[id]
-	var definition: Dictionary = Catalog.QUESTS[id]
-	if quest.status != "active" or quest.progress < definition.target:
+	var definition: Dictionary = definitions[id]
+	if quest.status != "active" or not MissionProgress.objectives_met(definition, MissionProgress.counts(quest, definition)) or not MissionProgress.delivery_ready(definition, _data().stash):
 		return false
-	if id == "first_delivery":
-		if int(_data().stash.get("scrap", 0)) < int(definition.target):
-			return false
-		_data().stash.scrap -= definition.target
-		if _data().stash.scrap == 0:
-			_data().stash.erase("scrap")
-	quest.status = "claimed"
+	for item: String in definition.get("delivery", {}):
+		_data().stash[item] -= int(definition.delivery[item])
+		if _data().stash[item] == 0:
+			_data().stash.erase(item)
+	_data().quests[id] = {"status": "claimed", "progress": MissionProgress.total(MissionProgress.counts(quest, definition))}
 	_data().credits = mini(1000000000, int(_data().credits) + int(definition.credits))
 	_data().xp = mini(1000000000, int(_data().xp) + int(definition.xp))
 	return true
@@ -263,23 +266,29 @@ func consume(id: String, player: Dictionary) -> bool:
 	backpack[id] -= 1
 	if backpack[id] == 0:
 		backpack.erase(id)
+	missions.consumable(id)
 	notice = "Использовано: " + str(Catalog.ITEMS[id].name)
 	return true
+
+func active_missions() -> Array:
+	var rows: Array = []
+	var definitions := Catalog.quests()
+	var pending := missions.current_metrics(backpack, Catalog.ITEMS)
+	var account_level: int = Catalog.account(_data().xp).level
+	var count := MissionProgress.active_count(_data().quests)
+	for id: String in _data().quests:
+		if _data().quests[id].status == "active" and definitions.has(id):
+			rows.append(MissionProgress.row(definitions[id], _data().quests[id], pending, account_level, active, count, _data().stash))
+	return rows
 
 func snapshot() -> Dictionary:
 	var account := Catalog.account(_data().xp)
 	var quests: Array = []
-	for id: String in Catalog.QUESTS:
-		var row: Dictionary = Catalog.QUESTS[id].duplicate(true)
-		var state: Dictionary = _data().quests.get(id, {"status": "available", "progress": 0})
-		row.id = id
-		row.title = row.name
-		row.status = "ready" if state.status == "active" and state.progress >= row.target else state.status
-		row.progress = state.progress
-		row.raid_progress = int(_raid_progress.get(id, 0)) if active else 0
-		row.can_claim = not active and state.status == "active" and state.progress >= row.target and (id != "first_delivery" or int(_data().stash.get("scrap", 0)) >= row.target)
-		row.reward_label = "%d кредитов · %d XP" % [row.credits, row.xp]
-		quests.append(row)
+	var count := MissionProgress.active_count(_data().quests)
+	var pending := missions.current_metrics(backpack, Catalog.ITEMS)
+	var definitions := Catalog.quests()
+	for id: String in definitions:
+		quests.append(MissionProgress.row(definitions[id], _data().quests.get(id, {}), pending, account.level, active, count, _data().stash))
 	var upgrades: Array = []
 	for id: String in Catalog.UPGRADES:
 		var row: Dictionary = Catalog.UPGRADES[id].duplicate(true)
@@ -291,4 +300,4 @@ func snapshot() -> Dictionary:
 		row.cost_label = "%d кредитов · ур. аккаунта %d" % [row.cost, row.required_level]
 		row.enabled = not active and row.level < row.max_level and account.level >= row.required_level and _data().credits >= row.cost
 		upgrades.append(row)
-	return {"active": active, "pending_result": _pending_result != null, "credits": _data().credits, "xp": account.xp, "total_xp": _data().xp, "xp_next": account.xp_next, "level": account.level, "capacity": capacity(), "used": Catalog.used(backpack if active else _data().loadout), "stash": _data().stash.duplicate(true), "loadout": _data().loadout.duplicate(true), "backpack": backpack.duplicate(true), "items": Catalog.ITEMS.duplicate(true), "quests": quests, "upgrades": upgrades, "last_result": last_result.duplicate(true), "notice": notice, "storage_status": progression.store.status}
+	return {"active": active, "pending_result": _pending_result != null, "credits": _data().credits, "xp": account.xp, "total_xp": _data().xp, "xp_next": account.xp_next, "level": account.level, "capacity": capacity(), "used": Catalog.used(backpack if active else _data().loadout), "stash": _data().stash.duplicate(true), "loadout": _data().loadout.duplicate(true), "backpack": backpack.duplicate(true), "items": Catalog.ITEMS.duplicate(true), "quests": quests, "active_quest_count": count, "quest_limit": MissionProgress.LIMIT, "upgrades": upgrades, "last_result": last_result.duplicate(true), "notice": notice, "storage_status": progression.store.status}

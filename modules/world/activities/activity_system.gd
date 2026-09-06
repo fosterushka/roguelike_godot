@@ -3,6 +3,7 @@ extends RefCounted
 const Rules = preload("res://modules/world/activities/activity_rules.gd")
 const SourceRandom = preload("res://modules/world/activities/source_random.gd")
 const Extraction = preload("res://modules/world/activities/extraction_rules.gd")
+const ExtractionSites = preload("res://modules/world/activities/extraction_sites.gd")
 var world: Node3D
 var random := SourceRandom.new()
 var records: Array[Dictionary] = []
@@ -14,6 +15,8 @@ var next_minor := 0.0
 var recovery_until := 0.0
 var elapsed := 0.0
 var extraction := Extraction.empty()
+var extraction_sites: Array[Dictionary] = []
+var _extraction_attempt := 0
 var events: Array[Dictionary] = []
 var _villages: Dictionary = {}
 var _village_props: Dictionary = {}
@@ -39,6 +42,9 @@ func reset(seed_value: int) -> void:
 	elapsed = 0.0
 	recovery_until = 0.0
 	extraction = Extraction.empty()
+	extraction_sites = ExtractionSites.generate(world.arena.world_layout, world.props, seed_value)
+	_extraction_attempt = 0
+	world.combat.model.player.extraction_active = false
 	events.clear()
 	random.seed_run(seed_value)
 	next_major = random.between(9, 14)
@@ -366,44 +372,91 @@ func _nearest_site() -> Dictionary:
 			result.anchor = anchor
 	return result
 
+func _nearest_extraction_site() -> Dictionary:
+	var nearest: Dictionary = {}
+	var closest := INF
+	var player_position: Vector3 = world.vehicle.global_position
+	player_position.y = 0.0
+	for site: Dictionary in extraction_sites:
+		var distance := player_position.distance_to(site.position)
+		if distance < closest:
+			closest = distance
+			nearest = site.duplicate()
+			nearest.distance = distance
+	return nearest
+
 func request_extraction() -> bool:
-	if extraction.active or not world.running or world.get_tree().paused or world.vehicle.health <= 0 or credits < Extraction.REQUIRED_CREDITS or absf(world.vehicle.motion.speed) > Extraction.MAXIMUM_SPEED:
+	if extraction.active or not world.running or not world.combat.model.running or world.combat.model.status in ["dead", "complete", "extracted"] or world.get_tree().paused or world.vehicle.health <= 0 or world.combat.model.player.hp <= 0:
 		return false
-	var nearest := _nearest_site()
-	if nearest.is_empty() or nearest.distance > Extraction.ACTIVATION_RADIUS or nearest.anchor.is_empty():
+	var nearest := _nearest_extraction_site()
+	if nearest.is_empty() or nearest.distance > Extraction.ZONE_RADIUS:
 		return false
-	credits -= Extraction.REQUIRED_CREDITS
-	world.combat.model.player.activity_credits = credits
 	extraction = Extraction.empty()
-	extraction.merge({"active": true, "village_id": nearest.village.id, "anchor_id": nearest.anchor.id, "position": Rules.point(nearest.anchor)}, true)
-	events.append({"kind": "extraction_started", "position": extraction.position})
+	extraction.merge({"active": true, "site_id": nearest.id, "zone_id": nearest.id, "position": nearest.position}, true)
+	_extraction_attempt += 1
+	world.combat.model.player.extraction_active = true
+	events.append({"kind": "extraction_started", "position": extraction.position, "site_id": nearest.id, "duration": Extraction.SECURE_SECONDS})
+	_spawn_extraction_wave()
+	extraction.next_wave_at = 5.0
 	return true
+
+func _spawn_extraction_wave() -> void:
+	var model: RefCounted = world.combat.model
+	var alive := 0
+	for enemy: Dictionary in model.enemies:
+		if not enemy.dead and enemy.get("extraction_defender", false):
+			alive += 1
+	var quota := mini(3, mini(10 - alive, 10 - int(extraction.spawned)))
+	var spawned := 0
+	for attempt in 48:
+		if spawned >= quota:
+			break
+		var angle := float(attempt) / 16.0 * TAU + float(_extraction_attempt) * 0.73 + float(extraction.spawned) * 0.38
+		var distance := 34.0 + float(attempt / 16) * 8.0
+		var point: Vector3 = extraction.position + Vector3(cos(angle), 0, sin(angle)) * distance
+		if not world.props.is_clear(point, 1.8):
+			continue
+		var kind := "ak" if extraction.progress >= 10.0 and spawned == 2 else "rifleman"
+		var enemy: Dictionary = model.spawn_enemy(kind, point, {"counts_toward_wave": false, "extraction_defender": true, "extraction_site": extraction.site_id})
+		if enemy.is_empty():
+			continue
+		extraction.spawned += 1
+		spawned += 1
+	if spawned > 0:
+		events.append({"kind": "extraction_wave", "position": extraction.position, "count": spawned, "site_id": extraction.site_id})
 
 func _update_extraction(delta: float) -> void:
 	if not extraction.active:
 		return
-	var valid := village_eligible(str(extraction.village_id)) and position_clear(extraction.position)
 	var hostiles := 0
 	for enemy: Dictionary in world.combat.model.enemies:
 		if not enemy.dead and enemy.position.distance_to(extraction.position) <= Extraction.HOSTILE_RADIUS:
 			hostiles += 1
-	var result := Extraction.step(extraction.progress, delta, valid, world.vehicle.global_position.distance_to(extraction.position) <= Extraction.ZONE_RADIUS, hostiles > 0, extraction.out_of_range)
+	var player_position: Vector3 = world.vehicle.global_position
+	player_position.y = 0.0
+	var alive: bool = world.vehicle.health > 0.0 and world.combat.model.player.hp > 0.0
+	var result := Extraction.step(extraction.progress, delta, alive, player_position.distance_to(extraction.position) <= Extraction.ZONE_RADIUS, hostiles > 0, extraction.out_of_range)
 	extraction.progress = result.progress
-	extraction.contested = result.status == "contested"
+	extraction.contested = false
 	extraction.hostile_count = hostiles
 	extraction.out_of_range = result.out_of_range
 	if result.status in ["failed", "abandoned"]:
 		cancel_extraction(str(result.status))
 	elif result.completed:
 		extraction = Extraction.empty()
+		world.combat.model.player.extraction_active = false
 		world.combat.finish_run(false, "extracted")
 		world.running = false
 		cancel_all("extracted")
 		events.append({"kind": "extracted"})
+	elif result.status == "defending" and extraction.progress >= extraction.next_wave_at:
+		_spawn_extraction_wave()
+		extraction.next_wave_at = (floorf(extraction.progress / 5.0) + 1.0) * 5.0
 
 func cancel_extraction(reason: String) -> void:
 	if extraction.active:
 		extraction = Extraction.empty()
+		world.combat.model.player.extraction_active = false
 		events.append({"kind": "extraction_failed", "reason": reason})
 
 func cancel_all(reason: String) -> void:
@@ -413,11 +466,18 @@ func cancel_all(reason: String) -> void:
 			finish(record, "failed", reason)
 
 func get_extraction_state() -> Dictionary:
-	if extraction.active:
-		return {"available": true, "visible": true, "mode": "contested" if extraction.contested else "leaving" if extraction.out_of_range > 0 else "securing", "active": true, "can_request": false, "credits": credits, "required_credits": 2, "position": extraction.position, "progress_percent": extraction.progress / 30.0 * 100.0, "remaining_seconds": maxf(0, 30.0 - extraction.progress), "hostile_count": extraction.hostile_count}
-	var nearest := _nearest_site()
-	var ready: bool = credits >= 2 and not nearest.is_empty() and nearest.distance <= 22 and not nearest.anchor.is_empty() and absf(world.vehicle.motion.speed) <= 1.5 and world.running and not world.get_tree().paused
-	return {"available": true, "visible": credits > 0, "mode": "locked" if credits < 2 else "ready" if ready else "route", "active": false, "can_request": ready, "credits": credits, "required_credits": 2, "position": Rules.point(nearest.anchor) if not nearest.is_empty() and not nearest.anchor.is_empty() else Vector3.ZERO, "distance": nearest.get("distance", -1.0), "progress_percent": 0.0, "remaining_seconds": 30.0, "hostile_count": 0}
+	var nearest := _nearest_extraction_site()
+	var ready: bool = not nearest.is_empty() and nearest.distance <= Extraction.ZONE_RADIUS and world.vehicle.health > 0.0 and world.combat.model.player.hp > 0.0 and world.running and world.combat.model.running and world.combat.model.status not in ["dead", "complete", "extracted"] and not world.get_tree().paused
+	var active: bool = extraction.active
+	var point: Vector3 = extraction.position if active else nearest.get("position", Vector3.ZERO)
+	var id := str(extraction.site_id) if active else str(nearest.get("id", ""))
+	return {"available": not extraction_sites.is_empty(), "visible": true, "sites": extraction_sites.duplicate(true), "site_id": id, "zone_id": id,
+		"mode": ("leaving" if extraction.out_of_range > 0.0 else "defending") if active else "ready" if ready else "route",
+		"active": active, "can_request": ready and not active, "credits": credits, "required_credits": 0, "position": point,
+		"radius": Extraction.ZONE_RADIUS, "duration": Extraction.SECURE_SECONDS, "distance": nearest.get("distance", -1.0),
+		"progress": extraction.progress, "progress_percent": extraction.progress / Extraction.SECURE_SECONDS * 100.0,
+		"remaining_seconds": maxf(0, Extraction.SECURE_SECONDS - extraction.progress), "hostile_count": extraction.hostile_count,
+		"leave_remaining": maxf(0.0, Extraction.LEAVE_GRACE - extraction.out_of_range)}
 
 func get_state() -> Dictionary:
 	var live: Array = []

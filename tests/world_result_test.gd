@@ -41,16 +41,10 @@ func _run() -> void:
 	game.hud.menu_action_requested.emit("restart", "")
 	await game.run_ready
 	check(game.progression.contracts.active and not game.progression.contracts.ended and game.screen_state == "running", "Restart opens fresh run after boundary result")
-	var site: Dictionary = {}
-	for candidate: Dictionary in game.arena.world_layout.villages:
-		game.vehicle.global_position = Rules.point(candidate)
-		var possible: Dictionary = game.world.activities._nearest_site()
-		if not possible.is_empty() and not possible.anchor.is_empty():
-			site = possible
-			break
-	check(not site.is_empty(), "Real source world provides extraction site")
-	game.world.activities.credits = 2
-	game.vehicle.motion.speed = 0
+	var zones: Array = game.world.activities.get_extraction_state().sites
+	check(zones.size() == 3, "Generated world exposes three dedicated extraction zones")
+	game.vehicle.global_position = zones[0].position
+	game.world.activities.credits = 0
 	var interact := InputEventAction.new()
 	interact.action = "interact"
 	interact.pressed = true
@@ -58,13 +52,13 @@ func _run() -> void:
 	check(game.world.activities.extraction.active, "Actual world interaction activates extraction")
 	game.vehicle.global_position = game.world.activities.extraction.position
 	var final_position: Vector3 = game.vehicle.global_position
-	game.world.activities._update_extraction(30.0)
+	game.world.activities._update_extraction(20.0)
 	check(results.size() == 2 and results[1].extracted and not results[1].won, "Extraction publishes one nonvictory result immediately")
 	check(game.screen_state == "result" and paused and not game.vehicle._driving_enabled, "Extraction reaches real result screen")
 	check(game.vehicle.health > 0 and game.vehicle.global_position == final_position, "Extraction retains living player and final position")
 	check(game.progression.contracts.ended and not game.progression.contracts.active and game.progression.profile.lifetimeStats.victories == 0, "Extraction closes profile without granting victory")
 	game.combat.set_running(true)
-	game.world.activities._update_extraction(30.0)
+	game.world.activities._update_extraction(20.0)
 	check(not game.combat.model.running and results.size() == 2, "Extraction terminal state cannot resume or repeat result")
 	check(game.progression.flush(), "Extraction profile persists")
 	var saved: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(game.profile_path))

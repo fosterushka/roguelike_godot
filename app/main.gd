@@ -39,6 +39,8 @@ var raid_loot: Node3D
 var _expedition_return := "menu"
 var _cargo_label: Button
 var _loot_poll := 0.0
+var _mission_poll := 0.0
+var _mission_hint: Label
 var progression: RefCounted
 var progression_feedback := preload("res://presentation/ui/progression_feedback.gd").new()
 var run_seed_override := -1
@@ -201,7 +203,7 @@ func _input(event: InputEvent) -> void:
 		_toggle_armory()
 	elif screen_state == "running":
 		if event.is_action_pressed("interact"):
-			if world.has_method("interact") and not combat.get_state().get("hack_status", {}).get("available", false):
+			if world.has_method("interact"):
 				world.interact()
 		elif event.is_action_pressed("focus_target"):
 			if camera._intro <= 0.0:
@@ -402,6 +404,11 @@ func _physics_process(delta: float) -> void:
 		hud.armory.refresh_save_status(progression.store.status, progression.dirty)
 	if screen_state != "running":
 		return
+	expedition.sample_run(combat.model.player, session_flow.clock.simulation_delta, str(world.weather.phase.type))
+	_mission_poll += delta
+	if _mission_poll >= 0.5:
+		_mission_poll = 0.0
+		_update_mission_hint()
 	_loot_poll += delta
 	if _loot_poll >= 0.2:
 		_loot_poll = 0.0
@@ -533,9 +540,7 @@ func _touch_command(command: String) -> void:
 				combat.focus_next()
 		"ability": combat.activate_ability(selected_ability)
 		"select": selected_ability = (selected_ability + 1) % 3
-		"interact":
-			if not combat.get_state().get("hack_status", {}).get("available", false):
-				world.interact()
+		"interact": world.interact()
 
 func _select_ability(slot: int) -> void:
 	if screen_state == "running" and slot in [0, 1, 2]:
@@ -548,6 +553,10 @@ func _spawn_outside_camera(point: Vector3) -> bool:
 	return not get_viewport().get_visible_rect().has_point(camera.unproject_position(point))
 
 func _on_world_event(event: Dictionary) -> void:
+	if event.get("kind", "") == "extraction_started":
+		hud.show_world_banner(ExpeditionPanel.words("ЗАЩИЩАЙТЕ ЗОНУ", "DEFEND THE EXTRACTION ZONE"), ExpeditionPanel.words("Продержитесь 20 секунд внутри разметки", "Stay inside the marked area for 20 seconds"))
+	elif event.get("kind", "") == "extraction_failed":
+		hud.show_world_banner(ExpeditionPanel.words("ЭВАКУАЦИЯ ПРЕРВАНА", "EXTRACTION CANCELLED"), ExpeditionPanel.words("Вернитесь в зону и нажмите E", "Return to the zone and press E to retry"))
 	if expedition != null:
 		expedition.record_event(event)
 		raid_loot.on_event(event)
@@ -571,6 +580,7 @@ func _vehicle_visual_delta(raw_delta: float) -> float:
 
 func _set_language(value: String) -> void:
 	hud.set_language(value)
+	_update_mission_hint()
 	if expedition != null:
 		_update_cargo()
 	if not ready_to_drive:
@@ -595,6 +605,9 @@ func _show_result() -> void:
 	hud.show_menu(Locale.text("ЭВАКУАЦИЯ ЗАВЕРШЕНА") if event.get("extracted", false) else Locale.text("ПОБЕДА") if event.get("won", false) else Locale.text("ЗАЕЗД ОКОНЧЕН"), (Locale.text("Волна %d · Убито %d · Время %ds") % [event.get("wave", 1), event.get("kills", 0), event.get("elapsed", 0)]) + _expedition_result_text(), [{"label": Locale.text("НОВЫЙ ЗАЕЗД"), "action": "restart"}, {"label": Locale.text("ГЛАВНОЕ МЕНЮ"), "action": "menu"}, {"label": ExpeditionPanel.words("СКЛАД И НАГРАДЫ", "VAULT AND REWARDS"), "action": "hideout"}])
 
 func _setup_expedition_ui() -> void:
+	_mission_hint = preload("res://presentation/ui/mission_hint.gd").new()
+	hud._gameplay.add_child(_mission_hint)
+	hud.markers.occluders.append(_mission_hint)
 	expedition_panel = ExpeditionPanel.new()
 	hud.get_node("Screen").add_child(expedition_panel)
 	expedition_panel.action_requested.connect(_expedition_action)
@@ -644,6 +657,7 @@ func _expedition_action(kind: String, id: String) -> void:
 	else:
 		expedition.action(kind, id)
 	expedition_panel.show_state(expedition.snapshot())
+	_update_mission_hint()
 	_update_cargo()
 
 func _update_cargo() -> void:
@@ -656,7 +670,13 @@ func _expedition_result_text() -> String:
 	if expedition == null or expedition.last_result.is_empty():
 		return ""
 	var result: Dictionary = expedition.last_result
-	return "\n" + ExpeditionPanel.words("Опыт профиля: +%d. %s", "Account XP: +%d. %s") % [result.get("xp", 0), ExpeditionPanel.words("Добыча отправлена на склад.", "Cargo moved to your vault.") if result.get("success", false) else ExpeditionPanel.words("Груз потерян.", "Cargo lost.")]
+	var text := "\n" + ExpeditionPanel.words("Опыт профиля: +%d. %s", "Account XP: +%d. %s") % [result.get("xp", 0), ExpeditionPanel.words("Добыча отправлена на склад.", "Cargo moved to your vault.") if result.get("success", false) else ExpeditionPanel.words("Груз потерян.", "Cargo lost.")]
+	var claimable_count := 0
+	for mission: Dictionary in expedition.active_missions():
+		claimable_count += int(mission.get("can_claim", false))
+	if claimable_count > 0:
+		text += "\n" + ExpeditionPanel.words("Заберите награды за задания в убежище: %d.", "Claim mission rewards in the hideout: %d.") % claimable_count
+	return text
 
 func _request_quit() -> void:
 	if expedition != null and expedition.snapshot().get("pending_result", false):
@@ -675,3 +695,7 @@ func _on_world_state(data: Dictionary) -> void:
 			points.append({"position": crate.position})
 	data["raid_loot"] = points
 	hud.update_world(data)
+
+func _update_mission_hint() -> void:
+	if expedition != null and is_instance_valid(_mission_hint):
+		_mission_hint.update_missions(expedition.active_missions())

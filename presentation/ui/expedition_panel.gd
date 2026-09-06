@@ -14,6 +14,7 @@ var tabs: HBoxContainer
 var notice: Label
 var intensity := 1.0
 var close_button: Button
+var mission_board: VBoxContainer
 
 static func words(ru: String, en: String) -> String:
 	return ru if Locale.language == "ru" else en
@@ -52,6 +53,10 @@ func _ready() -> void:
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body.add_theme_constant_override("separation", 10)
 	scroll.add_child(body)
+	mission_board = preload("res://presentation/ui/mission_board.gd").new()
+	mission_board.action_requested.connect(func(kind: String, id: String) -> void: action_requested.emit(kind, id))
+	column.add_child(mission_board)
+	mission_board.visible = false
 	visible = false
 
 func show_state(value: Dictionary, initial_tab := "") -> void:
@@ -78,11 +83,15 @@ func refresh() -> void:
 		button.disabled = key == tab
 		button.pressed.connect(func() -> void: tab = key; refresh())
 		tabs.add_child(button)
-	notice.text = words("Завершите 2 события, остановитесь у поселения и нажмите E. Удерживайте зону 30 секунд. Гибель и выход теряют груз.", "Complete 2 activities, stop near a settlement and press E. Secure the zone for 30 seconds. Death or abandoning loses cargo.") if raid else words("Переносите вещи со склада в снаряжение перед выездом. Кредиты торговца сохраняются между заездами.", "Move vault items to your loadout before a raid. Trader credits persist between raids.")
+	notice.text = words("Въезжайте в отмеченную зону эвакуации и нажмите E. Защищайтесь внутри 20 секунд. Гибель и выход теряют груз.", "Drive into a marked extraction zone and press E. Defend inside for 20 seconds. Death or abandoning loses cargo.") if raid else words("Переносите вещи со склада в снаряжение перед выездом. Кредиты торговца сохраняются между заездами.", "Move vault items to your loadout before a raid. Trader credits persist between raids.")
+	if tab == "quests":
+		notice.text = words("Эвакуируйтесь или одержите финальную победу, чтобы сохранить прогресс. Одновременно до 5 заданий.", "Extract or win the final battle to save progress. Track up to 5 tasks at once.")
 	if not str(state.get("notice", "")).is_empty():
 		notice.text += "\n" + Locale.text(str(state.notice))
 	if state.get("storage_status", "ready") in ["unsaved", "read-only-future", "unavailable"]:
 		notice.text += "\n" + words("Не удалось сохранить профиль. Операция отменена.", "Profile could not be saved. Transaction cancelled.")
+	body.get_parent().visible = tab != "quests"
+	mission_board.visible = tab == "quests"
 	match tab:
 		"stash", "loadout", "backpack": _inventory(tab)
 		"trade": _trade()
@@ -156,10 +165,7 @@ func _trade() -> void:
 		_row(item_name(id), (words("На складе: %d", "In vault: %d") % state.get("stash", {}).get(id, 0)) + "\n" + Locale.text(str(item.get("description", ""))), actions)
 
 func _quests() -> void:
-	for quest: Dictionary in state.get("quests", []):
-		var status := str(quest.get("status", "available"))
-		var kind := "claim" if status in ["ready", "completed"] else "accept"
-		_row(Locale.text(str(quest.get("title", quest.id))), "%s\n%d / %d  |  %s" % [Locale.text(str(quest.get("description", ""))), int(quest.get("progress", 0)) + int(quest.get("raid_progress", 0)), quest.get("target", 1), words("%d кредитов · %d XP", "%d credits · %d XP") % [quest.get("credits", 0), quest.get("xp", 0)]], [{"kind": kind, "id": str(quest.id), "label": words("ВЫПОЛНЕНО", "DONE") if status == "claimed" else words("В РАБОТЕ", "IN PROGRESS") if status == "active" else words("ЗАБРАТЬ", "CLAIM") if kind == "claim" else words("ПРИНЯТЬ", "ACCEPT"), "disabled": bool(state.get("active", false)) or (not bool(quest.get("can_claim", false)) if kind == "claim" else status != "available")}])
+	mission_board.show_state(state)
 
 func _upgrades() -> void:
 	for upgrade: Dictionary in state.get("upgrades", []):

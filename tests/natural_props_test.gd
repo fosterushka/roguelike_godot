@@ -20,6 +20,7 @@ func _initialize() -> void:
 		natural.dead_tree(45.678, -72.91, 1.05)
 		natural.fence(72.882, -141.137, 1.3, 6)
 		natural.ground_cover(77, -31, 9, 20, true)
+		var natural_rock_counts := {"rockInstances": context.instances.rockInstances.size(), "stoneInstances": context.instances.stoneInstances.size()}
 		var rocks := Rocks.new()
 		rocks.setup(context)
 		rocks.create(fixture.formation)
@@ -34,9 +35,18 @@ func _initialize() -> void:
 				compare(actual[key], expected[key], "prop %d %s" % [index, key])
 			compare(actual.position.x, expected.x, "prop x")
 			compare(actual.position.z, expected.z, "prop z")
+		var rock_props: Array = context.props.filter(func(prop: Dictionary) -> bool: return prop.get("rock_obstacle", false))
+		compare(rock_props.size(), context.rock_obstacles.size(), "one destructible prop per original rock collision")
+		for prop: Dictionary in rock_props:
+			compare(prop.parts.size(), 1, "formation section owns one complete monolith")
+			compare(str(prop.parts[0].pool).begins_with("rockMass"), true, "formation uses a natural monolith pool")
+		compare(context.instances.cliffFaces.is_empty() and context.instances.cliffStrata.is_empty(), true, "formation no longer emits stacked cylinders or bands")
 		for pool: String in fixture.instances:
-			compare(context.instances[pool].size(), fixture.instances[pool].size(), "instance count " + pool)
-			for index in mini(context.instances[pool].size(), fixture.instances[pool].size()):
+			if pool in ["cliffFaces", "cliffStrata"]:
+				continue
+			var expected_count: int = natural_rock_counts.get(pool, fixture.instances[pool].size())
+			compare(context.instances[pool].size(), expected_count, "legacy natural instance count " + pool)
+			for index in mini(context.instances[pool].size(), expected_count):
 				var transform: Transform3D = context.instances[pool][index]
 				var matrix := [transform.basis.x.x, transform.basis.x.y, transform.basis.x.z, 0, transform.basis.y.x, transform.basis.y.y, transform.basis.y.z, 0, transform.basis.z.x, transform.basis.z.y, transform.basis.z.z, 0, transform.origin.x, transform.origin.y, transform.origin.z, 1]
 				compare(matrix, fixture.instances[pool][index], "source matrix " + pool, 0.00015)

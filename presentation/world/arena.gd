@@ -22,6 +22,7 @@ func _ready() -> void:
 	add_child(source_world)
 	preload("res://presentation/world/world_decor_filter.gd").hide_reference_figures(source_world)
 	world_layout = JSON.parse_string(FileAccess.get_file_as_string("res://data/visual_models/world_layout.json"))
+	preload("res://presentation/world/tree_replacements.gd").replace_reference(source_world, world_layout)
 	_roads = RoadView.new()
 	_roads.name = "OriginalSoftEdgeRoads"
 	add_child(_roads)

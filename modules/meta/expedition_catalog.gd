@@ -1,5 +1,8 @@
 extends RefCounted
 
+const Missions = preload("res://modules/meta/mission_catalog.gd")
+const MissionProgress = preload("res://modules/meta/mission_progress.gd")
+
 const ITEMS := {
 	"scrap": {"name": "Металлолом", "description": "Материал для продажи и первого задания.", "buy": 16, "sell": 8, "size": 1, "usable": false, "rarity": "common"},
 	"circuit": {"name": "Электроника", "description": "Ценная добыча для торговца.", "buy": 80, "sell": 40, "size": 1, "usable": false, "rarity": "uncommon"},
@@ -8,16 +11,14 @@ const ITEMS := {
 	"fuel_cell": {"name": "Канистра", "description": "В рейде восстанавливает 45 топлива.", "buy": 50, "sell": 20, "size": 1, "usable": true, "rarity": "common"},
 	"weapon_parts": {"name": "Оружейный комплект", "description": "В рейде усиливает урон на 20% до конца рейда. Один раз за рейд.", "buy": 180, "sell": 75, "size": 2, "usable": true, "rarity": "uncommon"},
 }
-const QUESTS := {
-	"first_delivery": {"name": "Первая поставка", "description": "Эвакуируйте и передайте 6 единиц металлолома из хранилища.", "target": 6, "event": "scrap", "credits": 180, "xp": 120},
-	"road_keeper": {"name": "Дорога под защитой", "description": "Уничтожьте 12 врагов в успешных рейдах после принятия задания.", "target": 12, "event": "kills", "credits": 260, "xp": 180},
-	"helping_hand": {"name": "Рука помощи", "description": "Спасите 2 поселения и эвакуируйтесь после принятия задания.", "target": 2, "event": "rescues", "credits": 350, "xp": 240},
-}
 const UPGRADES := {
 	"cargo": {"name": "Грузовой отсек", "description": "+4 ячейки рюкзака за уровень.", "base_cost": 180, "max_level": 3},
 	"armor": {"name": "Усиление корпуса", "description": "+20 прочности в начале каждого рейда за уровень.", "base_cost": 200, "max_level": 3},
 	"engine": {"name": "Настройка двигателя", "description": "+3% скорости в каждом рейде за уровень.", "base_cost": 220, "max_level": 3},
 }
+
+static func quests() -> Dictionary:
+	return Missions.all()
 
 static func defaults() -> Dictionary:
 	return {"credits": 300, "xp": 0, "stash": {"repair_kit": 2, "fuel_cell": 1}, "loadout": {}, "upgrades": {"cargo": 0, "armor": 0, "engine": 0}, "quests": {}}
@@ -53,14 +54,7 @@ static func normalize(value: Variant) -> Dictionary:
 		if amount > 0:
 			result.loadout[id] = amount
 			space -= amount * int(ITEMS[id].size)
-	var quests: Variant = value.get("quests", {})
-	if quests is Dictionary:
-		for id: String in QUESTS:
-			if not quests.get(id) is Dictionary:
-				continue
-			var quest: Dictionary = quests[id]
-			if quest.get("status", "") in ["active", "claimed"]:
-				result.quests[id] = {"status": quest.status, "progress": integer(quest.get("progress", 0), QUESTS[id].target)}
+	result.quests = MissionProgress.normalize(value.get("quests", {}), quests())
 	return result
 
 static func account(xp: int) -> Dictionary:

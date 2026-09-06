@@ -1,0 +1,491 @@
+{
+  "mode": "Headless regression plus final targeted checks; graphical UI captures verified separately. No all-missions balance playthrough claim.",
+  "passed": 63,
+  "total": 63,
+  "results": [
+    {
+      "test": "mission_tracker_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "source": "/private/tmp/iron-missions-final/report.json"
+    },
+    {
+      "test": "mission_board_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34,
+      "source": "/private/tmp/iron-missions-ui-verified/report.json"
+    },
+    {
+      "test": "mission_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 4.99,
+      "source": "/private/tmp/iron-missions-ui-verified/report.json"
+    },
+    {
+      "test": "extraction_defense_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 7.16,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "extraction_zone_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 11.59,
+      "source": "/private/tmp/iron-missions-final/report.json"
+    },
+    {
+      "test": "meta_economy_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "combo_rewards_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "expedition_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 7.33,
+      "source": "/private/tmp/iron-missions-final/report.json"
+    },
+    {
+      "test": "vehicle_motion_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "offline_session_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.56,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "combat_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.26,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "advanced_combat_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "enemy_ai_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "progression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "world_generation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.45,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "natural_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "authored_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.89,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "world_builder_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 6.05,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "world_gameplay_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.28,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "world_activities_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.28,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "ambient_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.17,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "world_rebuild_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 3.01,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "world_result_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 12.37,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 7.22,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "visual_smoke.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.27,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "ui_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 12.45,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "integration_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 12.48,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "composed_world_seed_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 22.5,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "full_run_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.16,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "combat_soak_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 3.94,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "combat_presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.55,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "source_fx_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "world_presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "run_clock_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "session_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 11.47,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "presentation_details_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "loading_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.17,
+      "source": "/private/tmp/iron-missions-final/report.json"
+    },
+    {
+      "test": "minimap_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "ui_menu_regression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "ui_language_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 7.4,
+      "source": "/private/tmp/iron-missions-final/report.json"
+    },
+    {
+      "test": "hud_layout_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.36,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "ground_effect_depth_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "countdown_ui_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.15,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "reward_radar_mount_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.18,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "armory_tiles_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 7.36,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "ground_surface_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.36,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "wheel_vehicle_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.87,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "radar_progression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "radar_armory_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 7.32,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "vehicle_response_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "vehicle_render_runtime_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 4.26,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "tire_trails_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.37,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "road_speed_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.66,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "enemy_factory_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "weather_transition_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "support_feedback_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.46,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "support_wave_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "jammer_gameplay_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "jammer_feedback_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.46,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "mine_hacking_module_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 7.32,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "village_destruction_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.78,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "village_decoration_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 6.42,
+      "source": "/private/tmp/iron-missions-regression/report.json"
+    },
+    {
+      "test": "mission_catalog_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.14,
+      "source": "/private/tmp/iron-missions-final/report.json"
+    }
+  ],
+  "graphical": {
+    "completion": "MISSION_BOARD_CAPTURE_COMPLETE: 11 images, 3 active missions",
+    "script_errors": 0,
+    "engine_errors": 0,
+    "compiler_warnings": "Existing integer division and shadowing warnings; newly introduced main variable shadowing renamed afterwards.",
+    "captured_resolutions": [
+      "1280x800",
+      "960x600"
+    ],
+    "languages": [
+      "ru",
+      "en"
+    ],
+    "images": {
+      "active-en-960": "docs/validation/missions-active-en-960.png",
+      "active-ru-960": "docs/validation/missions-active-ru-960.png",
+      "hud-en-960": "docs/validation/missions-hud-en-960.png",
+      "hud-ru-960": "docs/validation/missions-hud-ru-960.png",
+      "all-page2-en-960": "docs/validation/missions-all-page2-en-960.png"
+    },
+    "evidence": [
+      "OFFLINE_READY: loaded world, vehicle, weapons, enemy pools, effects and HUD; waiting for start",
+      "MISSION_CAPTURE /private/tmp/iron-missions-new-profile-ru-1280.png status=0 size=(1280, 800)",
+      "MISSION_CAPTURE /private/tmp/iron-missions-active-ru-1280.png status=0 size=(1280, 800)",
+      "MISSION_CAPTURE /private/tmp/iron-missions-active-en-1280.png status=0 size=(1280, 800)",
+      "MISSION_CAPTURE /private/tmp/iron-missions-active-ru-960.png status=0 size=(960, 600)",
+      "MISSION_CAPTURE /private/tmp/iron-missions-active-en-960.png status=0 size=(960, 600)",
+      "MISSION_CAPTURE /private/tmp/iron-missions-all-page2-en-960.png status=0 size=(960, 600)",
+      "MISSION_CAPTURE /private/tmp/iron-missions-hunting-en-960.png status=0 size=(960, 600)",
+      "MISSION_CAPTURE /private/tmp/iron-missions-hud-ru-1280.png status=0 size=(1280, 800)",
+      "MISSION_CAPTURE /private/tmp/iron-missions-hud-en-1280.png status=0 size=(1280, 800)",
+      "MISSION_CAPTURE /private/tmp/iron-missions-hud-ru-960.png status=0 size=(960, 600)",
+      "MISSION_CAPTURE /private/tmp/iron-missions-hud-en-960.png status=0 size=(960, 600)",
+      "MISSION_BOARD_CAPTURE_COMPLETE: 11 images, 3 active missions"
+    ]
+  },
+  "normal_launch": {
+    "ready": true,
+    "renderer": "Metal 4.0, Forward+, Apple M4 Pro",
+    "script_errors": 0,
+    "engine_errors": 0,
+    "existing_compiler_warnings": true
+  }
+}

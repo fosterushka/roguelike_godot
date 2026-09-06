@@ -7,7 +7,7 @@ var _healers: Dictionary
 var _airdrop: Dictionary
 var _markers: Array[MeshInstance3D] = []
 var _routes: Array[MultiMeshInstance3D] = []
-var _evac: MeshInstance3D
+var _extraction_zones: Node3D
 var _state: Dictionary = {}
 var _warmup := false
 var _visual_elapsed := 0.0
@@ -47,8 +47,8 @@ func _ready() -> void:
 		route.multimesh = multimesh
 		add_child(route)
 		_routes.append(route)
-	_evac = _ring(11.9, 12.0, Color("74ddb2"))
-	_evac.visible = false
+	_extraction_zones = preload("res://presentation/world/extraction_zone_view.gd").new()
+	add_child(_extraction_zones)
 
 func apply_state(state: Dictionary) -> void:
 	_state = state
@@ -84,11 +84,7 @@ func apply_state(state: Dictionary) -> void:
 		_flare_smoke.apply_drop({}, _visual_elapsed)
 	else:
 		_place_airdrop(drops[0])
-	var extraction: Dictionary = state.get("extraction", {})
-	_evac.visible = bool(extraction.get("active", false))
-	if _evac.visible:
-		_evac.position = _grounded(extraction.position) + Vector3.UP * 0.05
-		_evac.material_override.albedo_color = Color("ff7552") if extraction.get("mode", "") == "contested" else Color("74ddb2")
+	_extraction_zones.apply_state(state.get("extraction", {}))
 
 func _update_route(view: MultiMeshInstance3D, points: Array, color: Color) -> void:
 	view.multimesh.mesh.material.albedo_color = color

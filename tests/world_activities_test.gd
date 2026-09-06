@@ -72,41 +72,35 @@ func _run() -> void:
 	world._flush_prop_events()
 	activities._update(distress, 0.1)
 	check(distress.state == "failed", "destroyedvillagedistressfails")
-	check(not activities.village_eligible(village.id), "destroyedvillagecannotextract")
+	check(not activities.village_eligible(village.id), "destroyed village is unavailable for settlement activities")
 	world.reset_run()
-	var extraction_site: Dictionary = {}
-	for candidate: Dictionary in arena.world_layout.villages:
-		vehicle.global_position = Rules.point(candidate)
-		var site: Dictionary = activities._nearest_site()
-		if not site.is_empty() and not site.anchor.is_empty():
-			extraction_site = site
-			break
-	check(not extraction_site.is_empty(), "sourceclear extractionanchor")
-	activities.credits = 2
+	combat.set_running(true)
+	var sites: Array = activities.get_extraction_state().sites
+	check(sites.size() == 3, "Three independent extraction zones exist before completing activities")
+	var extraction_site: Dictionary = sites[0]
+	vehicle.global_position = extraction_site.position
+	activities.credits = 0
 	vehicle.motion.speed = 1.6
-	check(not world.interact(), "extractionrejectsmovingfast")
-	vehicle.motion.speed = 0.0
-	check(world.interact() and activities.credits == 0, "extractEconsumes2credits")
-	check(not world.interact(), "activeextractcannotdoublecharge")
+	check(world.interact() and activities.credits == 0, "E inside a zone starts free extraction without settlement or speed requirements")
+	check(not world.interact(), "Active extraction cannot start twice")
 	vehicle.global_position = activities.extraction.position
 	var hostile: Dictionary = combat.model.spawn_enemy("rifleman", vehicle.global_position + Vector3(15, 0, 0))
 	activities._update_extraction(5.0)
-	check(activities.extraction.contested and activities.extraction.progress == 0, "hostilewithin28pausesprogress")
+	check(activities.extraction.progress == 5.0, "Defense countdown continues while enemies attack")
+	check(activities.get_extraction_state().hostile_count > 0, "Defense state reports nearby attackers")
 	hostile.dead = true
-	activities._update_extraction(10.0)
-	check(activities.extraction.progress == 10, "uncontestedholdadvances")
-	vehicle.global_position += Vector3(13, 0, 0)
+	activities._update_extraction(5.0)
+	check(activities.extraction.progress == 10.0, "Remaining inside advances the defense timer")
+	vehicle.global_position += Vector3(Extraction.ZONE_RADIUS + 2.0, 0, 0)
 	activities._update_extraction(1.0)
-	check(activities.extraction.active and activities.extraction.out_of_range == 1, "leavegracefirstsecond")
-	activities._update_extraction(1.0)
-	check(not activities.extraction.active and activities.credits == 0, "leave2secondsabandonswithoutrefund")
-	vehicle.global_position = Rules.point(extraction_site.village)
-	activities.credits = 2
-	check(world.interact(), "extractioncanretrynewcredits")
-	vehicle.global_position = activities.extraction.position
-	activities._update_extraction(30.0)
-	check(combat.model.status == "extracted" and not combat.model.running and vehicle.health > 0, "30secondextractionendsalive")
-	check(results.size() == 1 and results[0].get("extracted", false) and not results[0].won, "extractionisnotvictorycontract")
+	check(activities.extraction.active and activities.extraction.out_of_range == 1.0 and activities.extraction.progress == 10.0, "Leaving pauses the timer during grace period")
+	activities._update_extraction(Extraction.LEAVE_GRACE - 1.0)
+	check(not activities.extraction.active and activities.credits == 0, "Leaving for three seconds cancels extraction")
+	vehicle.global_position = extraction_site.position
+	check(world.interact(), "The independent extraction zone allows another attempt")
+	activities._update_extraction(Extraction.SECURE_SECONDS)
+	check(combat.model.status == "extracted" and not combat.model.running and vehicle.health > 0, "Surviving twenty seconds in the zone extracts alive")
+	check(results.size() == 1 and results[0].get("extracted", false) and not results[0].won, "Extraction is one distinct non-victory outcome")
 	combat.reset_run()
 	world.reset_run()
 	world.set_running(true)

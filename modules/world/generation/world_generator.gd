@@ -38,6 +38,7 @@ static func generate(seed_value: int, authored: RefCounted) -> RefCounted:
 	scatter.monuments()
 	scatter.outer_dressing()
 	scatter.pebbles()
+	preload("res://modules/world/generation/vegetation_generator.gd").populate(context)
 	context.terrain_details.groundCoverInstances = context.instances.grassTufts.size()
 	context.terrain_details.extraDrawCalls = 0
 	return context

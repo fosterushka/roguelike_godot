@@ -1,0 +1,3166 @@
+{
+  "version": 1,
+  "missions": [
+    {
+      "id": "first_delivery",
+      "name": "Первая поставка",
+      "name_en": "First delivery",
+      "description": "Мастерской нужен первый запас металла для починки караванов.",
+      "description_en": "The workshop needs its first stock of metal for caravan repairs.",
+      "category": "salvage",
+      "min_level": 1,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "loot_scrap",
+          "target": 6
+        }
+      ],
+      "conditions": [],
+      "delivery": {
+        "scrap": 6
+      },
+      "credits": 180,
+      "xp": 120
+    },
+    {
+      "id": "live_circuits",
+      "name": "Живые схемы",
+      "name_en": "Live circuits",
+      "description": "Торговец собирает исправные схемы для старых радиостанций.",
+      "description_en": "The trader is collecting working circuits for old radios.",
+      "category": "salvage",
+      "min_level": 1,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "loot_circuit",
+          "target": 3
+        }
+      ],
+      "conditions": [],
+      "delivery": {
+        "circuit": 3
+      },
+      "credits": 230,
+      "xp": 100
+    },
+    {
+      "id": "old_world_sample",
+      "name": "Образец старого мира",
+      "name_en": "Old world sample",
+      "description": "Архивариус просит привезти механизм из забытой литейной.",
+      "description_en": "The archivist wants a mechanism recovered from a forgotten foundry.",
+      "category": "salvage",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "loot_relic",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {
+        "relic": 1
+      },
+      "credits": 260,
+      "xp": 140
+    },
+    {
+      "id": "medical_reserve",
+      "name": "Запас для мастерской",
+      "name_en": "Workshop reserve",
+      "description": "Пополните резерв ремкомплектов, пока дорога между поселениями открыта.",
+      "description_en": "Restock the repair reserve while the road between settlements remains open.",
+      "category": "salvage",
+      "min_level": 2,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "loot_repair_kit",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {
+        "repair_kit": 2
+      },
+      "credits": 280,
+      "xp": 140
+    },
+    {
+      "id": "armorer_parcel",
+      "name": "Посылка оружейнику",
+      "name_en": "Armorer parcel",
+      "description": "Оружейник ждёт комплекты, потерянные рейдерскими колоннами.",
+      "description_en": "The armorer is waiting for kits lost by raider convoys.",
+      "category": "salvage",
+      "min_level": 2,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "loot_weapon_parts",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {
+        "weapon_parts": 2
+      },
+      "credits": 280,
+      "xp": 140
+    },
+    {
+      "id": "mixed_crates",
+      "name": "Разные ящики",
+      "name_en": "Mixed crates",
+      "description": "Докажите, что умеете выбирать полезное среди разной добычи.",
+      "description_en": "Prove you can pick useful cargo from a varied haul.",
+      "category": "salvage",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "loot_types",
+          "target": 3
+        },
+        {
+          "metric": "loot_items",
+          "target": 5
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "copper_and_iron",
+      "name": "Медь и железо",
+      "name_en": "Copper and iron",
+      "description": "Для новых генераторов мастерской нужны и металл, и электроника.",
+      "description_en": "The workshop needs both metal and electronics for new generators.",
+      "category": "salvage",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "loot_scrap",
+          "target": 4
+        },
+        {
+          "metric": "loot_circuit",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {
+        "scrap": 4,
+        "circuit": 2
+      },
+      "credits": 395,
+      "xp": 160
+    },
+    {
+      "id": "precision_package",
+      "name": "Точный груз",
+      "name_en": "Precision package",
+      "description": "Доставьте редкий механизм вместе с комплектом для его вооружённой охраны.",
+      "description_en": "Deliver a rare mechanism alongside a kit for its armed escort.",
+      "category": "salvage",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "loot_relic",
+          "target": 1
+        },
+        {
+          "metric": "loot_weapon_parts",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {
+        "relic": 1,
+        "weapon_parts": 1
+      },
+      "credits": 385,
+      "xp": 200
+    },
+    {
+      "id": "traveling_exhibition",
+      "name": "Передвижная выставка",
+      "name_en": "Traveling exhibition",
+      "description": "Привезите образцы разных находок для маленькой выставки в убежище.",
+      "description_en": "Bring a varied collection of finds for the hideout's small exhibition.",
+      "category": "salvage",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "loot_types",
+          "target": 4
+        },
+        {
+          "metric": "loot_items",
+          "target": 7
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 415,
+      "xp": 240
+    },
+    {
+      "id": "freight_trial",
+      "name": "Испытание грузового отсека",
+      "name_en": "Cargo hold trial",
+      "description": "Проверьте расширенный отсек под настоящей нагрузкой и выведите груз через E1.",
+      "description_en": "Test your expanded hold under a real load and leave through E1.",
+      "category": "salvage",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "loot_slots",
+          "target": 16
+        },
+        {
+          "metric": "extract_1",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "consumables_used",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 455,
+      "xp": 270
+    },
+    {
+      "id": "rescue_supplies",
+      "name": "Припасы спасателей",
+      "name_en": "Rescue supplies",
+      "description": "Верните лишний ремкомплект спасённого поселения в общий резерв.",
+      "description_en": "Return a rescued settlement's spare repair kit to the shared reserve.",
+      "category": "salvage",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "loot_repair_kit",
+          "target": 1
+        },
+        {
+          "metric": "rescues",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {
+        "repair_kit": 1
+      },
+      "credits": 365,
+      "xp": 200
+    },
+    {
+      "id": "factory_electronics",
+      "name": "Заводская электроника",
+      "name_en": "Factory electronics",
+      "description": "После остановки литейной соберите электронику для ремонтной бригады.",
+      "description_en": "After shutting down a foundry, recover electronics for the repair crew.",
+      "category": "salvage",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "loot_circuit",
+          "target": 3
+        },
+        {
+          "metric": "foundries",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {
+        "circuit": 3
+      },
+      "credits": 475,
+      "xp": 240
+    },
+    {
+      "id": "road_keeper",
+      "name": "Дорога под защитой",
+      "name_en": "Road keeper",
+      "description": "Очистите дороги, которыми пользуются небольшие мирные караваны.",
+      "description_en": "Clear the roads used by small civilian caravans.",
+      "category": "hunting",
+      "min_level": 1,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "kills",
+          "target": 12
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 260,
+      "xp": 180
+    },
+    {
+      "id": "ground_and_air",
+      "name": "Земля и воздух",
+      "name_en": "Ground and air",
+      "description": "Разбейте смешанный отряд, который прикрывается дронами.",
+      "description_en": "Break a mixed squad that relies on drone cover.",
+      "category": "hunting",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "kills_soldier",
+          "target": 8
+        },
+        {
+          "metric": "kills_drone",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "two_wheel_patrol",
+      "name": "Двухколёсный патруль",
+      "name_en": "Two wheel patrol",
+      "description": "Разгоните мотоциклетные дозоры на подступах к торговым дорогам.",
+      "description_en": "Drive the motorcycle patrols away from the trade roads.",
+      "category": "hunting",
+      "min_level": 1,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "kills_bike",
+          "target": 3
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 170,
+      "xp": 100
+    },
+    {
+      "id": "broken_escort",
+      "name": "Разбитое сопровождение",
+      "name_en": "Broken escort",
+      "description": "Лишите рейдерскую пехоту поддержки быстрых багги.",
+      "description_en": "Strip the raider infantry of its fast buggy support.",
+      "category": "hunting",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "kills_buggy",
+          "target": 2
+        },
+        {
+          "metric": "kills_soldier",
+          "target": 4
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "dangerous_infantry",
+      "name": "Опасная пехота",
+      "name_en": "Dangerous infantry",
+      "description": "Уберите самых опасных стрелков из вражеской пехоты.",
+      "description_en": "Remove the most dangerous shooters from the enemy infantry.",
+      "category": "hunting",
+      "min_level": 3,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "kills_ak",
+          "target": 4
+        },
+        {
+          "metric": "kills_bazooka",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 345,
+      "xp": 200
+    },
+    {
+      "id": "defuse_the_pack",
+      "name": "Обезвредить стаю",
+      "name_en": "Defuse the pack",
+      "description": "Разбейте группу подрывников и используйте форсаж для выхода из боя.",
+      "description_en": "Break a bomber group and use overdrive to get through the fight.",
+      "category": "hunting",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "kills_bomber",
+          "target": 3
+        },
+        {
+          "metric": "overdrives",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 345,
+      "xp": 200
+    },
+    {
+      "id": "empty_sky",
+      "name": "Пустое небо",
+      "name_en": "Empty sky",
+      "description": "Сбейте оба вида дронов, охотящихся на одиночные машины.",
+      "description_en": "Bring down both drone types that hunt isolated vehicles.",
+      "category": "hunting",
+      "min_level": 3,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "kills_shooter",
+          "target": 2
+        },
+        {
+          "metric": "kills_kamikaze",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 345,
+      "xp": 200
+    },
+    {
+      "id": "garrison_sweep",
+      "name": "Зачистка гарнизона",
+      "name_en": "Garrison sweep",
+      "description": "Уничтожьте гарнизон вместе с охраняющей дорогу пехотой.",
+      "description_en": "Destroy a garrison and the infantry guarding its road.",
+      "category": "hunting",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "kills_garrison",
+          "target": 1
+        },
+        {
+          "metric": "kills_soldier",
+          "target": 8
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 345,
+      "xp": 200
+    },
+    {
+      "id": "cut_the_support",
+      "name": "Отрезать поддержку",
+      "name_en": "Cut the support",
+      "description": "Выбейте специальные машины, которые поддерживают рейдерские отряды.",
+      "description_en": "Take out the special vehicles supporting raider squads.",
+      "category": "hunting",
+      "min_level": 4,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "kills_priority",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 380,
+      "xp": 220
+    },
+    {
+      "id": "heavy_traffic",
+      "name": "Тяжёлый трафик",
+      "name_en": "Heavy traffic",
+      "description": "Разбейте дорожный гарнизон и уничтожьте патрули на багги.",
+      "description_en": "Break a roadside garrison and destroy the buggy patrols.",
+      "category": "hunting",
+      "min_level": 4,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "kills_garrison",
+          "target": 1
+        },
+        {
+          "metric": "kills_buggy",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 415,
+      "xp": 240
+    },
+    {
+      "id": "untouched_hunter",
+      "name": "Неуловимый охотник",
+      "name_en": "Untouched hunter",
+      "description": "Ветеранам нужен водитель, способный закончить охоту без единого повреждения.",
+      "description_en": "The veterans need a driver who can finish a hunt without taking any damage.",
+      "category": "hunting",
+      "min_level": 7,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "kills",
+          "target": 15
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "damage_taken",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 630,
+      "xp": 370
+    },
+    {
+      "id": "swift_sweep",
+      "name": "Быстрая зачистка",
+      "name_en": "Swift sweep",
+      "description": "Проведите короткую зачистку и уходите, пока не понадобились припасы.",
+      "description_en": "Finish a quick sweep and leave before you need supplies.",
+      "category": "hunting",
+      "min_level": 5,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "kills",
+          "target": 20
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "seconds",
+          "op": "max",
+          "value": 210
+        },
+        {
+          "metric": "consumables_used",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 565,
+      "xp": 340
+    },
+    {
+      "id": "helping_hand",
+      "name": "Рука помощи",
+      "name_en": "Helping hand",
+      "description": "Помогите соседним поселениям пережить рейдерские нападения.",
+      "description_en": "Help neighboring settlements survive raider attacks.",
+      "category": "rescue",
+      "min_level": 1,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "rescues",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 350,
+      "xp": 240
+    },
+    {
+      "id": "field_mechanic",
+      "name": "Полевой механик",
+      "name_en": "Field mechanic",
+      "description": "Доберитесь до поселения и проверьте полевой ремонт в деле.",
+      "description_en": "Reach the settlement and put field repairs to work.",
+      "category": "rescue",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "rescues",
+          "target": 1
+        },
+        {
+          "metric": "repair_uses",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 205,
+      "xp": 120
+    },
+    {
+      "id": "ambulance_cargo",
+      "name": "Груз скорой помощи",
+      "name_en": "Ambulance cargo",
+      "description": "Выведите припасы спасённого поселения через второй коридор эвакуации.",
+      "description_en": "Move a rescued settlement's supplies through the second extraction corridor.",
+      "category": "rescue",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "rescues",
+          "target": 1
+        },
+        {
+          "metric": "loot_repair_kit",
+          "target": 1
+        },
+        {
+          "metric": "extract_2",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {
+        "repair_kit": 1
+      },
+      "credits": 330,
+      "xp": 180
+    },
+    {
+      "id": "sideways_to_safety",
+      "name": "Боком к спасению",
+      "name_en": "Sideways to safety",
+      "description": "Покажите, что умеете добираться до нуждающихся в помощи по извилистой дороге.",
+      "description_en": "Show that you can reach people in need along a winding road.",
+      "category": "rescue",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "rescues",
+          "target": 1
+        },
+        {
+          "metric": "drift_distance",
+          "target": 100
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "clean_rescue",
+      "name": "Спасение без царапин",
+      "name_en": "Clean rescue",
+      "description": "Проведите спасательную операцию так, чтобы корпус не потребовал ремонта.",
+      "description_en": "Run a rescue operation without leaving the hull in need of repairs.",
+      "category": "rescue",
+      "min_level": 7,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "rescues",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "damage_taken",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 630,
+      "xp": 370
+    },
+    {
+      "id": "neighbors_and_supplies",
+      "name": "Соседи и припасы",
+      "name_en": "Neighbors and supplies",
+      "description": "Помощь соседям начнётся с безопасных поселений и перехваченных припасов.",
+      "description_en": "Helping the neighbors starts with safe settlements and intercepted supplies.",
+      "category": "rescue",
+      "min_level": 3,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "rescues",
+          "target": 2
+        },
+        {
+          "metric": "convoys",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 345,
+      "xp": 200
+    },
+    {
+      "id": "silence_the_factory",
+      "name": "Остановить завод",
+      "name_en": "Silence the factory",
+      "description": "После спасения поселения остановите ближайший источник рейдерских подкреплений.",
+      "description_en": "After rescuing a settlement, shut down a source of raider reinforcements.",
+      "category": "rescue",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "rescues",
+          "target": 1
+        },
+        {
+          "metric": "foundries",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 345,
+      "xp": 200
+    },
+    {
+      "id": "regional_response",
+      "name": "Районная помощь",
+      "name_en": "Regional response",
+      "description": "Проверьте несколько участков района и ответьте на сигнал о помощи.",
+      "description_en": "Check several parts of the region and answer a call for help.",
+      "category": "rescue",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "rescues",
+          "target": 1
+        },
+        {
+          "metric": "sectors",
+          "target": 4
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "return_with_reserve",
+      "name": "Обратный путь с запасом",
+      "name_en": "Return with reserve",
+      "description": "Вернитесь после спасения с топливом для следующего экстренного выезда.",
+      "description_en": "Return from a rescue with fuel left for the next emergency trip.",
+      "category": "rescue",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "rescues",
+          "target": 1
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "fuel_pct",
+          "op": "min",
+          "value": 60
+        }
+      ],
+      "delivery": {},
+      "credits": 315,
+      "xp": 190
+    },
+    {
+      "id": "rocket_rescue",
+      "name": "Ракетная помощь",
+      "name_en": "Rocket rescue",
+      "description": "Ракетная поддержка должна помочь защитникам поселения удержать дорогу.",
+      "description_en": "Rocket support should help the settlement defenders hold the road.",
+      "category": "rescue",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "rescues",
+          "target": 1
+        },
+        {
+          "metric": "shots_bazooka",
+          "target": 8
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 345,
+      "xp": 200
+    },
+    {
+      "id": "relief_from_above",
+      "name": "Помощь с неба",
+      "name_en": "Relief from above",
+      "description": "Совместите помощь поселению с получением груза снабжения с воздуха.",
+      "description_en": "Combine settlement relief with the recovery of an airdropped supply crate.",
+      "category": "rescue",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "rescues",
+          "target": 1
+        },
+        {
+          "metric": "airdrops",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 345,
+      "xp": 200
+    },
+    {
+      "id": "urgent_call",
+      "name": "Срочный вызов",
+      "name_en": "Urgent call",
+      "description": "Ответьте на вызов и успейте к третьему выходу до закрытия короткого окна.",
+      "description_en": "Answer the call and reach the third exit within the short departure window.",
+      "category": "rescue",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "rescues",
+          "target": 1
+        },
+        {
+          "metric": "extract_3",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "seconds",
+          "op": "max",
+          "value": 240
+        }
+      ],
+      "delivery": {},
+      "credits": 455,
+      "xp": 270
+    },
+    {
+      "id": "first_interception",
+      "name": "Первый перехват",
+      "name_en": "First interception",
+      "description": "Перехватите первую колонну и заберите пригодный оружейный комплект.",
+      "description_en": "Intercept your first convoy and recover a usable weapon kit.",
+      "category": "convoy",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "convoys",
+          "target": 1
+        },
+        {
+          "metric": "loot_weapon_parts",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 205,
+      "xp": 120
+    },
+    {
+      "id": "arms_supply_line",
+      "name": "Оружейная линия",
+      "name_en": "Arms supply line",
+      "description": "Обеспечьте оружейнику устойчивую поставку трофейных комплектов.",
+      "description_en": "Give the armorer a reliable supply of recovered weapon kits.",
+      "category": "convoy",
+      "min_level": 2,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "convoys",
+          "target": 2
+        },
+        {
+          "metric": "loot_weapon_parts",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {
+        "weapon_parts": 2
+      },
+      "credits": 315,
+      "xp": 160
+    },
+    {
+      "id": "bumper_interception",
+      "name": "Перехват бампером",
+      "name_en": "Bumper interception",
+      "description": "Разорвите строй конвоя машиной, а затем закончите перехват.",
+      "description_en": "Break the convoy formation with your vehicle, then finish the interception.",
+      "category": "convoy",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "convoys",
+          "target": 1
+        },
+        {
+          "metric": "roadkills",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "catch_and_boost",
+      "name": "Догнать и ускориться",
+      "name_en": "Catch and boost",
+      "description": "Используйте запас нитро, чтобы навязать колонне удобный темп боя.",
+      "description_en": "Use your nitro reserve to set the pace of the convoy fight.",
+      "category": "convoy",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "convoys",
+          "target": 1
+        },
+        {
+          "metric": "nitro_uses",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 205,
+      "xp": 120
+    },
+    {
+      "id": "covering_fire",
+      "name": "Прикрывающий огонь",
+      "name_en": "Covering fire",
+      "description": "Прикройте перехват колонны плотным огнём из штатной винтовки.",
+      "description_en": "Cover a convoy interception with sustained fire from the standard rifle.",
+      "category": "convoy",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "convoys",
+          "target": 1
+        },
+        {
+          "metric": "shots_assaultRifle",
+          "target": 80
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "careful_intercept",
+      "name": "Осторожный перехват",
+      "name_en": "Careful intercept",
+      "description": "Оружейник оплатит аккуратный перехват с небольшим ущербом для машины.",
+      "description_en": "The armorer will pay for a careful interception that leaves little vehicle damage.",
+      "category": "convoy",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "convoys",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "damage_taken",
+          "op": "max",
+          "value": 50
+        }
+      ],
+      "delivery": {},
+      "credits": 420,
+      "xp": 250
+    },
+    {
+      "id": "escort_scrap",
+      "name": "Лом сопровождения",
+      "name_en": "Escort scrap",
+      "description": "Привезите металл, оставшийся после разгрома конвойного сопровождения.",
+      "description_en": "Bring back metal recovered after defeating a convoy's escort.",
+      "category": "convoy",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "convoys",
+          "target": 1
+        },
+        {
+          "metric": "loot_scrap",
+          "target": 3
+        }
+      ],
+      "conditions": [],
+      "delivery": {
+        "scrap": 3
+      },
+      "credits": 335,
+      "xp": 160
+    },
+    {
+      "id": "long_haul_capture",
+      "name": "Дальний перехват",
+      "name_en": "Long haul capture",
+      "description": "Пройдите длинный маршрут и найдите колонну, которую стоит перехватить.",
+      "description_en": "Take a long route and find a convoy worth intercepting.",
+      "category": "convoy",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "convoys",
+          "target": 1
+        },
+        {
+          "metric": "distance",
+          "target": 1500
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 345,
+      "xp": 200
+    },
+    {
+      "id": "western_manifest",
+      "name": "Манифест второго выхода",
+      "name_en": "Second exit manifest",
+      "description": "Выведите перехваченный груз по второму эвакуационному коридору.",
+      "description_en": "Move the intercepted cargo out through the second extraction corridor.",
+      "category": "convoy",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "convoys",
+          "target": 1
+        },
+        {
+          "metric": "extract_2",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "field_armorer",
+      "name": "Оружейник в дороге",
+      "name_en": "Armorer on the road",
+      "description": "Испытайте трофейный оружейный комплект сразу после встречи с колонной.",
+      "description_en": "Test a recovered weapon kit during the same raid as a convoy interception.",
+      "category": "convoy",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "convoys",
+          "target": 1
+        },
+        {
+          "metric": "weapon_uses",
+          "target": 1
+        },
+        {
+          "metric": "kills",
+          "target": 6
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 380,
+      "xp": 220
+    },
+    {
+      "id": "rolling_thunder",
+      "name": "Грохот колонны",
+      "name_en": "Convoy thunder",
+      "description": "Рейдеры рассчитывают на грозу, чтобы провести колонну незаметно.",
+      "description_en": "The raiders are counting on a storm to move their convoy unnoticed.",
+      "category": "convoy",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "convoys",
+          "target": 1
+        },
+        {
+          "metric": "storm_seconds",
+          "target": 20
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 415,
+      "xp": 240
+    },
+    {
+      "id": "double_intercept",
+      "name": "Двойной перехват",
+      "name_en": "Double intercept",
+      "description": "Успейте перехватить две колонны и собрать оружейный груз за один выезд.",
+      "description_en": "Intercept two convoys and assemble an arms shipment in a single trip.",
+      "category": "convoy",
+      "min_level": 5,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "convoys",
+          "target": 2
+        },
+        {
+          "metric": "loot_weapon_parts",
+          "target": 3
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "seconds",
+          "op": "max",
+          "value": 360
+        }
+      ],
+      "delivery": {
+        "weapon_parts": 3
+      },
+      "credits": 585,
+      "xp": 310
+    },
+    {
+      "id": "first_drift",
+      "name": "Первый дрифт",
+      "name_en": "First drift",
+      "description": "Освойте управляемое скольжение и верните машину на базу.",
+      "description_en": "Practice a controlled slide and bring the vehicle back to base.",
+      "category": "driving",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "drift_distance",
+          "target": 60
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 205,
+      "xp": 120
+    },
+    {
+      "id": "rolling_start",
+      "name": "Ходовой тест",
+      "name_en": "Rolling test",
+      "description": "Проведите ходовой тест машины вдали от стен убежища.",
+      "description_en": "Give the vehicle a road test away from the hideout walls.",
+      "category": "driving",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "moving_seconds",
+          "target": 60
+        },
+        {
+          "metric": "distance",
+          "target": 350
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 205,
+      "xp": 120
+    },
+    {
+      "id": "nitro_delivery",
+      "name": "Доставка на нитро",
+      "name_en": "Nitro delivery",
+      "description": "Доставьте небольшой груз, используя нитро для быстрого возвращения.",
+      "description_en": "Deliver a small load and use nitro for a quick return.",
+      "category": "driving",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "nitro_uses",
+          "target": 2
+        },
+        {
+          "metric": "loot_scrap",
+          "target": 2
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "seconds",
+          "op": "max",
+          "value": 150
+        }
+      ],
+      "delivery": {},
+      "credits": 245,
+      "xp": 150
+    },
+    {
+      "id": "steel_handshake",
+      "name": "Стальное рукопожатие",
+      "name_en": "Steel handshake",
+      "description": "Механик хочет проверить бампер против вражеского транспорта.",
+      "description_en": "The mechanic wants to test the bumper against enemy traffic.",
+      "category": "driving",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "rams",
+          "target": 4
+        },
+        {
+          "metric": "kills_bike",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "road_clearance",
+      "name": "Освободить полосу",
+      "name_en": "Clear the lane",
+      "description": "Освободите полосу машиной и закончите рейс через первый выход.",
+      "description_en": "Clear the lane with your vehicle and finish through the first exit.",
+      "category": "driving",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "roadkills",
+          "target": 3
+        },
+        {
+          "metric": "extract_1",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "hold_the_slide",
+      "name": "Держать скольжение",
+      "name_en": "Hold the slide",
+      "description": "Отработайте длинные скольжения в разных частях района.",
+      "description_en": "Practice sustained slides across different parts of the region.",
+      "category": "driving",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "drift_seconds",
+          "target": 20
+        },
+        {
+          "metric": "sectors",
+          "target": 3
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "full_gauge",
+      "name": "Полная шкала",
+      "name_en": "Full gauge",
+      "description": "Зарядите форсаж во время настоящего дальнего заезда.",
+      "description_en": "Charge overdrive during a proper long-distance run.",
+      "category": "driving",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "overdrives",
+          "target": 1
+        },
+        {
+          "metric": "distance",
+          "target": 600
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "fast_and_intact",
+      "name": "Быстро и цело",
+      "name_en": "Fast and intact",
+      "description": "Разгонитесь на открытом участке и верните почти целую машину.",
+      "description_en": "Build speed on open ground and return with the vehicle nearly intact.",
+      "category": "driving",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "speed_max",
+          "target": 10
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "health_pct",
+          "op": "min",
+          "value": 80
+        }
+      ],
+      "delivery": {},
+      "credits": 385,
+      "xp": 230
+    },
+    {
+      "id": "switchback_runner",
+      "name": "Бег по серпантину",
+      "name_en": "Switchback runner",
+      "description": "Совместите дрифт, нитро и полезную находку в одном рейсе.",
+      "description_en": "Combine drifting, nitro and a useful find in one trip.",
+      "category": "driving",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "drift_distance",
+          "target": 200
+        },
+        {
+          "metric": "nitro_uses",
+          "target": 3
+        },
+        {
+          "metric": "loot_circuit",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 380,
+      "xp": 220
+    },
+    {
+      "id": "bumper_chain",
+      "name": "Цепочка таранов",
+      "name_en": "Ram chain",
+      "description": "Свяжите несколько ударов бампером с повторными включениями форсажа.",
+      "description_en": "Link several bumper strikes with repeated overdrive activations.",
+      "category": "driving",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "rams",
+          "target": 6
+        },
+        {
+          "metric": "overdrives",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 415,
+      "xp": 240
+    },
+    {
+      "id": "long_way_home",
+      "name": "Долгая дорога домой",
+      "name_en": "Long way home",
+      "description": "Пройдите дальний путь к третьему выходу без запасной канистры.",
+      "description_en": "Take the long route to the third exit without using a spare fuel can.",
+      "category": "driving",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "distance",
+          "target": 2500
+        },
+        {
+          "metric": "extract_3",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "fuel_uses",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 455,
+      "xp": 270
+    },
+    {
+      "id": "dustline_express",
+      "name": "Экспресс пыльной трассы",
+      "name_en": "Dustline express",
+      "description": "Покажите быстрый круг с дрифтом и вернитесь в короткое окно эвакуации.",
+      "description_en": "Run a fast route with drifting and return within a short extraction window.",
+      "category": "driving",
+      "min_level": 5,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "speed_max",
+          "target": 12
+        },
+        {
+          "metric": "drift_distance",
+          "target": 150
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "seconds",
+          "op": "max",
+          "value": 210
+        }
+      ],
+      "delivery": {},
+      "credits": 560,
+      "xp": 330
+    },
+    {
+      "id": "rifle_zeroing",
+      "name": "Пристрелка M4",
+      "name_en": "M4 zeroing",
+      "description": "Проверьте штатную винтовку на пехоте, угрожающей дороге.",
+      "description_en": "Test the standard rifle against infantry threatening the road.",
+      "category": "arsenal",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "shots_assaultRifle",
+          "target": 60
+        },
+        {
+          "metric": "kills_soldier",
+          "target": 4
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 205,
+      "xp": 120
+    },
+    {
+      "id": "ak_workbench",
+      "name": "Стенд турели АК",
+      "name_en": "AK turret bench",
+      "description": "Оружейник просит проверить новую турель АК под боевой нагрузкой.",
+      "description_en": "The armorer wants the AK turret tested under combat conditions.",
+      "category": "arsenal",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "shots_akTurret",
+          "target": 50
+        },
+        {
+          "metric": "kills",
+          "target": 5
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "rocket_practice",
+      "name": "Ракетная практика",
+      "name_en": "Rocket practice",
+      "description": "Используйте базуку против транспорта, а не только для громкого шума.",
+      "description_en": "Put the bazooka to work against vehicles, beyond making noise.",
+      "category": "arsenal",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "shots_bazooka",
+          "target": 10
+        },
+        {
+          "metric": "kills_buggy",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "lobbed_answer",
+      "name": "Ответ навесом",
+      "name_en": "Lobbed answer",
+      "description": "Испытайте навесной огонь гранатомёта против пехотного отряда.",
+      "description_en": "Test the grenade launcher's arcing fire against an infantry squad.",
+      "category": "arsenal",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "shots_grenadeLauncher",
+          "target": 15
+        },
+        {
+          "metric": "kills_soldier",
+          "target": 6
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 345,
+      "xp": 200
+    },
+    {
+      "id": "barrel_rotation",
+      "name": "Вращение стволов",
+      "name_en": "Spinning barrels",
+      "description": "Проверьте, хватает ли минигану плотности огня против воздушных целей.",
+      "description_en": "See whether the minigun can sustain enough fire against aerial targets.",
+      "category": "arsenal",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "shots_minigun",
+          "target": 150
+        },
+        {
+          "metric": "kills_drone",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 345,
+      "xp": 200
+    },
+    {
+      "id": "rail_trial",
+      "name": "Испытание рельсотрона",
+      "name_en": "Railgun trial",
+      "description": "Продемонстрируйте рельсотрон при штурме укреплённого гарнизона.",
+      "description_en": "Demonstrate the railgun during an assault on a fortified garrison.",
+      "category": "arsenal",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "shots_railgun",
+          "target": 8
+        },
+        {
+          "metric": "kills_garrison",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 415,
+      "xp": 240
+    },
+    {
+      "id": "guided_package",
+      "name": "Управляемая посылка",
+      "name_en": "Guided package",
+      "description": "Отправьте управляемые ракеты навстречу вражеской машине поддержки.",
+      "description_en": "Send guided missiles after an enemy support vehicle.",
+      "category": "arsenal",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "shots_missileRack",
+          "target": 12
+        },
+        {
+          "metric": "kills_priority",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 415,
+      "xp": 240
+    },
+    {
+      "id": "combined_battery",
+      "name": "Смешанная батарея",
+      "name_en": "Combined battery",
+      "description": "Согласуйте работу винтовки и базуки в одной оружейной сборке.",
+      "description_en": "Make the rifle and bazooka work together in one weapon build.",
+      "category": "arsenal",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "shots_assaultRifle",
+          "target": 50
+        },
+        {
+          "metric": "shots_bazooka",
+          "target": 6
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 380,
+      "xp": 220
+    },
+    {
+      "id": "workshop_live_fire",
+      "name": "Живой тест мастерской",
+      "name_en": "Workshop live fire",
+      "description": "Проверьте усиленное оружие в затяжной перестрелке.",
+      "description_en": "Test your improved weapons in a sustained firefight.",
+      "category": "arsenal",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "weapon_uses",
+          "target": 1
+        },
+        {
+          "metric": "shots",
+          "target": 100
+        },
+        {
+          "metric": "kills",
+          "target": 8
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 380,
+      "xp": 220
+    },
+    {
+      "id": "close_quarters",
+      "name": "Ближняя дистанция",
+      "name_en": "Close quarters",
+      "description": "Совместите огонь турели с работой бампера без дополнительного оружейного комплекта.",
+      "description_en": "Combine turret fire and bumper work without using an extra weapon kit.",
+      "category": "arsenal",
+      "min_level": 5,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "roadkills",
+          "target": 3
+        },
+        {
+          "metric": "shots_akTurret",
+          "target": 60
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "weapon_uses",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 560,
+      "xp": 330
+    },
+    {
+      "id": "red_hot_battery",
+      "name": "Раскалённая батарея",
+      "name_en": "Red hot battery",
+      "description": "Заставьте скорострельную и навесную батареи работать в темпе форсажа.",
+      "description_en": "Run rapid-fire and arcing-fire weapons at overdrive pace.",
+      "category": "arsenal",
+      "min_level": 5,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "shots_minigun",
+          "target": 100
+        },
+        {
+          "metric": "shots_grenadeLauncher",
+          "target": 10
+        },
+        {
+          "metric": "overdrives",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 520,
+      "xp": 300
+    },
+    {
+      "id": "no_rockets_needed",
+      "name": "Без ракет обойдёмся",
+      "name_en": "No rockets needed",
+      "description": "Разберите вражеский транспорт рельсотроном, оставив ракетные установки на складе.",
+      "description_en": "Take enemy vehicles apart with a railgun and leave rocket launchers behind.",
+      "category": "arsenal",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "kills_buggy",
+          "target": 2
+        },
+        {
+          "metric": "shots_railgun",
+          "target": 6
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "shots_bazooka",
+          "op": "max",
+          "value": 0
+        },
+        {
+          "metric": "shots_missileRack",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 495,
+      "xp": 300
+    },
+    {
+      "id": "three_directions",
+      "name": "Три направления",
+      "name_en": "Three directions",
+      "description": "Разведайте несколько направлений и найдите безопасный путь домой.",
+      "description_en": "Scout several directions and find a way home.",
+      "category": "exploration",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "sectors",
+          "target": 3
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 205,
+      "xp": 120
+    },
+    {
+      "id": "scavenger_map",
+      "name": "Карта сборщика",
+      "name_en": "Scavenger map",
+      "description": "Проследите за маршрутами сборщиков, чтобы лучше понять местные дороги.",
+      "description_en": "Follow scavenger routes to learn the local roads.",
+      "category": "exploration",
+      "min_level": 1,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "scavengers",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 170,
+      "xp": 100
+    },
+    {
+      "id": "clear_sky_route",
+      "name": "Маршрут ясного неба",
+      "name_en": "Clear sky route",
+      "description": "Используйте ясную погоду для изучения окрестностей.",
+      "description_en": "Use clear weather to survey the surrounding area.",
+      "category": "exploration",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "sunny_seconds",
+          "target": 60
+        },
+        {
+          "metric": "sectors",
+          "target": 3
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 205,
+      "xp": 120
+    },
+    {
+      "id": "fog_lantern",
+      "name": "Фонарь в тумане",
+      "name_en": "Fog lantern",
+      "description": "Пройдите часть маршрута в тумане, не теряя направление.",
+      "description_en": "Travel part of the route through fog without losing your bearings.",
+      "category": "exploration",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "foggy_seconds",
+          "target": 30
+        },
+        {
+          "metric": "distance",
+          "target": 500
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "rain_trail",
+      "name": "Дождевой след",
+      "name_en": "Rain trail",
+      "description": "Привезите электронику из рейса по мокрым дорогам.",
+      "description_en": "Bring back electronics from a trip along rain-soaked roads.",
+      "category": "exploration",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "rainy_seconds",
+          "target": 30
+        },
+        {
+          "metric": "loot_circuit",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "storm_cartographer",
+      "name": "Картограф грозы",
+      "name_en": "Storm cartographer",
+      "description": "Отметьте несколько секторов даже во время грозы.",
+      "description_en": "Survey several sectors even while a storm is passing through.",
+      "category": "exploration",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "storm_seconds",
+          "target": 30
+        },
+        {
+          "metric": "sectors",
+          "target": 4
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 415,
+      "xp": 240
+    },
+    {
+      "id": "parachute_hunt",
+      "name": "Охота за парашютом",
+      "name_en": "Parachute hunt",
+      "description": "Найдите воздушный груз во время разведывательного заезда.",
+      "description_en": "Find an airdropped crate during a scouting run.",
+      "category": "exploration",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "airdrops",
+          "target": 1
+        },
+        {
+          "metric": "sectors",
+          "target": 3
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "mobile_workshop",
+      "name": "Мастерская на колёсах",
+      "name_en": "Mobile workshop",
+      "description": "Познакомьтесь с помощью ремонтных караванов на маршруте сборщиков.",
+      "description_en": "Make use of repair caravan assistance along a scavenger route.",
+      "category": "exploration",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "healers",
+          "target": 1
+        },
+        {
+          "metric": "scavengers",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "clear_the_mines",
+      "name": "Снять минные замки",
+      "name_en": "Unlock the mines",
+      "description": "Изучите район и обезвредьте мины с помощью модуля взлома.",
+      "description_en": "Explore the area and disarm mines with the hacking module.",
+      "category": "exploration",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "mine_hacks",
+          "target": 3
+        },
+        {
+          "metric": "sectors",
+          "target": 4
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 415,
+      "xp": 240
+    },
+    {
+      "id": "survey_three_exits",
+      "name": "Разведка трёх выходов",
+      "name_en": "Survey three exits",
+      "description": "Проверьте все три эвакуационных коридора в отдельных рейдах.",
+      "description_en": "Check all three extraction corridors across separate raids.",
+      "category": "exploration",
+      "min_level": 3,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "extract_1",
+          "target": 1
+        },
+        {
+          "metric": "extract_2",
+          "target": 1
+        },
+        {
+          "metric": "extract_3",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 380,
+      "xp": 220
+    },
+    {
+      "id": "long_map",
+      "name": "Большая карта",
+      "name_en": "Long map",
+      "description": "Составьте большую карту маршрута, обходясь без расходных припасов.",
+      "description_en": "Survey a long route without relying on consumable supplies.",
+      "category": "exploration",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "sectors",
+          "target": 6
+        },
+        {
+          "metric": "distance",
+          "target": 2000
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "consumables_used",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 385,
+      "xp": 230
+    },
+    {
+      "id": "salvage_circuit",
+      "name": "Круг сборщика",
+      "name_en": "Scavenger circuit",
+      "description": "Соедините маршрут сборщиков, воздушный груз и разнообразную добычу.",
+      "description_en": "Connect a scavenger route, an airdrop and a varied haul.",
+      "category": "exploration",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "scavengers",
+          "target": 1
+        },
+        {
+          "metric": "airdrops",
+          "target": 1
+        },
+        {
+          "metric": "loot_types",
+          "target": 3
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 450,
+      "xp": 260
+    },
+    {
+      "id": "first_watch",
+      "name": "Первая вахта",
+      "name_en": "First watch",
+      "description": "Проведите первую полноценную вахту в опасной зоне и вернитесь.",
+      "description_en": "Complete your first full watch in the danger zone and return.",
+      "category": "survival",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "seconds",
+          "target": 120
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 205,
+      "xp": 120
+    },
+    {
+      "id": "unmarked_hull",
+      "name": "Корпус без отметин",
+      "name_en": "Unmarked hull",
+      "description": "Доставьте полезный груз, не оставив на корпусе ни одной боевой отметины.",
+      "description_en": "Deliver useful cargo without leaving a single battle mark on the hull.",
+      "category": "survival",
+      "min_level": 7,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "loot_scrap",
+          "target": 3
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "damage_taken",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 665,
+      "xp": 390
+    },
+    {
+      "id": "last_fuel_stop",
+      "name": "Последняя заправка",
+      "name_en": "Last fuel stop",
+      "description": "Проверьте запасную канистру во время длинного дорожного участка.",
+      "description_en": "Test your spare fuel can during a long stretch of road.",
+      "category": "survival",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "fuel_uses",
+          "target": 1
+        },
+        {
+          "metric": "distance",
+          "target": 700
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 205,
+      "xp": 120
+    },
+    {
+      "id": "patch_and_return",
+      "name": "Залатать и вернуться",
+      "name_en": "Patch and return",
+      "description": "Восстановите серьёзно повреждённый корпус и доведите машину до выхода.",
+      "description_en": "Repair a badly damaged hull and get the vehicle to an exit.",
+      "category": "survival",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "repair_uses",
+          "target": 1
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "damage_taken",
+          "op": "min",
+          "value": 80
+        },
+        {
+          "metric": "health_pct",
+          "op": "min",
+          "value": 70
+        }
+      ],
+      "delivery": {},
+      "credits": 355,
+      "xp": 220
+    },
+    {
+      "id": "lean_expedition",
+      "name": "Налегке",
+      "name_en": "Travel light",
+      "description": "Продержитесь вдали от убежища и соберите груз без расходников.",
+      "description_en": "Stay out in the field and collect a load without consumables.",
+      "category": "survival",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "seconds",
+          "target": 180
+        },
+        {
+          "metric": "loot_items",
+          "target": 5
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "consumables_used",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 385,
+      "xp": 230
+    },
+    {
+      "id": "cracked_but_running",
+      "name": "Треснул, но едет",
+      "name_en": "Cracked but running",
+      "description": "Переживите критическое повреждение и вернитесь после восстановления.",
+      "description_en": "Survive critical damage and return after recovering the hull.",
+      "category": "survival",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "extractions",
+          "target": 1
+        },
+        {
+          "metric": "kills",
+          "target": 8
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "min_health_pct",
+          "op": "max",
+          "value": 30
+        },
+        {
+          "metric": "health_pct",
+          "op": "min",
+          "value": 60
+        }
+      ],
+      "delivery": {},
+      "credits": 495,
+      "xp": 300
+    },
+    {
+      "id": "fuel_economy",
+      "name": "Экономный рейс",
+      "name_en": "Fuel economy",
+      "description": "Проведите экономный заезд, сохранив заметный запас топлива.",
+      "description_en": "Make an economical trip and preserve a useful fuel reserve.",
+      "category": "survival",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "distance",
+          "target": 1000
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "nitro_uses",
+          "op": "max",
+          "value": 0
+        },
+        {
+          "metric": "fuel_pct",
+          "op": "min",
+          "value": 40
+        }
+      ],
+      "delivery": {},
+      "credits": 355,
+      "xp": 220
+    },
+    {
+      "id": "storm_shelter",
+      "name": "Укрытие от грозы",
+      "name_en": "Storm shelter",
+      "description": "Выдержите грозу и довезите до выхода достаточно прочную машину.",
+      "description_en": "Weather the storm and bring a sound vehicle to extraction.",
+      "category": "survival",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "storm_seconds",
+          "target": 45
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "health_pct",
+          "op": "min",
+          "value": 70
+        }
+      ],
+      "delivery": {},
+      "credits": 455,
+      "xp": 270
+    },
+    {
+      "id": "raincoat_armor",
+      "name": "Броня-дождевик",
+      "name_en": "Raincoat armor",
+      "description": "Ведите бой под дождём, стараясь пропустить как можно меньше попаданий.",
+      "description_en": "Fight through the rain while taking as few hits as possible.",
+      "category": "survival",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "rainy_seconds",
+          "target": 60
+        },
+        {
+          "metric": "kills",
+          "target": 8
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "hits_taken",
+          "op": "max",
+          "value": 5
+        }
+      ],
+      "delivery": {},
+      "credits": 385,
+      "xp": 230
+    },
+    {
+      "id": "dry_workshop",
+      "name": "Сухая мастерская",
+      "name_en": "Dry workshop",
+      "description": "Остановите литейную в долгом рейде, не прибегая к ремонту.",
+      "description_en": "Shut down a foundry during a long raid without making repairs.",
+      "category": "survival",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "seconds",
+          "target": 240
+        },
+        {
+          "metric": "foundries",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "repair_uses",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 455,
+      "xp": 270
+    },
+    {
+      "id": "low_tank_return",
+      "name": "Назад на остатках",
+      "name_en": "Return on fumes",
+      "description": "Дотяните дальний рейс до эвакуации на остатках топлива.",
+      "description_en": "Finish a long trip by reaching extraction on the remaining fuel.",
+      "category": "survival",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "extractions",
+          "target": 1
+        },
+        {
+          "metric": "distance",
+          "target": 1500
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "fuel_pct",
+          "op": "max",
+          "value": 20
+        }
+      ],
+      "delivery": {},
+      "credits": 455,
+      "xp": 270
+    },
+    {
+      "id": "steady_hands",
+      "name": "Твёрдая рука",
+      "name_en": "Steady hands",
+      "description": "Покажите спокойную и точную езду в продолжительном бою без расходников.",
+      "description_en": "Show steady driving through a prolonged fight without consumables.",
+      "category": "survival",
+      "min_level": 5,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "seconds",
+          "target": 180
+        },
+        {
+          "metric": "kills",
+          "target": 20
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "hits_taken",
+          "op": "max",
+          "value": 3
+        },
+        {
+          "metric": "consumables_used",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 565,
+      "xp": 340
+    },
+    {
+      "id": "first_exit",
+      "name": "Первый выход",
+      "name_en": "First exit",
+      "description": "Проверьте эвакуационный сигнал и вернитесь в убежище.",
+      "description_en": "Test the extraction signal and return to the hideout.",
+      "category": "extraction",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 170,
+      "xp": 100
+    },
+    {
+      "id": "exit_one_manifest",
+      "name": "Ведомость E1",
+      "name_en": "E1 manifest",
+      "description": "Первый коридор ждёт небольшой пробной партии металла.",
+      "description_en": "The first corridor is waiting for a small trial shipment of metal.",
+      "category": "extraction",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "extract_1",
+          "target": 1
+        },
+        {
+          "metric": "loot_scrap",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 205,
+      "xp": 120
+    },
+    {
+      "id": "exit_two_manifest",
+      "name": "Ведомость E2",
+      "name_en": "E2 manifest",
+      "description": "Проверьте доставку электроники через второй выход.",
+      "description_en": "Test an electronics delivery through the second exit.",
+      "category": "extraction",
+      "min_level": 1,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "extract_2",
+          "target": 1
+        },
+        {
+          "metric": "loot_circuit",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 205,
+      "xp": 120
+    },
+    {
+      "id": "exit_three_manifest",
+      "name": "Ведомость E3",
+      "name_en": "E3 manifest",
+      "description": "Провезите редкий механизм по третьему эвакуационному коридору.",
+      "description_en": "Take a rare mechanism through the third extraction corridor.",
+      "category": "extraction",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "extract_3",
+          "target": 1
+        },
+        {
+          "metric": "loot_relic",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 275,
+      "xp": 160
+    },
+    {
+      "id": "short_shift",
+      "name": "Короткая смена",
+      "name_en": "Short shift",
+      "description": "Соберите небольшой груз и закончите короткую смену в поле.",
+      "description_en": "Collect a small load and finish a short shift in the field.",
+      "category": "extraction",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "extractions",
+          "target": 1
+        },
+        {
+          "metric": "loot_items",
+          "target": 3
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "seconds",
+          "op": "max",
+          "value": 120
+        }
+      ],
+      "delivery": {},
+      "credits": 315,
+      "xp": 190
+    },
+    {
+      "id": "change_of_plan",
+      "name": "Смена плана",
+      "name_en": "Change of plan",
+      "description": "Прервите неудобный вызов эвакуации и успешно организуйте новый.",
+      "description_en": "Cancel an inconvenient extraction call and complete a new one.",
+      "category": "extraction",
+      "min_level": 2,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "extraction_cancels",
+          "target": 1
+        },
+        {
+          "metric": "extraction_attempts",
+          "target": 2
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 310,
+      "xp": 180
+    },
+    {
+      "id": "single_signal",
+      "name": "Единственный сигнал",
+      "name_en": "Single signal",
+      "description": "Подготовьте разный груз и обойдитесь единственным вызовом эвакуации.",
+      "description_en": "Prepare a varied load and get out with a single extraction call.",
+      "category": "extraction",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "extractions",
+          "target": 1
+        },
+        {
+          "metric": "loot_types",
+          "target": 3
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "extraction_attempts",
+          "op": "max",
+          "value": 1
+        }
+      ],
+      "delivery": {},
+      "credits": 385,
+      "xp": 230
+    },
+    {
+      "id": "valuable_departure",
+      "name": "Ценный выезд",
+      "name_en": "Valuable departure",
+      "description": "Выведите ценный смешанный груз через второй выход и передайте заказчику.",
+      "description_en": "Take a valuable mixed load through the second exit and hand it in.",
+      "category": "extraction",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "extract_2",
+          "target": 1
+        },
+        {
+          "metric": "loot_relic",
+          "target": 1
+        },
+        {
+          "metric": "loot_weapon_parts",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {
+        "relic": 1,
+        "weapon_parts": 1
+      },
+      "credits": 420,
+      "xp": 220
+    },
+    {
+      "id": "rolling_return",
+      "name": "Возвращение в движении",
+      "name_en": "Rolling return",
+      "description": "Держитесь в движении и довезите прочную машину до первого выхода.",
+      "description_en": "Keep moving and bring a sound vehicle to the first exit.",
+      "category": "extraction",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "extract_1",
+          "target": 1
+        },
+        {
+          "metric": "moving_seconds",
+          "target": 90
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "health_pct",
+          "op": "min",
+          "value": 75
+        }
+      ],
+      "delivery": {},
+      "credits": 385,
+      "xp": 230
+    },
+    {
+      "id": "supply_exit",
+      "name": "Выход с припасами",
+      "name_en": "Supply exit",
+      "description": "Третий коридор принимает металл и ремонтные припасы для убежища.",
+      "description_en": "The third corridor is taking metal and repair supplies for the hideout.",
+      "category": "extraction",
+      "min_level": 3,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "extract_3",
+          "target": 1
+        },
+        {
+          "metric": "loot_repair_kit",
+          "target": 1
+        },
+        {
+          "metric": "loot_scrap",
+          "target": 4
+        }
+      ],
+      "conditions": [],
+      "delivery": {
+        "repair_kit": 1,
+        "scrap": 4
+      },
+      "credits": 480,
+      "xp": 220
+    },
+    {
+      "id": "reliable_driver",
+      "name": "Надёжный водитель",
+      "name_en": "Reliable driver",
+      "description": "Докажите надёжность несколькими успешными выездами с полезной добычей.",
+      "description_en": "Prove your reliability through several successful trips with useful loot.",
+      "category": "extraction",
+      "min_level": 4,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "extractions",
+          "target": 5
+        },
+        {
+          "metric": "loot_items",
+          "target": 20
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 415,
+      "xp": 240
+    },
+    {
+      "id": "silent_departure",
+      "name": "Тихий выезд",
+      "name_en": "Silent departure",
+      "description": "Уйдите через второй коридор без нитро и расходных припасов.",
+      "description_en": "Leave through the second corridor without nitro or consumable supplies.",
+      "category": "extraction",
+      "min_level": 5,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "extract_2",
+          "target": 1
+        },
+        {
+          "metric": "loot_items",
+          "target": 4
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "nitro_uses",
+          "op": "max",
+          "value": 0
+        },
+        {
+          "metric": "consumables_used",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 565,
+      "xp": 340
+    },
+    {
+      "id": "jammer_silence",
+      "name": "Помех больше нет",
+      "name_en": "No more interference",
+      "description": "Уберите источник помех и восстановите безопасный канал эвакуации.",
+      "description_en": "Remove a source of interference and restore a safe extraction channel.",
+      "category": "elite",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "kills_jammerTruck",
+          "target": 1
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 415,
+      "xp": 240
+    },
+    {
+      "id": "stop_the_repairs",
+      "name": "Остановить ремонт",
+      "name_en": "Stop the repairs",
+      "description": "Лишите рейдеров ремонтной машины и другой мобильной поддержки.",
+      "description_en": "Deprive the raiders of a repair crawler and other mobile support.",
+      "category": "elite",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "kills_repairCrawler",
+          "target": 1
+        },
+        {
+          "metric": "kills_priority",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 415,
+      "xp": 240
+    },
+    {
+      "id": "mine_layer_hunt",
+      "name": "Охота на заградителя",
+      "name_en": "Minelayer hunt",
+      "description": "Остановите заградителя и проверьте взлом оставленных врагом мин.",
+      "description_en": "Stop a minelayer and test your hacking module on enemy mines.",
+      "category": "elite",
+      "min_level": 4,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "kills_minelayer",
+          "target": 1
+        },
+        {
+          "metric": "mine_hacks",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 415,
+      "xp": 240
+    },
+    {
+      "id": "three_support_roles",
+      "name": "Три службы врага",
+      "name_en": "Three enemy services",
+      "description": "Последовательно выведите из строя все три службы вражеской поддержки.",
+      "description_en": "Take all three enemy support services out of action over time.",
+      "category": "elite",
+      "min_level": 5,
+      "scope": "career",
+      "objectives": [
+        {
+          "metric": "kills_jammerTruck",
+          "target": 1
+        },
+        {
+          "metric": "kills_repairCrawler",
+          "target": 1
+        },
+        {
+          "metric": "kills_minelayer",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 520,
+      "xp": 300
+    },
+    {
+      "id": "dismantle_the_giant",
+      "name": "Разобрать великана",
+      "name_en": "Dismantle the giant",
+      "description": "Выбейте узлы великана и уходите до окончательной развязки.",
+      "description_en": "Knock out the giant's components and leave before the final showdown.",
+      "category": "elite",
+      "min_level": 6,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "boss_components",
+          "target": 2
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 555,
+      "xp": 320
+    },
+    {
+      "id": "leviathan_fall",
+      "name": "Падение Левиафана",
+      "name_en": "Leviathan falls",
+      "description": "Доведите бой с Левиафаном до конца.",
+      "description_en": "Finish the battle against the Leviathan.",
+      "category": "elite",
+      "min_level": 5,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "wins",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 450,
+      "xp": 260
+    },
+    {
+      "id": "giant_and_foundry",
+      "name": "Великан и завод",
+      "name_en": "Giant and factory",
+      "description": "В одном рейде остановите заводы и уничтожьте главную боевую машину врага.",
+      "description_en": "Shut down foundries and destroy the enemy's main war machine in one raid.",
+      "category": "elite",
+      "min_level": 6,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "kills_boss",
+          "target": 1
+        },
+        {
+          "metric": "foundries",
+          "target": 2
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 555,
+      "xp": 320
+    },
+    {
+      "id": "last_magazine",
+      "name": "Последний магазин",
+      "name_en": "Last magazine",
+      "description": "Победите великана со снайперской батареей и без помощи расходников.",
+      "description_en": "Defeat the giant with a railgun battery and without consumable support.",
+      "category": "elite",
+      "min_level": 7,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "wins",
+          "target": 1
+        },
+        {
+          "metric": "shots_railgun",
+          "target": 15
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "consumables_used",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {},
+      "credits": 665,
+      "xp": 390
+    },
+    {
+      "id": "storm_victory",
+      "name": "Победа под гром",
+      "name_en": "Victory to thunder",
+      "description": "Дождитесь грома и всё равно доведите сражение с Левиафаном до победы.",
+      "description_en": "Endure the thunder and still carry the Leviathan battle through to victory.",
+      "category": "elite",
+      "min_level": 7,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "wins",
+          "target": 1
+        },
+        {
+          "metric": "storm_seconds",
+          "target": 45
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 625,
+      "xp": 360
+    },
+    {
+      "id": "region_reclaimed",
+      "name": "Район отвоёван",
+      "name_en": "Region reclaimed",
+      "description": "Освободите поселение, перекройте снабжение и подавите производство рейдеров.",
+      "description_en": "Free a settlement, cut off supplies and suppress raider production.",
+      "category": "elite",
+      "min_level": 6,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "foundries",
+          "target": 2
+        },
+        {
+          "metric": "rescues",
+          "target": 1
+        },
+        {
+          "metric": "convoys",
+          "target": 1
+        },
+        {
+          "metric": "extractions",
+          "target": 1
+        }
+      ],
+      "conditions": [],
+      "delivery": {},
+      "credits": 625,
+      "xp": 360
+    },
+    {
+      "id": "ace_caravan",
+      "name": "Караван аса",
+      "name_en": "Ace caravan",
+      "description": "Завершите решающий бой агрессивной ездой и сохраните боеспособный корпус.",
+      "description_en": "Finish the decisive battle with aggressive driving and a serviceable hull.",
+      "category": "elite",
+      "min_level": 8,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "wins",
+          "target": 1
+        },
+        {
+          "metric": "overdrives",
+          "target": 3
+        },
+        {
+          "metric": "roadkills",
+          "target": 5
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "health_pct",
+          "op": "min",
+          "value": 60
+        }
+      ],
+      "delivery": {},
+      "credits": 770,
+      "xp": 450
+    },
+    {
+      "id": "museum_manifest",
+      "name": "Музейный манифест",
+      "name_en": "Museum manifest",
+      "description": "Выведите музейный груз через третий выход, не отвлекаясь на ремонт.",
+      "description_en": "Take the museum shipment through the third exit without stopping for repairs.",
+      "category": "elite",
+      "min_level": 8,
+      "scope": "raid",
+      "objectives": [
+        {
+          "metric": "loot_relic",
+          "target": 3
+        },
+        {
+          "metric": "loot_weapon_parts",
+          "target": 2
+        },
+        {
+          "metric": "loot_circuit",
+          "target": 3
+        },
+        {
+          "metric": "extract_3",
+          "target": 1
+        }
+      ],
+      "conditions": [
+        {
+          "metric": "repair_uses",
+          "op": "max",
+          "value": 0
+        }
+      ],
+      "delivery": {
+        "relic": 3,
+        "weapon_parts": 2,
+        "circuit": 3
+      },
+      "credits": 965,
+      "xp": 470
+    }
+  ]
+}

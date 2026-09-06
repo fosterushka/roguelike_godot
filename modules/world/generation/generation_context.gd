@@ -2,7 +2,7 @@ extends RefCounted
 const Random = preload("res://modules/world/activities/source_random.gd")
 const Layout = preload("res://modules/world/generation/layout_generator.gd")
 const DURABILITY := {"tree": [0.9, 28, "wood"], "deadTree": [0.78, 20, "wood"], "boulder": [0.82, 58, "stone"], "scrub": [0.48, 7, "wood"], "fence": [1.05, 14, "wood"], "barrel": [0.52, 12, "metal"], "crate": [0.52, 10, "wood"], "scrap": [0.78, 18, "metal"], "wreck": [1.65, 46, "metal"], "well": [1.45, 72, "mixed"], "stall": [1.75, 34, "mixed"], "windmill": [2.4, 115, "mixed"], "signal": [0.65, 24, "metal"], "ruin": [2.35, 62, "stone"], "streetlight": [0.8, 34, "mixed"], "building": [2.25, 58, "mixed"], "monument": [7, 150, "mixed"]}
-const POOLS := {"treeTrunks": [6, 1500], "treeCrowns": [7, 2200], "treeCrownsAlt": [8, 2200], "treeBranches": [9, 2200], "rockInstances": [10, 2600], "stoneInstances": [11, 1600], "scrubInstances": [12, 3600], "deadBrushInstances": [13, 2200], "grassTufts": [14, 7000], "flowerInstances": [15, 1200], "barrelInstances": [16, 900], "crateInstances": [17, 1900], "fencePosts": [18, 2400], "fenceRails": [19, 2800], "ironStructure": [20, 1400], "metalStructure": [21, 1400], "woodStructure": [22, 1400], "redStructure": [23, 700], "tankInstances": [24, 600], "earthStructure": [25, 1800], "ruinStructure": [26, 1100], "scarStructure": [27, 900], "trenches": [28, 256], "bowls": [29, 192], "rims": [30, 192], "decals": [31, 192], "char": [32, 1088], "cliffFaces": [33, 900], "cliffStrata": [34, 900]}
+const POOLS := {"treeTrunks": [6, 1500], "treeCrowns": [7, 2200], "treeCrownsAlt": [8, 2200], "treeBranches": [9, 2200], "rockInstances": [10, 2600], "stoneInstances": [11, 1600], "scrubInstances": [12, 3600], "deadBrushInstances": [13, 2200], "grassTufts": [14, 7000], "flowerInstances": [15, 1200], "barrelInstances": [16, 900], "crateInstances": [17, 1900], "fencePosts": [18, 2400], "fenceRails": [19, 2800], "ironStructure": [20, 1400], "metalStructure": [21, 1400], "woodStructure": [22, 1400], "redStructure": [23, 700], "tankInstances": [24, 600], "earthStructure": [25, 1800], "ruinStructure": [26, 1100], "scarStructure": [27, 900], "trenches": [28, 256], "bowls": [29, 192], "rims": [30, 192], "decals": [31, 192], "char": [32, 1088], "cliffFaces": [33, 900], "cliffStrata": [34, 900], "spruceTrees": [6, 3300], "birchTrees": [6, 3300], "rockMass0": [33, 500], "rockMass1": [33, 500], "rockMass2": [33, 500], "rockMass3": [33, 500], "rockMass4": [33, 500], "rockMass5": [33, 500]}
 var random := Random.new()
 var layout: Dictionary
 var instances: Dictionary = {}
@@ -21,6 +21,8 @@ var ambient_animators: Array = []
 var ambient_critters: Array = []
 
 func setup(seed_value: int) -> void:
+	if has_meta("legacy_tree_views"):
+		remove_meta("legacy_tree_views")
 	layout = Layout.generate(seed_value)
 	random.state = (int(layout.seed) ^ 0x68bc21eb) & 0xffffffff
 	instances.clear()

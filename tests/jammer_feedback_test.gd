@@ -25,6 +25,7 @@ func _run() -> void:
 	effects.set_process(false)
 	var field: Node3D = effects.jammer_field
 	var overlay: Control = hud.jammer_overlay
+	var vhs: ColorRect = hud.jammer_vhs
 	var player := {"position": Vector3.ZERO, "hp": 100.0}
 	var enemy := {"id": 8, "kind": "jammerTruck", "position": Vector3(20, 0, 0), "hp": 150.0}
 	var enemies: Array[Dictionary] = [enemy]
@@ -34,10 +35,14 @@ func _run() -> void:
 	effects.sync_state(state, 0)
 	hud.update_run(state, null, 0)
 	check(not overlay.visible and not field.rings[0].visible, "Reset player starts without jammer visuals")
+	check(not vhs.visible, "Reset player has no screen distortion")
+	check(vhs.get_index() < hud.markers.get_index() and not hud.markers.occluders.has(vhs), "VHS draws beneath HUD and does not occlude world markers")
+	check(vhs.mouse_filter == Control.MOUSE_FILTER_IGNORE and vhs.anchor_right == 1 and vhs.anchor_bottom == 1, "VHS covers viewport without intercepting controls")
 	rules.step(player, enemies, 1.85)
 	effects.sync_state(state, 0)
 	hud.update_run(state, null, 0)
 	check(player.jammer_reversed and overlay.reversed and overlay.detail.visible, "Reversal caption follows actual gameplay pulse")
+	check(vhs.visible and vhs.intensity > 0.9 and vhs.material.get_shader_parameter("pulse") > 0.9, "Real jammer radius drives full-screen shader and reversal pulse")
 	check(overlay.caption.text == "SIGNAL JAMMED" and overlay.detail.text == "CONTROLS REVERSED", "Jammer status defaults to English")
 	check(overlay.mouse_filter == Control.MOUSE_FILTER_IGNORE and overlay.get_child_count() == 2, "Compact text status creates no modal or panel input surface")
 	check(overlay.size.x <= 280 and overlay.size.y <= 40, "Jammer status occupies a small HUD corner")
@@ -74,6 +79,7 @@ func _run() -> void:
 	paused = false
 	hud.set_paused(true)
 	check(not overlay.is_visible_in_tree(), "Jammer HUD is hidden behind pause menu")
+	check(not vhs.is_visible_in_tree(), "Pause hides full-screen interference")
 	hud.set_paused(false)
 	hud.set_language("ru")
 	check(overlay.caption.text == "СИГНАЛ ПОДАВЛЕН" and overlay.detail.text == "УПРАВЛЕНИЕ ИНВЕРТИРОВАНО", "Visible jammer labels switch immediately to Russian")
@@ -86,6 +92,11 @@ func _run() -> void:
 	effects.sync_state(state, 0)
 	hud.update_run(state, null, 0)
 	check(not overlay.visible and not field.rings[0].visible and not field.sparks[0].visible, "Outside-range fade fully hides world and HUD interference")
+	check(not vhs.visible and vhs.intensity == 0, "Leaving radius clears VHS after fade")
+	player.position = Vector3(20, 0, 47.9)
+	rules.step(player, enemies, 0.016)
+	hud.update_run(state, null, 0)
+	check(player.jammed and vhs.visible and vhs.intensity >= 0.32, "Outer edge of actual radius already displays visible interference")
 	player.position = Vector3.ZERO
 	rules.step(player, enemies, 1)
 	effects.sync_state(state, 0)
@@ -98,6 +109,10 @@ func _run() -> void:
 	effects.sync_state(state, 0)
 	hud.update_run(state, null, 0)
 	check(not overlay.visible and not field.rings[0].visible, "Player death hides stale jammer state immediately")
+	check(not vhs.visible, "Death clears VHS even with stale jammer strength")
+	rules.reset(player)
+	hud.update_run(state, null, 0)
+	check(not vhs.visible and vhs.intensity == 0, "Run reset clears screen interference")
 	effects.reset_effects()
 	check(field.strength == 0 and field.elapsed == 0 and field._player.is_empty(), "Run reset clears all retained visual jammer state")
 	hud.queue_free()

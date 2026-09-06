@@ -98,6 +98,8 @@ func _spawn_network() -> void:
 		if point.distance_to(world.vehicle.global_position) < 170 or not world.props.is_clear(point, 6.0):
 			continue
 		var separated := true
+		for site: Dictionary in activities.extraction_sites:
+			separated = separated and point.distance_to(site.position) >= float(site.radius) + 12.0
 		for foundry in foundries:
 			separated = separated and foundry.enemy.position.distance_to(point) >= 120.0
 		if not separated:

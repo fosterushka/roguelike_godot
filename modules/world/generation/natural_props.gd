@@ -19,6 +19,7 @@ func tree(x: float, z: float, scale: float = 1, sparse: bool = false, destructib
 	if not sparse and random.next() < 0.42:
 		var side: float = random.between(-0.55, 0.55) * scale
 		parts.append(context.append(crown_pool, Vector3(x + side, 3.35 * scale, z - side * 0.4), rotation, crown_scale * 0.62))
+	_tree_view(x, z, scale, parts, false)
 	if destructible:
 		context.register_prop("tree", x, z, scale, {"parts": parts}, {"salvage": 1 if random.next() < 0.16 else 0})
 
@@ -43,6 +44,7 @@ func dead_tree(x: float, z: float, scale: float = 1) -> void:
 	parts.append(context.landmark_box("woodStructure", x, z, 0.38 * scale, 2.42 * scale, 0, 1.2 * scale, 0.13 * scale, 0.14 * scale, rotation, 0.38))
 	if random.next() < 0.68:
 		parts.append(context.landmark_box("woodStructure", x, z, -0.25 * scale, 2.9 * scale, 0, 0.92 * scale, 0.11 * scale, 0.12 * scale, rotation, -0.46))
+	_tree_view(x, z, scale, parts, true)
 	context.register_prop("deadTree", x, z, scale, {"parts": parts})
 
 func fence(x: float, z: float, rotation: float = 0, count: int = 5) -> void:
@@ -73,3 +75,8 @@ func ground_cover(x: float, z: float, radius: float, count: int, flowers: bool =
 		context.append("grassTufts", Vector3(point_x, 0.23 * scale, point_z), Vector3(0, random.between(0, TAU), random.between(-0.12, 0.12)), Vector3(scale, scale * random.between(0.85, 1.25), scale))
 		if flowers and index % 4 == 0:
 			context.append("flowerInstances", Vector3(point_x + random.between(-0.28, 0.28), 0.18, point_z + random.between(-0.28, 0.28)), Vector3.ZERO, Vector3(random.between(0.8, 1.3), random.between(0.8, 1.3), random.between(0.8, 1.3)))
+
+func _tree_view(x: float, z: float, scale: float, parts: Array, dead: bool) -> void:
+	if not context.has_meta("legacy_tree_views"):
+		context.set_meta("legacy_tree_views", [])
+	context.get_meta("legacy_tree_views").append({"position": Vector3(x, 0, z), "scale": scale, "parts": parts.duplicate(), "dead": dead})

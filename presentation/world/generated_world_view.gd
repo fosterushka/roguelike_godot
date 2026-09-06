@@ -1,20 +1,26 @@
 extends Node3D
+const TreeReplacements = preload("res://presentation/world/tree_replacements.gd")
 const SourceModel = preload("res://presentation/combat/source_model.gd")
+const NaturalMeshes = preload("res://presentation/world/natural_meshes.gd")
 var context: RefCounted
 var pool_indices: Dictionary = {}
 
 func build(generated: RefCounted) -> Dictionary:
 	context = generated
 	SourceModel._prepare("world_72841")
+	var trees := TreeReplacements.prepare(context)
 	for pool: String in context.POOLS:
 		var template: Dictionary = SourceModel._templates.world_72841[context.POOLS[pool][0]]
-		var values: Array = context.instances[pool]
+		var values: Array = trees.instances[pool]
 		var batch := MultiMeshInstance3D.new()
 		batch.name = pool
 		batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		var instances := MultiMesh.new()
 		instances.transform_format = MultiMesh.TRANSFORM_3D
-		instances.mesh = template.mesh
+		var natural_mesh: Mesh = NaturalMeshes.mesh_for(pool)
+		instances.mesh = natural_mesh if natural_mesh != null else template.mesh
+		if pool.begins_with("rockMass"):
+			batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 		instances.instance_count = values.size()
 		for index in values.size():
 			instances.set_instance_transform(index, values[index])
@@ -29,7 +35,7 @@ func build(generated: RefCounted) -> Dictionary:
 		prop.parts = []
 		prop.meshes = []
 		prop.visual_nodes = source.get("groups", [])
-		for part: Dictionary in source.parts:
+		for part: Dictionary in TreeReplacements.parts_for(source.parts, trees.parts):
 			if part.instance < 0:
 				continue
 			prop.parts.append({"mesh": pool_indices[part.pool], "instance": part.instance, "matrix": matrix(part.transform)})

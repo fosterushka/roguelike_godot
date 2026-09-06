@@ -1,0 +1,35 @@
+{
+	"measurements": [
+		{
+			"draw_calls": 669,
+			"first_ms": 4.251,
+			"frames": 60,
+			"max_ms": 9.425,
+			"p50_ms": 8.284,
+			"p95_ms": 9.117,
+			"view": "first_rock_view"
+		},
+		{
+			"draw_calls": 424,
+			"first_ms": 0.935,
+			"frames": 60,
+			"max_ms": 9.363,
+			"p50_ms": 8.33,
+			"p95_ms": 9.087,
+			"view": "dense_forest"
+		},
+		{
+			"draw_calls": 669,
+			"first_ms": 1.043,
+			"frames": 60,
+			"max_ms": 9.239,
+			"p50_ms": 8.304,
+			"p95_ms": 8.946,
+			"view": "revisited_rock"
+		}
+	],
+	"notes": "Static actual-world views after covered warmup; gameplay physics frozen. Frame intervals include CPU/GPU sync and display pacing. Imported caches present. These are not a full combat performance benchmark.",
+	"renderer": "Apple M4 Pro (Apple9)",
+	"seed": 0,
+	"trees": 1800
+}
