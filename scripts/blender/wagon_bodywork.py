@@ -79,3 +79,32 @@ def add_bodywork(b, kind):
             for z in (-.50, 1.65):
                 b.box((side*1.61, 1.89, z), (.10, .90, .10), "steel")
             b.box((side*1.61, 2.34, .58), (.10, .10, 2.25), "paint_light")
+
+
+def add_chassis_detail(b):
+    """Suspension, wiring, latches and rear lamps baked into the deck batch."""
+    for side in (-1, 1):
+        x = side*1.29
+        for z in (-1.55, 1.55):
+            # Visible leaf stack and its axle clamps inside each wheel.
+            for layer in range(3):
+                b.box((x, .78+layer*.055, z), (.16, .04, .90-layer*.17), 'steel')
+            for dz in (-.22, .22):
+                b.box((x, .87, z+dz), (.21, .24, .055), 'trim')
+            beam(b, (side*1.45, .82, z-.12), (side*1.38, 1.26, z+.24), .085, 'paint_light')
+            b.box((side*1.80, 1.38, z-.73), (.62, .52, .055), 'rubber')
+        for z in (-1.30, -.42, .46, 1.34):
+            b.box((side*1.61, 1.56, z), (.035, .17, .12), 'steel')
+            b.box((side*1.64, 1.56, z), (.025, .07, .055), 'accent')
+        # Rear lamp housings and a contrasting lens, matching the pickup.
+        b.box((side*1.30, 1.26, -1.89), (.30, .27, .13), 'trim')
+        b.box((side*1.30, 1.29, -1.965), (.23, .14, .035), 'red')
+        b.box((side*1.30, 1.17, -1.965), (.23, .06, .035), 'white')
+        b.box((side*1.57, 1.51, 1.66), (.045, .09, .17), 'amber')
+    for z in (-1.55, 1.55):
+        b.box((0, .84, z), (3.16, .15, .16), 'steel')
+        for x in (-.67, .67):
+            beam(b, (x, .90, z), (x, 1.05, z*.35), .07, 'trim')
+    b.box((0, 1.15, -1.87), (.65, .22, .035), 'dark')
+    for x in (-.22, -.11, 0, .11, .22):
+        b.box((x, 1.15, -1.897), (.055, .08, .018), 'white')

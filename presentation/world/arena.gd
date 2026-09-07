@@ -1,5 +1,6 @@
 extends Node3D
 
+const Biomes = preload("res://modules/world/biome_rules.gd")
 const TerrainSurface = preload("res://modules/caravan/terrain_surface.gd")
 const SourceModel = preload("res://presentation/combat/source_model.gd")
 const GeneratedView = preload("res://presentation/world/generated_world_view.gd")
@@ -20,6 +21,7 @@ var _prop_offsets: Dictionary = {}
 func _ready() -> void:
 	_create_lighting()
 	source_world = SourceModel.instantiate("world_72841")
+	_replace_reference_meshes()
 	add_child(source_world)
 	preload("res://presentation/world/world_decor_filter.gd").hide_reference_figures(source_world)
 	world_layout = JSON.parse_string(FileAccess.get_file_as_string("res://data/visual_models/world_layout.json"))
@@ -34,6 +36,23 @@ func _ready() -> void:
 	for index in world_layout.roads.size() + 1:
 		source_world.get_child(index).visible = false
 	_bind_layout_collisions()
+
+func _replace_reference_meshes() -> void:
+	# Keep indices/transforms: destruction records refer to these source batches.
+	var context = preload("res://modules/world/generation/generation_context.gd")
+	var meshes = preload("res://presentation/world/natural_meshes.gd")
+	var replaced := {}
+	for pool: String in context.POOLS:
+		if pool in ["spruceTrees", "birchTrees", "deadTrees"] or pool.begins_with("rockMass"):
+			continue
+		var mesh: Mesh = meshes.mesh_for(pool)
+		var index: int = context.POOLS[pool][0]
+		if mesh != null and not replaced.has(index):
+			var visual := source_world.get_child(index) as MultiMeshInstance3D
+			if visual != null:
+				visual.multimesh.mesh = mesh
+				visual.material_override = null
+				replaced[index] = true
 
 func _bind_layout_collisions() -> void:
 	for prop: Dictionary in world_layout.props:
@@ -55,6 +74,10 @@ func _create_ground() -> void:
 		ground.name = "OriginalTerrainSurface"
 		var material := ShaderMaterial.new()
 		material.shader = TERRAIN_SHADER
+		material.set_shader_parameter("biome_border", Biomes.BORDER)
+		material.set_shader_parameter("biome_blend", Biomes.BLEND_WIDTH)
+		material.set_shader_parameter("biome_wave", Biomes.BORDER_WAVE)
+		material.set_shader_parameter("biome_frequency", Biomes.BORDER_FREQUENCY)
 		ground.material_override = material
 		add_child(ground)
 	ground.mesh = TerrainSurface.create_mesh()

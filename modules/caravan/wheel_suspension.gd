@@ -8,6 +8,12 @@ const HALF_TRACK := Dimensions.WHEEL_HALF_TRACK
 const RADIUS := 0.88
 const ANCHORS := [Vector3(-HALF_TRACK, 0, FRONT_Z), Vector3(HALF_TRACK, 0, FRONT_Z), Vector3(-HALF_TRACK, 0, REAR_Z), Vector3(HALF_TRACK, 0, REAR_Z)]
 const TRAVEL := 0.48
+const PITCH_PER_ACCELERATION := 0.007
+const MAX_LOAD_PITCH := 0.055
+const PITCH_SPRING := 100.0
+const PITCH_DAMPING := 20.0
+const INTEGRATION_HZ := 120.0
+const TRAILER_PITCH_FACTOR := 0.65
 
 static func create() -> Dictionary:
 	return {"initialized": false, "height": 0.0, "velocity": 0.0, "pitch": 0.0, "roll": 0.0, "pitch_velocity": 0.0, "roll_velocity": 0.0, "last_speed": 0.0, "wheel_offsets": PackedFloat32Array([0, 0, 0, 0]), "wheel_contacts": [true, true, true, true], "contacts": 4, "grip": 1.0, "slope": 0.0}
@@ -31,15 +37,19 @@ static func step(state: Dictionary, position: Vector3, heading: float, speed: fl
 		state.initialized = true
 	var wheelbase: float = (anchors[0].z - anchors[2].z) * scale_factor
 	var target_pitch := -atan2((grounds[0] + grounds[1] - grounds[2] - grounds[3]) * 0.5, wheelbase)
+	var acceleration := (speed - float(state.last_speed)) / delta
+	var load_pitch := clampf(-acceleration * PITCH_PER_ACCELERATION, -MAX_LOAD_PITCH, MAX_LOAD_PITCH)
+	if trailer:
+		load_pitch *= TRAILER_PITCH_FACTOR
 	state.last_speed = speed
 	state.slope = -sin(target_pitch)
-	state.pitch = 0.0
 	state.roll = 0.0
-	state.pitch_velocity = 0.0
 	state.roll_velocity = 0.0
-	var steps := maxi(1, ceili(delta * 120.0))
+	var steps := maxi(1, ceili(delta * INTEGRATION_HZ))
 	var dt := delta / steps
 	for substep in steps:
+		state.pitch_velocity += ((load_pitch - float(state.pitch)) * PITCH_SPRING - float(state.pitch_velocity) * PITCH_DAMPING) * dt
+		state.pitch = clampf(float(state.pitch) + float(state.pitch_velocity) * dt, -MAX_LOAD_PITCH, MAX_LOAD_PITCH)
 		var force := 0.0
 		var contacts := 0
 		for index in 4:

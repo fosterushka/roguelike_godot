@@ -2,6 +2,7 @@ extends Node3D
 const Encounter = preload("res://modules/crew/crew_encounter.gd")
 const Source = preload("res://presentation/combat/source_model.gd")
 const Seats = preload("res://presentation/crew/crew_seats.gd")
+const Appearance = preload("res://presentation/crew/crew_appearance.gd")
 const Ground = preload("res://modules/caravan/terrain_surface.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 const Speech = preload("res://presentation/crew/crew_speech.gd")
@@ -12,9 +13,13 @@ var clock := 0.0
 var _warmup_restore: Array[Dictionary] = []
 var _vehicle: Node3D
 var _carrier_visuals: Dictionary = {}
+var _pickup_benches: Dictionary = {}
 
 func _ready() -> void:
 	process_priority = 20
+
+func _exit_tree() -> void:
+	_clear_pickup_benches()
 
 func _process(_delta: float) -> void:
 	var camera := get_viewport().get_camera_3d()
@@ -46,9 +51,11 @@ func update_reactions(reactions: Array) -> void:
 		reaction_views.append({"speech": bubble, "actor": reaction.actor})
 
 func set_vehicle(vehicle: Node3D) -> void:
+	_clear_pickup_benches()
 	_vehicle = vehicle
 
 func set_carrier_visuals(values: Dictionary) -> void:
+	_clear_pickup_benches()
 	_carrier_visuals = values
 
 func prepare() -> void:
@@ -118,7 +125,8 @@ func update_people(people: Array, delta: float) -> void:
 		view.seated.visible = seated
 		view.is_seated = seated
 		if seated:
-			view.seated.get_node("PickupBench").visible = str(person.get("carrier_id", "crawler")) == "crawler"
+			if str(person.get("carrier_id", "crawler")) == "crawler":
+				_mount_pickup_bench(carrier, int(person.get("seat", 0)))
 			var appearance := str(person.get("role", "")) + ":" + str(person.get("faction", "ally"))
 			if str(view.seated.get_meta("appearance", "")) != appearance:
 				Seats.apply_role(view.seated, str(person.get("role", "")), str(person.get("faction", "ally")))
@@ -146,6 +154,7 @@ func update_people(people: Array, delta: float) -> void:
 			if part is GeometryInstance3D and part.has_meta("source_part") and part.get_meta("source_part").get("rig", {}).get("role", "") == "weapon":
 				part.visible = str(person.role) in ["shooter", "anti_tank", "anti_air"]
 		if not seated:
+			Appearance.apply(view.body, str(person.role))
 			Source.animate_instance(view.body, {"move_blend": 1.0 if moving and not person.get("airborne", false) else 0.0, "phase": clock * 9, "animation_time": clock, "instance_index": index, "attack_animation": minf(1, float(person.get("cooldown", 0))), "wave": calling, "climbing": climbing})
 		view.id = str(person.id)
 		view.last = point
@@ -162,6 +171,24 @@ func _carrier_visual(carrier_id: String) -> Node3D:
 		return vehicle_view
 	var trailers: Dictionary = vehicle_view.get("_trailers")
 	return trailers.get(carrier_id) as Node3D
+
+func _mount_pickup_bench(carrier: Node3D, seat: int) -> void:
+	var key := str(carrier.get_instance_id()) + ":" + str(seat)
+	var bench := _pickup_benches.get(key) as Node3D
+	if not is_instance_valid(bench):
+		bench = Seats.build_pickup_bench()
+		carrier.add_child(bench)
+		_pickup_benches[key] = bench
+	bench.position = Seats.anchor("crawler", seat)
+
+func _clear_pickup_benches() -> void:
+	for bench: Variant in _pickup_benches.values():
+		if is_instance_valid(bench):
+			var parent: Node = bench.get_parent()
+			if parent != null:
+				parent.remove_child(bench)
+			bench.queue_free()
+	_pickup_benches.clear()
 
 func set_warmup(enabled: bool, point: Vector3) -> void:
 	prepare()

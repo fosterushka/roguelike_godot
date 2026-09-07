@@ -62,20 +62,38 @@ def mesh(name, build, material):
     return builder.finish(name, material)
 
 
+def tailored(builder, center, levels, color):
+    """Eight-sided tailored volumes, instead of rectangular placeholder anatomy."""
+    cx, cy, cz = center
+    rings=[]
+    for y, width, depth in levels:
+        bevel=min(width,depth)*.22
+        outline=[(-width/2+bevel,-depth/2),(width/2-bevel,-depth/2),(width/2,-depth/2+bevel),(width/2,depth/2-bevel),(width/2-bevel,depth/2),(-width/2+bevel,depth/2),(-width/2,depth/2-bevel),(-width/2,-depth/2+bevel)]
+        rings.append([(cx+x,cy+y,cz+z) for x,z in outline])
+    builder.loft(rings,color)
+
+
 def limb_meshes(material):
     def leg(builder):
-        builder.box((0, -0.23, 0.0), (.18, .47, .19), "paint_shadow")
+        tailored(builder,(0,0,0),[(-.46,.14,.16),(-.28,.18,.18),(-.13,.205,.21),(.015,.19,.21)],"paint_shadow")
         builder.box((0, -0.25, .112), (.19, .16, .055), "trim")
-        builder.box((0, -0.47, .035), (.22, .16, .31), "rubber")
+        tailored(builder,(0,0,.035),[(-.55,.22,.32),(-.46,.21,.31),(-.39,.17,.22)],"rubber")
+        for y in (-.43,-.46,-.49): builder.box((0,y,.185),(.15,.015,.015),"steel")
         builder.box((0, -0.555, .018), (.235, .045, .34), "dark")
         builder.box((0, -0.025, .0), (.205, .08, .205), "paint_light")
     def arm(builder):
-        builder.box((0, -0.22, 0.0), (.16, .45, .16), "paint")
+        tailored(builder,(0,0,0),[(-.44,.125,.14),(-.27,.15,.17),(-.17,.17,.18),(.015,.185,.19)],"paint")
         builder.box((0, -0.12, .095), (.175, .15, .035), "paint_light")
-        builder.box((0, -0.47, .0), (.135, .12, .135), "accent")
+        tailored(builder,(0,-.47,0),[(-.07,.11,.13),(.05,.135,.15)],"trim")
+        builder.box((0,-.25,-.091),(.16,.11,.045),"trim")
         builder.box((0, -0.03, .0), (.19, .07, .19), "paint_light")
     def head(builder):
-        builder.box((0, 0.0, 0.0), (.34, .34, .34), "accent")
+        tailored(builder,(0,0,0),[(-.165,.19,.23),(-.11,.28,.28),(.07,.31,.30),(.17,.28,.27)],"accent")
+        builder.box((0,-.066,.177),(.07,.09,.055),"accent")
+        builder.box((0,-.127,.152),(.15,.013,.016),"paint_shadow")
+        for side in (-1,1):
+            builder.box((side*.166,.016,0),(.048,.15,.12),"trim")
+            builder.box((side*.167,-.098,.067),(.022,.17,.035),"paint_shadow")
         builder.box((0, -.035, .182), (.25, .10, .026), "glass")
         for side in (-1, 1):
             builder.box((side * .075, -.035, .202), (.10, .075, .022), "glass_light")
@@ -92,11 +110,18 @@ def limb_meshes(material):
 def torso_mesh(kind, material):
     def build(builder):
         color = "paint" if kind in ("rifleman", "ak", "bazooka") else "paint_shadow"
-        builder.box((0, 0.0, 0.0), (.54, .70, .32), color)
+        tailored(builder,(0,0,0),[(-.35,.45,.30),(-.18,.49,.33),(.20,.56,.35),(.35,.42,.29)],color)
+        tailored(builder,(0,.13,.183),[(-.22,.36,.065),(.13,.40,.07),(.21,.28,.055)],"trim")
+        for side in (-1,1):
+            builder.box((side*.19,.11,.191),(.055,.43,.036),"accent")
+        builder.box((0,-.345,.175),(.075,.053,.028),"steel")
         builder.box((0, -.19, .19), (.48, .40, .075), "trim")
         builder.box((0, -.42, .02), (.58, .06, .34), "paint_light")
         builder.box((0, .24, -.20), (.44, .22, .10), "bed")
         builder.box((0, -.24, .245), (.43, .07, .045), "paint_light")
+        for x in (-.14,0,.14):
+            builder.box((x,.035,.28),(.12,.031,.025),"paint_light")
+            builder.box((x,-.067,.278),(.025,.04,.019),"steel")
         for side in (-1, 0, 1):
             builder.box((side * .14, -.06, .245), (.115, .16, .055), "bed")
         builder.box((-.31, .06, .08), (.11, .28, .17), "steel")
@@ -175,6 +200,80 @@ def add_model(collection, kind, shared, material):
     return root
 
 
+CREW_ROLES = ("mechanic", "shooter", "loader", "looter", "fuel", "anti_tank", "anti_air", "civilian")
+
+
+def add_crew_assets(collection, material, shared):
+    roots=[]
+    seated=bpy.data.objects.new("MODEL_SEATED",None); collection.objects.link(seated); roots.append(seated)
+    def part(name, build, position, uniform=False):
+        data=mesh("Seated"+name,build,material)
+        obj=bpy.data.objects.new(name,data); collection.objects.link(obj); obj.parent=seated
+        obj.location=(position[0],-position[2],position[1]); obj["seat_role_uniform"]=uniform
+        return obj
+    def volume(size, color):
+        return lambda b: tailored(b,(0,0,0),[(-size[1]/2,size[0]*.91,size[2]*.91),(size[1]*.30,size[0],size[2]),(size[1]/2,size[0]*.87,size[2]*.86)],color)
+    part("Pelvis",volume((.38,.20,.30),"paint"),(0,.42,0),True)
+    part("Torso",volume((.48,.64,.30),"paint"),(0,.83,-.03),True)
+    # The head is the same authored helmet, goggles and face used on infantry.
+    head=bpy.data.objects.new("Head",shared[2]); collection.objects.link(head); head.parent=seated; head.location=(0,-.01,1.29); head.scale=(.90,.90,.90)
+    part("VestPlate",lambda b: tailored(b,(0,0,0),[(-.2,.31,.06),(.11,.41,.07),(.2,.28,.055)],"trim"),(0,.88,.14))
+    part("VestPouches",lambda b: [b.box((x,0,0),(.105,.14,.08),"bed") for x in (-.14,0,.14)],(0,.76,.21))
+    part("PickupBenchCushion",volume((.62,.14,.58),"bed"),(0,.25,0))
+    for side in (-1,1):
+        suffix="" if side<0 else "Right"
+        part("PickupBenchLeg"+suffix,volume((.08,.34,.10),"trim"),(side*.22,.07,0))
+        part("Thigh"+suffix,volume((.17,.18,.52),"paint"),(side*.16,.39,.27),True)
+        part("Shin"+suffix,volume((.16,.40,.17),"paint_shadow"),(side*.16,.20,.49))
+        part("Boot"+suffix,volume((.20,.13,.30),"rubber"),(side*.16,.06,.57))
+        part("Kneepad"+suffix,volume((.17,.10,.055),"trim"),(side*.16,.40,.548))
+        part("UpperArm"+suffix,volume((.16,.43,.17),"paint"),(side*.31,.81,.03),True)
+        part("Forearm"+suffix,volume((.14,.15,.40),"paint"),(side*.31,.57,.25),True)
+        part("Hand"+suffix,volume((.135,.13,.14),"trim"),(side*.31,.56,.48))
+    for role in CREW_ROLES:
+        kit=bpy.data.objects.new("MODEL_CREW_"+role.upper(),None); collection.objects.link(kit); roots.append(kit)
+        def build(b):
+            # All accessories use torso-local coordinates so walking follows the body.
+            if role=="civilian":
+                tailored(b,(0,.24,.19),[(-.11,.43,.07),(.05,.46,.09),(.13,.29,.07)],"accent")
+                b.box((0,-.27,-.24),(.29,.29,.18),"bed")
+            elif role=="mechanic":
+                for x in (-.22,-.11,.0):
+                    b.box((x,-.35,.26),(.06,.21,.06),"steel")
+                    b.box((x,-.24,.26),(.09,.075,.045),"steel")
+                b.box((.32,-.17,.0),(.17,.32,.22),"bed")
+                b.box((.34,-.1,.125),(.08,.03,.026),"amber")
+            elif role=="shooter":
+                for x in (-.25,-.08,.09,.26): b.box((x,-.12,.285),(.12,.22,.10),"paint_shadow")
+                b.box((0,.0,-.245),(.37,.45,.19),"paint")
+            elif role=="loader":
+                b.box((0,0,-.28),(.42,.48,.23),"steel")
+                for y in (-.16,0,.16): b.box((0,y,-.411),(.39,.03,.021),"accent")
+                for x in (-.2,-.1,0,.1,.2): b.box((x,.17,.27),(.055,.19,.065),"amber")
+            elif role=="looter":
+                tailored(b,(0,0,-.32),[(-.36,.37,.25),(.2,.46,.30),(.36,.33,.25)],"accent")
+                for x in (-.14,.14): b.box((x,0,-.481),(.045,.65,.027),"trim")
+                b.box((.32,-.19,0),(.16,.28,.23),"bed")
+            elif role=="fuel":
+                b.box((0,-.02,-.31),(.39,.53,.25),"paint_shadow")
+                b.box((0,.29,-.31),(.24,.06,.17),"steel")
+                for x in (-.105,.105): b.box((x,.00,-.45),(.026,.39,.023),"amber")
+                b.box((.135,.267,-.31),(.065,.06,.09),"dark")
+            elif role=="anti_tank":
+                for x in (-.2,.2):
+                    rings=[[(x+math.cos(i*math.tau/10)*r,y,-.28+math.sin(i*math.tau/10)*r) for i in range(10)] for y,r in ((-.43,.082),(.30,.082),(.46,.018))]
+                    b.loft(rings,"paint_light","amber")
+                b.box((0,-.18,-.30),(.53,.10,.15),"trim")
+            elif role=="anti_air":
+                b.box((0,-.03,-.30),(.45,.55,.23),"steel")
+                b.box((0,.05,-.43),(.25,.18,.025),"glass_light")
+                for x in (-.17,.17): b.box((x,.48,-.30),(.025,.57,.025),"trim")
+                b.box((.31,.01,.08),(.14,.28,.20),"amber")
+        data=mesh("CrewKit_"+role,build,material)
+        obj=bpy.data.objects.new("Kit",data);collection.objects.link(obj);obj.parent=kit
+    return roots
+
+
 def add_preview(scene):
     stage = bpy.data.collections.new("PRESENTATION_ONLY")
     scene.collection.children.link(stage)
@@ -211,6 +310,7 @@ def export_model(root, path):
 
 
 def main():
+    bpy.context.preferences.filepaths.save_version = 0
     OUT.mkdir(parents=True, exist_ok=True)
     GAME_OUT.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.object.select_all(action="SELECT")
@@ -224,6 +324,8 @@ def main():
     material = palette_material()
     shared = limb_meshes(material)
     roots = [add_model(collection, kind, shared, material) for kind in ("rifleman", "ak", "bazooka", "bomber")]
+    crew_roots = add_crew_assets(collection, material, shared)
+    for crew_root in crew_roots: crew_root.hide_render = True
     for index, root in enumerate(roots): root.location.x = (index - 1.5) * 1.45
     add_preview(scene)
     scene.render.engine = "BLENDER_EEVEE"
@@ -235,7 +337,8 @@ def main():
     for root in roots: root.location.x = 0.0
     for root in roots: export_model(root, OUT / (root.name.removeprefix("MODEL_").lower() + ".obj"))
     bpy.ops.object.select_all(action="DESELECT")
-    for root in roots:
+    for crew_root in crew_roots: crew_root.hide_render = False
+    for root in roots + crew_roots:
         root.select_set(True)
         for child in root.children: child.select_set(True)
     bpy.ops.export_scene.gltf(filepath=str(GAME_OUT), export_format="GLB", use_selection=True,

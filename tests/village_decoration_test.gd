@@ -22,7 +22,9 @@ func _initialize() -> void:
 		var authored := Authored.new()
 		authored.setup(context, natural)
 		authored.callv("critter", fixture.args)
-		_check(context.groups.is_empty() and context.ambient_critters.is_empty(), "Retired figure creates neither visible meshes nor an ambient entity")
+		_check(not context.groups.is_empty() and context.groups.size() == context.ambient_critters.size() and context.ambient_critters.all(func(critter: Dictionary) -> bool: return critter.kind == "grazer"), "Sheep flocks replace retired decorative humans")
+		for group: Node3D in context.groups:
+			group.free()
 		_check(context.random.state == int(fixture.state), "Retired figure consumes exactly the historical RNG draws")
 	for seed_value in [72841, 0, 991827]:
 		var context := Generator.generate(seed_value, Authored.new())

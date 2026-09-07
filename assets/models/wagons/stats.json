@@ -2,7 +2,7 @@
   "asset_type": "military_wagons",
   "variants": {
     "cargo": {
-      "triangles": 1888,
+      "triangles": 6208,
       "mesh_count": 4,
       "material_count": 2,
       "bounds": {
@@ -24,7 +24,7 @@
       }
     },
     "repair": {
-      "triangles": 1948,
+      "triangles": 6268,
       "mesh_count": 4,
       "material_count": 2,
       "bounds": {
@@ -46,7 +46,7 @@
       }
     },
     "weapon": {
-      "triangles": 1972,
+      "triangles": 6628,
       "mesh_count": 4,
       "material_count": 2,
       "bounds": {
@@ -68,7 +68,7 @@
       }
     },
     "fuel": {
-      "triangles": 1960,
+      "triangles": 6280,
       "mesh_count": 4,
       "material_count": 2,
       "bounds": {
@@ -90,7 +90,7 @@
       }
     },
     "anti_tank": {
-      "triangles": 1876,
+      "triangles": 6052,
       "mesh_count": 4,
       "material_count": 2,
       "bounds": {
@@ -112,7 +112,7 @@
       }
     },
     "anti_air": {
-      "triangles": 2032,
+      "triangles": 6832,
       "mesh_count": 4,
       "material_count": 2,
       "bounds": {

@@ -1,0 +1,24 @@
+{
+  "mode": "headless automated; no GPU rendering, listening or balance-playthrough claim",
+  "project": "/Users/fosterushka/Work/vibe/roguelike_godot/new-game-project",
+  "results": [
+    {
+      "test": "environment_lod_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25
+    },
+    {
+      "test": "vegetation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 15.66
+    },
+    {
+      "test": "world_quality_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.75
+    }
+  ]
+}

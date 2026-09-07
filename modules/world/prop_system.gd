@@ -110,6 +110,11 @@ func land(prop: Dictionary, point: Vector3, speed: float) -> void:
 	prop.airborne = false
 	prop.position = point
 	prop.position.y = 0.0
+	if str(prop.kind) in Policy.TREE_KINDS:
+		var landing := Damage.create("landing")
+		landing.impact_speed = speed
+		destroy(prop, speed / 7.0, landing)
+		return
 	prop.hp -= minf(Policy.damage_on_landing(speed), float(prop.max_hp) * 0.7)
 	grid.insert(prop)
 	if prop.hp <= 0.0:

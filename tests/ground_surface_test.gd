@@ -60,7 +60,7 @@ func _run() -> void:
 	view.apply_state(state)
 	for index in 3:
 		_surface_check(view._mud[index], Ground.MUD_OFFSET, "Mud %d" % index)
-		check(view._mud[index].global_position.y < 1.0, "View also rejects stale airborne mud record altitude")
+		check(absf(view._mud[index].global_position.y - Ground.Terrain.height_at(view._mud[index].global_position.x, view._mud[index].global_position.z) - Ground.MUD_OFFSET) < 0.0001, "View also rejects stale airborne mud record altitude")
 	var texture: Texture2D = view._mud[1].material_override.albedo_texture
 	state.mud_zones.pop_front()
 	view.apply_state(state)

@@ -62,6 +62,8 @@ func _physics_process(delta: float) -> void:
 	motion.z = position.z
 	var tuning := Fuel.drive_tuning(fuel, player_stats)
 	tuning.traction *= float(surface_effects.get("traction", 1.0)) * float(suspension.grip)
+	tuning.surface_traction = float(surface_effects.get("traction", 1.0))
+	tuning.mass = float(player_stats.get("weight", Motion.Handling.BASE_MASS))
 	tuning.wheeled = true
 	tuning.wheelbase = (Suspension.FRONT_Z - Suspension.REAR_Z) * float(player_stats.get("visual_scale", Dimensions.BASE_SCALE))
 	tuning.acceleration *= clampf(1.0 - float(suspension.slope) * signf(motion.speed) * 1.6, 0.65, 1.25)

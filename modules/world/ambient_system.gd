@@ -1,4 +1,6 @@
 extends RefCounted
+const Wildlife = preload("res://modules/world/wildlife_rules.gd")
+const Dimensions = preload("res://modules/caravan/player_dimensions.gd")
 const Terrain = preload("res://modules/caravan/terrain_surface.gd")
 
 const Random = preload("res://modules/world/activities/source_random.gd")
@@ -6,6 +8,8 @@ var random := Random.new()
 var critters: Array = []
 var animators: Array = []
 var _initial: Array = []
+var rewards: Array[Vector3] = []
+var _previous_player := Vector3.INF
 
 func bind(generated: RefCounted) -> void:
 	critters = generated.ambient_critters if generated != null else []
@@ -21,6 +25,8 @@ func bind(generated: RefCounted) -> void:
 
 func reset(seed_value: int) -> void:
 	random.state = seed_value & 0xffffffff
+	rewards.clear()
+	_previous_player = Vector3.INF
 	for index in critters.size():
 		critters[index].merge(_initial[index], true)
 		critters[index].group.transform = _initial[index].transform
@@ -28,7 +34,7 @@ func reset(seed_value: int) -> void:
 		animator.phase = animator.initial_phase
 		animator.object.rotation = animator.initial_rotation
 
-func step(delta: float, enemies: Array, severe_weather: bool, wind_strength: float = 0.0) -> void:
+func step(delta: float, enemies: Array, severe_weather: bool, wind_strength: float = 0.0, player_position: Vector3 = Vector3.INF, player_speed: float = 0.0, player_scale: float = Dimensions.BASE_SCALE) -> void:
 	for animator: Dictionary in animators:
 		if animator.type == "windmill":
 			animator.object.rotation.z -= delta * animator.speed * (1.0 + wind_strength * 0.035)
@@ -36,7 +42,16 @@ func step(delta: float, enemies: Array, severe_weather: bool, wind_strength: flo
 			animator.phase += delta * animator.speed * (1.0 + wind_strength * 0.006)
 			animator.object.rotation.z = sin(animator.phase) * animator.amplitude
 	var threats := enemies.filter(func(enemy: Dictionary) -> bool: return enemy.get("type", "") != "garrison" and not enemy.get("dead", false) and float(enemy.get("hp", 0)) > 0 and enemy.get("allegiance", "enemy") != "friendly")
+	if player_position.is_finite():
+		threats.append({"position": player_position})
+	var previous := _previous_player if _previous_player.is_finite() else player_position
 	for critter: Dictionary in critters:
+		if critter.get("dead", false):
+			Wildlife.settle(critter, delta)
+			continue
+		if Wildlife.run_over(critter, previous, player_position, player_speed, Dimensions.radius(player_scale)):
+			rewards.append(critter.group.position)
+			continue
 		critter.phase += delta * 2.0
 		critter.turn -= delta
 		if critter.turn <= 0.0 and critter.activityState == "roaming":
@@ -45,6 +60,7 @@ func step(delta: float, enemies: Array, severe_weather: bool, wind_strength: flo
 		update_behavior(critter, delta, threats, severe_weather, random)
 		critter.group.position.y = Terrain.height_at(critter.group.position.x, critter.group.position.z) + sin(critter.phase) * 0.018
 		critter.group.rotation.y = critter.heading
+	_previous_player = player_position
 
 static func update_behavior(critter: Dictionary, delta: float, threats: Array, severe_weather: bool, rng: RefCounted) -> String:
 	var point: Vector3 = critter.group.position

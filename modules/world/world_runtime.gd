@@ -134,7 +134,10 @@ func step_ambient(delta: float) -> void:
 	var wind_particles: int = wind.step(delta, weather.phase.type == "storm", ambient.random)
 	for index in wind_particles:
 		world_event.emit({"kind": "wind_particle", "direction": wind.direction, "strength": wind.strength})
-	ambient.step(delta, combat.model.enemies, weather.phase.type == "storm", wind.strength)
+	ambient.step(delta, combat.model.enemies, weather.phase.type == "storm", wind.strength, vehicle.global_position, vehicle.motion.speed, float(combat.model.player.get("visual_scale", 0.88)))
+	for position: Vector3 in ambient.rewards:
+		combat.model.spawn_pickup(position, preload("res://modules/world/wildlife_rules.gd").SCRAP_REWARD)
+	ambient.rewards.clear()
 	if raw_weather_driven:
 		_weather_view._wind_debris._process(delta)
 

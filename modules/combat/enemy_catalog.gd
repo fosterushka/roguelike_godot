@@ -1,5 +1,7 @@
 extends RefCounted
 
+const GARRISON_AIM_HEIGHT_RATIO := 0.6
+
 # Values ported from combat/spawning.ts, enemy-system.ts and leviathan.ts.
 const DEFINITIONS := {
 	"rifleman": {"model": "rifleman","type": "soldier", "hp": 12.0, "speed": 2.25, "damage": 5.0, "radius": 0.7, "preferred": 18.0, "range": 34.0, "interval": 1.05, "jitter": 0.35},
@@ -11,8 +13,8 @@ const DEFINITIONS := {
 	"bike": {"model": "bike","spawn": {"speed_range": [5.2, 6.5], "speed_multiplier": 1.5}, "type": "bike", "hp": 34.0, "speed": 8.775, "damage": 9.0, "radius": 1.15, "preferred": 0.0, "range": 0.0, "interval": 0.0},
 	"buggy": {"model": "buggy","spawn": {"speed_range": [3.4, 4.2]}, "type": "buggy", "hp": 96.0, "speed": 3.8, "damage": 15.0, "radius": 2.05, "preferred": 16.0, "range": 34.0, "interval": 1.25, "jitter": 0.55},
 	"keep": {"model": "raider","type": "keep", "hp": 320.0, "speed": 2.0, "damage": 23.0, "radius": 3.8, "preferred": 15.8, "range": 64.0, "interval": 3.1, "projectile": "rocket", "height": 2.5},
-	"garrison_1": {"model": "garrison_1","type": "garrison", "tier": 1, "hp": 370.0, "speed": 0.0, "damage": 9.0, "radius": 5.227400, "preferred": 0.0, "range": 48.0, "interval": 2.230000, "jitter": 0.45, "height": 4.071000},
-	"garrison_2": {"model": "garrison_2","type": "garrison", "tier": 2, "hp": 480.0, "speed": 0.0, "damage": 11.0, "radius": 5.493200, "preferred": 0.0, "range": 48.0, "interval": 2.010000, "jitter": 0.45, "height": 4.278000},
+	"garrison_1": {"model": "garrison_1","type": "garrison", "tier": 1, "hp": 370.0, "speed": 0.0, "damage": 9.0, "radius": 5.227400, "preferred": 0.0, "range": 48.0, "interval": 2.230000, "jitter": 0.45, "height": 3.27},
+	"garrison_2": {"model": "garrison_2","type": "garrison", "tier": 2, "hp": 480.0, "speed": 0.0, "damage": 11.0, "radius": 5.493200, "preferred": 0.0, "range": 48.0, "interval": 2.010000, "jitter": 0.45, "height": 3.6},
 	"garrison_3": {"model": "garrison_3","type": "garrison", "tier": 3, "hp": 590.0, "speed": 0.0, "damage": 13.0, "radius": 5.759000, "preferred": 0.0, "range": 48.0, "interval": 1.790000, "jitter": 0.45, "height": 4.485000},
 	"jammerTruck": {"model": "jammerTruck","type": "priorityVehicle", "hp": 150.0, "speed": 3.25, "damage": 10.0, "radius": 2.45, "preferred": 29.0, "range": 43.0, "interval": 1.45, "priority": 2},
 	"repairCrawler": {"model": "repairCrawler","type": "priorityVehicle", "hp": 185.0, "speed": 2.75, "damage": 0.0, "radius": 2.65, "preferred": 31.0, "range": 0.0, "interval": 0.00, "priority": 2},

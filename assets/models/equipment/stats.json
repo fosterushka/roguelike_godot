@@ -1,126 +1,121 @@
 {
   "turret": {
-    "triangles": 412,
+    "triangles": 928,
     "meshes": 2,
     "materials": 1
   },
   "repair_station": {
-    "triangles": 288,
+    "triangles": 504,
     "meshes": 1,
     "materials": 1
   },
   "ammo_feed": {
-    "triangles": 176,
+    "triangles": 576,
     "meshes": 1,
     "materials": 1
   },
   "cargo_rack": {
-    "triangles": 200,
+    "triangles": 320,
     "meshes": 1,
     "materials": 1
   },
   "salvage_arm": {
-    "triangles": 212,
+    "triangles": 372,
     "meshes": 1,
     "materials": 1
   },
   "fuel_pump": {
-    "triangles": 312,
+    "triangles": 508,
     "meshes": 1,
     "materials": 1
   },
   "anti_tank_station": {
-    "triangles": 412,
+    "triangles": 940,
     "meshes": 2,
     "materials": 1
   },
   "anti_air_station": {
-    "triangles": 520,
+    "triangles": 1228,
     "meshes": 2,
     "materials": 1
   },
-  "armor_panels": {
-    "triangles": 284,
-    "meshes": 1,
-    "materials": 1
-  },
   "reinforced_hitch": {
-    "triangles": 192,
+    "triangles": 408,
     "meshes": 1,
     "materials": 1
   },
   "akTurret": {
-    "triangles": 412,
+    "triangles": 932,
     "meshes": 2,
     "materials": 1
   },
   "armor": {
-    "triangles": 284,
+    "triangles": 548,
     "meshes": 1,
     "materials": 1
   },
   "assaultRifle": {
-    "triangles": 412,
+    "triangles": 824,
     "meshes": 2,
     "materials": 1
   },
   "bazooka": {
-    "triangles": 412,
+    "triangles": 848,
     "meshes": 2,
     "materials": 1
   },
   "bumper": {
-    "triangles": 104,
+    "triangles": 428,
     "meshes": 1,
     "materials": 1
   },
   "counterDroneJammer": {
-    "triangles": 388,
+    "triangles": 700,
     "meshes": 1,
     "materials": 1
   },
   "flamethrower": {
-    "triangles": 400,
+    "triangles": 760,
     "meshes": 2,
     "materials": 1
   },
   "grenadeLauncher": {
-    "triangles": 412,
+    "triangles": 788,
     "meshes": 2,
     "materials": 1
   },
   "mineHacker": {
-    "triangles": 388,
+    "triangles": 652,
     "meshes": 1,
     "materials": 1
   },
   "minigun": {
-    "triangles": 952,
+    "triangles": 1356,
     "meshes": 2,
     "materials": 1
   },
   "missileRack": {
-    "triangles": 420,
+    "triangles": 816,
     "meshes": 2,
     "materials": 1
   },
   "radar": {
-    "triangles": 332,
+    "triangles": 524,
     "meshes": 1,
     "materials": 1
   },
   "railgun": {
-    "triangles": 436,
+    "triangles": 952,
     "meshes": 2,
     "materials": 1
   },
   "treasury": {
-    "triangles": 216,
+    "triangles": 336,
     "meshes": 1,
     "materials": 1
   },
   "workshop": {
-    "triangles": 288,
+    "triangles": 600,
     "meshes": 1,
     "materials": 1
   }

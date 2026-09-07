@@ -1,6 +1,7 @@
 extends RefCounted
 
 const Random = preload("res://modules/world/activities/source_random.gd")
+const ROAD_WIDTH_SCALE := 1.22
 const RADIUS := 1248.0
 const MONUMENT_TYPES := ["watchtower", "pumpjack", "rock-spire", "dead-grove", "scrap-yard", "water-tower", "recycling-factory", "cargo-crane", "refinery", "satellite-array"]
 const ADJECTIVES := ["Ashen", "Broken", "Copper", "Dustbound", "Hollow", "Iron", "Rust", "Shattered"]
@@ -75,7 +76,7 @@ static func generate(seed_value: int) -> Dictionary:
 				x = x / from_center * road_limit
 				z = z / from_center * road_limit
 			points.append({"x": x, "z": z})
-		roads.append({"id": "road-%02d" % road_index, "points": points, "width": random.between(7.2, 10.2)})
+		roads.append({"id": "road-%02d" % road_index, "points": points, "width": random.between(7.2, 10.2) * ROAD_WIDTH_SCALE})
 	var villages: Array = []
 	var village_target := random.integer(28, 36)
 	for index in village_target:

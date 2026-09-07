@@ -337,7 +337,14 @@ func _resolve_projectile_segment(shot: Dictionary) -> bool:
 		for enemy: Dictionary in _target_candidates():
 			if enemy.dead or enemy.id in shot.get("hit_targets", []) or (enemy.get("collidable", true) == false and not enemy.get("is_component", false)):
 				continue
-			var fraction := Shots.hit_fraction(start, end, _aim_center(enemy), enemy.radius + shot.radius + (0.12 if enemy.type == "soldier" else 0.1))
+			var hit_radius: float = enemy.radius + shot.radius + (0.12 if enemy.type == "soldier" else 0.1)
+			var fraction: float
+			if enemy.type == "garrison":
+				var hull_origin: Vector3 = enemy.position + Vector3.UP * Terrain.height_at(enemy.position.x, enemy.position.z)
+				var hull_size: Vector3 = enemy.get("hitbox_size", EnemyFactory.BaseGeometry.profile(int(enemy.get("tier", 1))).hitbox_size)
+				fraction = Shots.box_hit_fraction(start, end, hull_origin, hull_size, float(enemy.get("yaw", 0.0)), float(shot.radius))
+			else:
+				fraction = Shots.hit_fraction(start, end, _aim_center(enemy), hit_radius)
 			if fraction >= 0.0:
 				hits.append({"fraction": fraction, "enemy": enemy})
 	else:
@@ -415,13 +422,13 @@ func _projectile_damage(enemy: Dictionary, shot: Dictionary, amount: float, dire
 	var chain: Dictionary = {}
 	if direct and shot.get("module_type", "") == "railgun" and shot.get("synergy_eligible", true) and Protocols.active(player, "stormConductor"):
 		chain = Protocols.conductor_target(_target_candidates(), enemy, elapsed)
-	damage_enemy(enemy.id, amount * multiplier)
+	damage_enemy(enemy.id, amount * multiplier, true, shot.position if direct else null)
 	Sidegrades.apply_control(enemy, shot)
 	if not chain.is_empty() and not chain.dead:
 		damage_enemy(chain.id, amount * multiplier * 0.45)
 		_emit("conductor_arc", {"position": enemy.position, "target_position": chain.position})
 
-func damage_enemy(id: int, amount: float, lethal: bool = true) -> bool:
+func damage_enemy(id: int, amount: float, lethal: bool = true, impact_position: Variant = null) -> bool:
 	for enemy: Dictionary in enemies:
 		if enemy.dead:
 			continue
@@ -439,7 +446,7 @@ func damage_enemy(id: int, amount: float, lethal: bool = true) -> bool:
 			amount = minf(amount, maxf(0.0, enemy.hp - 1.0))
 		enemy.hp = maxf(0.0, enemy.hp - amount)
 		enemy.hit_time = 1.0 / 6.0
-		_emit("hit", {"id": id, "type": enemy.type, "position": _aim_center(enemy), "damage": amount})
+		_emit("hit", {"id": id, "type": enemy.type, "position": impact_position if impact_position is Vector3 else _aim_center(enemy), "damage": amount})
 		if enemy.hp <= 0.0:
 			kill_enemy(enemy)
 		return true
@@ -645,12 +652,16 @@ func _target_aim(enemy: Dictionary) -> Vector3:
 	if enemy.get("is_component", false):
 		return enemy.position
 	var height: float = enemy.height if enemy.type in ["drone", "garrison"] else 2.8 if enemy.type == "keep" else 1.05
+	if enemy.type == "garrison":
+		height *= Enemies.GARRISON_AIM_HEIGHT_RATIO
 	return enemy.position + Vector3.UP * (height + Terrain.height_at(enemy.position.x, enemy.position.z) + float(enemy.get("lift_height", 0.0)))
 
 func _aim_center(enemy: Dictionary) -> Vector3:
 	if enemy.get("is_component", false):
 		return enemy.position
 	var height: float = enemy.height if enemy.type in ["drone", "garrison"] else 2.5 if enemy.type == "keep" else 1.5 if enemy.type == "buggy" else 1.0 if enemy.type == "bike" else 1.05
+	if enemy.type == "garrison":
+		height *= Enemies.GARRISON_AIM_HEIGHT_RATIO
 	return enemy.position + Vector3.UP * (height + Terrain.height_at(enemy.position.x, enemy.position.z) + float(enemy.get("lift_height", 0.0)))
 
 func _id() -> int:

@@ -9,9 +9,7 @@ if (!source) throw new Error('Pass original Iron Caravan source checkout');
 const require = createRequire(path.join(source, 'package.json'));
 const THREE = require('three');
 const importSource = p => import(pathToFileURL(path.join(source, p)).href);
-const { createModernPlayerVehicle, addModernPlayerEvolutionTier } = await importSource('src/client/infrastructure/three/player-vehicle-model.ts');
 const { createPriorityEnemyViews } = await importSource('src/client/infrastructure/three/priority-enemy-views.ts');
-const { createWalkerTrailerView } = await importSource('src/client/infrastructure/three/walker-trailer-view.ts');
 const { createCaravanViews } = await importSource('src/client/infrastructure/three/caravan-views.ts');
 const { createEnemyViews } = await importSource('src/client/infrastructure/three/enemy-views.ts');
 const { setWeaponAimTarget } = await importSource('src/client/infrastructure/three/weapon-aim.ts');
@@ -65,11 +63,6 @@ function save(name, root) {
 }
 const catalog=[];
 for(const kind of ['jammerTruck','repairCrawler','minelayer'])catalog.push(save(kind,priority.createPriorityVehicleView(kind,0,0).group));
-for(const state of ['enemy','friendly','unarmed']){const view=priority.createMineView(0,0);view.update({armed:state!=='unarmed',allegiance:state,hackProgress:0,lifeRatio:1});for(const part of [...view.group.children])if(!part.visible)view.group.remove(part);catalog.push(save('mine_'+state,view.group));}
-catalog.push(save('walker_trailer',createWalkerTrailerView(runtime).group));
-const player=createModernPlayerVehicle(runtime,.88);catalog.push(save('player',player));
-for(let tier=2;tier<=4;tier++){const g=new THREE.Group();addModernPlayerEvolutionTier(runtime,g,tier);g.scale.setScalar(.88);catalog.push(save(`evolution_${tier}`,g));}
-for(const kind of ['assaultRifle','akTurret','bazooka','missileRack','grenadeLauncher','railgun','minigun','workshop','armor','treasury','radar','bumper','counterDroneJammer']) {const group=caravan.createModuleVisual(kind);if(!['workshop','armor','treasury','radar','bumper','counterDroneJammer'].includes(kind))setWeaponAimTarget(group,new THREE.Vector3(),new THREE.Vector3(0,0,10));catalog.push(save(`weapon_${kind}`,group));}
 for(const kind of ['bike','buggy']){const view=enemies.createRaiderVehicleView(kind,0,0);view.group.userData.wheels=view.wheels;catalog.push(save(kind,view.group));}
 for(const kind of ['drone','kamikaze']){const view=enemies.createDroneView(kind,0,0);view.group.position.y=0;view.group.userData.rotors=view.rotors;catalog.push(save(kind,view.group));}
 for(const boss of [false,true]){const view=enemies.createEnemyKeepView(0,0,boss);view.group.userData.componentAnchors=view.componentAnchors;catalog.push(save(boss?'boss':'raider',view.group));}
@@ -121,9 +114,10 @@ if(process.env.EXPORT_WORLD === '1'){
 }
 const files=['effects.ts','explosion-fireball.ts','rocket-smoke-trail.ts','smoke-shader.ts','vehicle-wrecks.ts','particle-shader.ts','battlefield-retention.ts','weapon-aim.ts','priority-enemy-views.ts','walker-trailer-view.ts','player-vehicle-model.ts','player-vehicle-details.ts','enemy-views.ts','caravan-views.ts','soldier-pool.ts','world-builder.ts','terrain-surface.ts','road-network.ts','battlefield-scars.ts','counter-drone-jammer-view.ts','scene.ts'];
 const provenance=files.map(file=>({file:`src/client/infrastructure/three/${file}`,sha256:createHash('sha256').update(readFileSync(path.join(source,'src/client/infrastructure/three',file))).digest('hex')}));
-let retained=[];try{retained=JSON.parse(readFileSync(path.join(output,'catalog.json'),'utf8')).models.filter(entry=>!catalog.some(current=>current.name===entry.name));}catch{}
+const retired = /^(mine_|player$|walker_trailer$|evolution_|weapon_)/;
+let retained=[];try{retained=JSON.parse(readFileSync(path.join(output,'catalog.json'),'utf8')).models.filter(entry=>!catalog.some(current=>current.name===entry.name)&&!retired.test(entry.name));}catch{}
 writeFileSync(path.join(output,'catalog.json'),JSON.stringify({models:[...catalog,...retained],provenance},null,2));
-console.log(JSON.stringify({models:catalog.length,meshes:total,player:catalog.find(model=>model.name==='player')},null,2));
+console.log(JSON.stringify({models:catalog.length,meshes:total},null,2));
 
 // Executed original source effect functions provide independent numerical fixtures.
 const { createEffects } = await importSource('src/client/infrastructure/three/effects.ts');

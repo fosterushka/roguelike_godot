@@ -2,6 +2,7 @@ extends RefCounted
 
 const MODEL_PATH := "res://assets/vehicles/military_equipment.glb"
 const Library = preload(MODEL_PATH)
+const MODEL_ALIASES := {"armor_panels": "armor"}
 static var _parts: Dictionary = {}
 
 static func prepare() -> void:
@@ -16,6 +17,11 @@ static func prepare() -> void:
 			if child is MeshInstance3D:
 				parts.append({"mesh": child.mesh, "moving": str(child.name).begins_with("MOVING"), "transform": child.transform})
 		_parts[str(model.name).trim_prefix("EQUIPMENT_")] = parts
+	# Gameplay IDs remain separate while equivalent models share one GLB root.
+	for alias: String in MODEL_ALIASES:
+		var canonical: String = MODEL_ALIASES[alias]
+		if _parts.has(canonical):
+			_parts[alias] = _parts[canonical]
 	scene.free()
 
 static func build(type: String) -> Node3D:

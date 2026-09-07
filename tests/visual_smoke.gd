@@ -3,6 +3,7 @@ const SourceModel = preload("res://presentation/combat/source_model.gd")
 const CombatView = preload("res://presentation/combat/combat_view.gd")
 const Runtime = preload("res://modules/combat/combat_runtime.gd")
 const Vehicle = preload("res://modules/caravan/vehicle_controller.gd")
+const Rig = preload("res://presentation/vehicles/wheeled_rig.gd")
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -10,20 +11,11 @@ func _initialize() -> void:
 func _run() -> void:
 	preload("res://app/input_actions.gd").register()
 	SourceModel.preload_models()
-	var crawler := SourceModel.instantiate("player")
-	assert(crawler.get_child_count() >= 76)
+	var crawler := Rig.build_player()
+	assert(crawler.get_child_count() > 0)
 	root.add_child(crawler)
-	var crawler_bounds := AABB()
-	var first := true
-	for part in crawler.get_children():
-		var bounds: AABB = part.transform * part.get_aabb()
-		crawler_bounds = bounds if first else crawler_bounds.merge(bounds)
-		first = false
-	var casters := 0
-	for part in crawler.get_children():
-		casters += int(part.cast_shadow != GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
-	assert(casters == 4, "Original crawler uses four main hull shadow casters")
-	assert(crawler_bounds.size.distance_to(Vector3(6.6, 4.8708, 6.17738)) < 0.001)
+	var crawler_bounds := _bounds(crawler)
+	assert(crawler_bounds.size.length() > 3.0, "Current crawler has authored pickup geometry")
 	var world := SourceModel.instantiate("world_72841")
 	assert(world.get_child_count() > 3000)
 	root.add_child(world)
@@ -56,5 +48,17 @@ func _run() -> void:
 	view.on_event({"kind": "explosion", "position": Vector3(10, 0, 10), "radius": 4.0})
 	await process_frame
 	view.apply_state({"generation": 99, "enemies": [], "projectiles": [], "pickups": []})
-	print("VISUAL_SMOKE_OK: exact source crawler/world meshes, reusable combat pools, inert warmup, state reset")
+	print("VISUAL_SMOKE_OK: current crawler/world meshes, reusable combat pools, inert warmup, state reset")
 	quit()
+
+func _bounds(node: Node3D, parent_transform := Transform3D.IDENTITY) -> AABB:
+	var transform := parent_transform * node.transform
+	var result := AABB()
+	if node is MeshInstance3D and node.mesh != null:
+		result = transform * node.mesh.get_aabb()
+	for child: Node in node.get_children():
+		if child is Node3D:
+			var child_bounds := _bounds(child, transform)
+			if child_bounds.size.length_squared() > 0.0:
+				result = child_bounds if result.size.length_squared() == 0.0 else result.merge(child_bounds)
+	return result

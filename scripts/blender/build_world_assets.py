@@ -8,9 +8,10 @@ sys.path.insert(0,str(Path(__file__).parent))
 import build_player
 from pickup_geometry import MeshBuilder
 from build_equipment import box,tube,beam,crate
+import field_prop_detail
 OUT=ROOT/'assets/models/field_props'
 GAME=ROOT/'assets/actors/military_field_props.glb'
-TYPES=['garrison_1','garrison_2','garrison_3','mine_enemy','mine_friendly','mine_unarmed','pickup_fuel','pickup_salvage','heal_cart','airdrop']
+TYPES=['garrison_3','mine','pickup_fuel','pickup_salvage','heal_cart']
 def garrison(tier):
     scale=.95+(tier-1)*.05
     body,roof,tower=MeshBuilder(),MeshBuilder(),MeshBuilder()
@@ -42,6 +43,8 @@ def garrison(tier):
     tube(tower,(1.5,4.88,1.0),.5,.22,'steel',segments=12)
     tube(tower,(1.5,5.16,1.85),.16,1.8,'trim',(0,0,1),10)
     box(tower,(1.5,5.17,1.0),(1.05,.48,.8),'paint_light')
+    if tier == 3:
+        field_prop_detail.factory(body, roof)
     combined=MeshBuilder()
     for b in [body,roof,tower]:
         offset=len(combined.vertices)
@@ -52,11 +55,12 @@ def garrison(tier):
 def build(name):
     if name.startswith('garrison'):return garrison(int(name[-1]))
     b=MeshBuilder(); parts=[]
-    if name.startswith('mine_'):
+    if name == 'mine':
         tube(b,(0,.15,0),.66,.30,'paint_shadow',segments=12)
         tube(b,(0,.33,0),.55,.12,'paint',segments=12)
         tube(b,(0,.405,0),.28,.04,'trim',segments=10)
-        for x in [-.45,.45]: box(b,(x,.35,0),(.10,.08,.42),'accent')
+        for x in [-.45,.45]: box(b,(x,.408,0),(.10,.025,.42),'accent')
+        field_prop_detail.mine(b)
         signal=MeshBuilder();tube(signal,(0,.447,0),.16,.045,'white',segments=12)
         return [('MineBody',b,(0,0,0)),('MineSignal',signal,(0,0,0))]
     if name=='pickup_fuel':
@@ -71,34 +75,10 @@ def build(name):
         crate(b,(0,.36,0),(.70,.60,.62),'bed')
         for x,z in [(-.18,-.12),(.17,.13),(0,.05)]:tube(b,(x,.73,z),.105,.30,'steel',(1,0,0),8)
         box(b,(.13,.72,-.15),(.27,.18,.18),'accent')
-    elif name=='airdrop':
-        crate(b,(0,1.75,0),(2.5,2.95,2.4),'paint')
-        for x in [-.95,.95]:box(b,(x,.15,0),(.3,.3,2.7),'trim')
-        for x in [-.85,.85]:
-            for z in [-.85,.85]:box(b,(x,3.32,z),(.15,.2,.15),'steel')
-        box(b,(0,1.95,1.22),(1.0,.35,.045),'accent')
-        canopy=MeshBuilder()
-        rings=[]
-        import math
-        for y,r in [(0,2.45),(1.05,2.0),(1.8,.75)]:rings.append([(math.cos(i*math.tau/12)*r,math.sin(i*math.tau/12)*r,y) for i in range(12)])
-        canopy.loft(rings,'paint_light')
-        for x,z in [(-1.8,-1.8),(-1.8,1.8),(1.8,-1.8),(1.8,1.8)]:beam(canopy,(x,0,z),(x*.48,-4.0,z*.48),.02,'accent')
-        parts.append(('Canopy',canopy,(0,7.4,0)))
     elif name=='heal_cart':
-        box(b,(0,.72,0),(2.65,.25,3.65),'paint_shadow')
-        box(b,(0,1.12,-.42),(2.30,.66,2.5),'paint')
-        box(b,(0,1.75,-.42),(2.05,.63,2.30),'paint_light')
-        box(b,(0,1.36,1.15),(1.7,.28,.60),'steel')
-        box(b,(0,1.88,1.22),(1.5,.77,.08),'glass')
-        box(b,(0,2.35,.72),(2.05,.14,1.45),'paint')
-        for x in [-1.08,1.08]:
-            box(b,(x,1.77,-.5),(.035,.52,.15),'white');box(b,(x,1.77,-.5),(.045,.14,.56),'white')
-        for x in [-.75,.75]:box(b,(x,.93,1.84),(.28,.16,.04),'lamp')
-        for x in [-1.25,1.25]:
-            for z in [-1.15,1.15]:
-                wheel=MeshBuilder();tube(wheel,(0,0,0),.52,.35,'rubber',(1,0,0),12)
-                for side in [-1,1]:tube(wheel,(side*.185,0,0),.29,.04,'steel',(1,0,0),10)
-                parts.append(('Wheel_'+('L' if x<0 else 'R')+('F' if z>0 else 'B'),wheel,(x,.52,z)))
+        from heal_cart_bodywork import build as build_ambulance
+        return build_ambulance()
+    field_prop_detail.supply(b, name)
     return [('Body',b,(0,0,0))]+parts
 
 def main():

@@ -3,6 +3,8 @@ extends RefCounted
 const HALF_SIZE := 1730.4
 const CELLS := 512
 const STEP := HALF_SIZE * 2.0 / CELLS
+const HUMMOCK_HEIGHT := 1.15
+const SWELL_HEIGHT := 1.8
 static var heights := PackedFloat32Array()
 
 static func configure(layout: Dictionary, roads: Array = []) -> void:
@@ -12,8 +14,8 @@ static func configure(layout: Dictionary, roads: Array = []) -> void:
 		var z := row * STEP - HALF_SIZE
 		for column in CELLS + 1:
 			var x := column * STEP - HALF_SIZE
-			var hummocks := sin(x * 0.23 + z * 0.09) * sin(z * 0.19 - x * 0.035) * 0.48
-			var swells := sin(x * 0.063) * sin(z * 0.078) * 0.26
+			var hummocks := sin(x * 0.23 + z * 0.09) * sin(z * 0.19 - x * 0.035) * HUMMOCK_HEIGHT
+			var swells := sin(x * 0.031) * sin(z * 0.038) * SWELL_HEIGHT
 			heights[row * (CELLS + 1) + column] = hummocks + swells
 	_flatten(Vector2.ZERO, 12.0)
 	for prop: Dictionary in layout.get("props", []):
@@ -45,17 +47,20 @@ static func _flatten(point: Vector2, radius: float) -> void:
 static func height_at(x: float, z: float) -> float:
 	if heights.is_empty():
 		return 0.0
-	var coordinate := Vector2(clampf((x + HALF_SIZE) / STEP, 0, CELLS - 0.00001), clampf((z + HALF_SIZE) / STEP, 0, CELLS - 0.00001))
-	var column := clampi(floori(coordinate.x), 0, CELLS - 1)
-	var row := clampi(floori(coordinate.y), 0, CELLS - 1)
-	var fraction := coordinate - Vector2(column, row)
+	# Scalar coordinates retain double precision across the full 3.4 km heightfield.
+	var column_coordinate := clampf((x + HALF_SIZE) / STEP, 0, CELLS - 0.00001)
+	var row_coordinate := clampf((z + HALF_SIZE) / STEP, 0, CELLS - 0.00001)
+	var column := clampi(floori(column_coordinate), 0, CELLS - 1)
+	var row := clampi(floori(row_coordinate), 0, CELLS - 1)
+	var fraction_x := column_coordinate - column
+	var fraction_z := row_coordinate - row
 	var a := heights[row * (CELLS + 1) + column]
 	var b := heights[row * (CELLS + 1) + column + 1]
 	var c := heights[(row + 1) * (CELLS + 1) + column]
 	var d := heights[(row + 1) * (CELLS + 1) + column + 1]
-	if fraction.x + fraction.y <= 1.0:
-		return a + (b - a) * fraction.x + (c - a) * fraction.y
-	return d + (c - d) * (1.0 - fraction.x) + (b - d) * (1.0 - fraction.y)
+	if fraction_x + fraction_z <= 1.0:
+		return a + (b - a) * fraction_x + (c - a) * fraction_z
+	return d + (c - d) * (1.0 - fraction_x) + (b - d) * (1.0 - fraction_z)
 
 static func normal_at(x: float, z: float) -> Vector3:
 	return Vector3(height_at(x - 0.2, z) - height_at(x + 0.2, z), 0.4, height_at(x, z - 0.2) - height_at(x, z + 0.2)).normalized()

@@ -1,52 +1,27 @@
 {
-  "garrison_1": {
-    "triangles": 804,
-    "mesh_objects": 1,
-    "materials": 1
-  },
-  "garrison_2": {
-    "triangles": 944,
-    "mesh_objects": 1,
-    "materials": 1
-  },
   "garrison_3": {
-    "triangles": 1084,
+    "triangles": 3692,
     "mesh_objects": 1,
     "materials": 1
   },
-  "mine_enemy": {
-    "triangles": 192,
-    "mesh_objects": 2,
-    "materials": 1
-  },
-  "mine_friendly": {
-    "triangles": 192,
-    "mesh_objects": 2,
-    "materials": 1
-  },
-  "mine_unarmed": {
-    "triangles": 192,
+  "mine": {
+    "triangles": 520,
     "mesh_objects": 2,
     "materials": 1
   },
   "pickup_fuel": {
-    "triangles": 124,
+    "triangles": 572,
     "mesh_objects": 1,
     "materials": 1
   },
   "pickup_salvage": {
-    "triangles": 180,
+    "triangles": 608,
     "mesh_objects": 1,
     "materials": 1
   },
   "heal_cart": {
-    "triangles": 608,
+    "triangles": 4740,
     "mesh_objects": 5,
-    "materials": 1
-  },
-  "airdrop": {
-    "triangles": 284,
-    "mesh_objects": 2,
     "materials": 1
   }
 }

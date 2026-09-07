@@ -19,6 +19,7 @@ func _init() -> void:
 	_run.call_deferred()
 
 func _run() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT.get_base_dir()))
 	Source._prepare("world_72841")
 	var library := Node3D.new()
 	library.name = "AUTHORED_MONUMENTS"

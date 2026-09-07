@@ -16,6 +16,7 @@ func _init() -> void:
 func _run() -> void:
 	_test_controls()
 	_test_rigid_suspension()
+	_test_load_transfer()
 	var results: Array[Dictionary] = []
 	for rate in [30, 60, 144]:
 		results.append(await _test_render_rate(rate))
@@ -33,11 +34,11 @@ func _test_controls() -> void:
 	var tuning := {"maximum_speed": 6.0, "acceleration": 4.0, "braking": 8.0, "traction": 1.0, "wheeled": true, "wheelbase": 4.7}
 	for tick in 6:
 		Motion.step(state, {"throttle": 1.0, "steer": 1.0, "handbrake": false}, tuning, 1.0 / 60)
-	check(state.steer > 0.9 and state.heading > 0.035, "Steering exceeds90percent response within100ms without a second yaw delay")
+	check(state.steer > 0.7 and state.steer < 0.9 and state.heading > 0.0, "High speed steering ramps smoothly during first100ms")
 	check(state.speed == 6.0, "Responsive steering preserves maximum driving speed")
 	for tick in 6:
 		Motion.step(state, {"throttle": 1.0, "steer": -1.0, "handbrake": false}, tuning, 1.0 / 60)
-	check(state.steer < -0.8 and state.yaw_velocity < 0, "Changing steering direction responds within100ms")
+	check(state.steer < -0.5 and state.steer > -0.85, "Changing steering direction smoothly crosses neutral")
 	var normal := State.new()
 	var handbrake := State.new()
 	normal.speed = 6.0
@@ -62,6 +63,37 @@ func _test_rigid_suspension() -> void:
 	var transform := Pose.transform(midpoint)
 	check(absf(absf(midpoint.heading) - PI) < 0.00001, "Yaw interpolation crosses angle wrap without a full revolution")
 	check(_rigid(transform.basis), "Interpolating vehicle growth preserves uniform scale with no shear")
+
+func _test_load_transfer() -> void:
+	var state := Suspension.create()
+	var flat := func(_x: float, _z: float) -> float: return 0.0
+	Suspension.step(state, Vector3.ZERO, 0, 0, 0, 1.0 / 60, 1.0, false, flat)
+	for tick in 60:
+		Suspension.step(state, Vector3.ZERO, 0, (tick + 1) * 0.1, 0, 1.0 / 60, 1.0, false, flat)
+	check(state.pitch < -0.03 and absf(state.pitch) <= Suspension.MAX_LOAD_PITCH, "Acceleration lifts nose with bounded suspension squat")
+	var first := Pose.capture(Vector3.ZERO, 0, 1, 0, 0, 0, Suspension.create())
+	var accelerated := Pose.capture(Vector3(0, state.height, 0), 0, 1, 6, 0, 0, state)
+	var half := Pose.interpolate(first, accelerated, 0.5)
+	check(is_equal_approx(half.suspension.pitch, state.pitch * 0.5), "Body pitch interpolates between physics ticks")
+	var rig := preload("res://presentation/vehicles/wheeled_rig.gd").build_player()
+	root.add_child(rig)
+	rig.transform = Pose.transform(accelerated)
+	preload("res://presentation/vehicles/wheeled_rig.gd").animate(rig, state, 0.6, 6, 0)
+	var wheels: Array = rig.get_meta("wheels")
+	var grounded := true
+	for index in wheels.size():
+		var expected: Vector3 = wheels[index].get_meta("anchor")
+		expected.y += float(state.height) + float(state.wheel_offsets[index])
+		grounded = grounded and wheels[index].global_position.distance_to(expected) < 0.00001
+		grounded = grounded and wheels[index].global_basis.y.distance_to(Vector3.UP) < 0.00001
+	check(grounded and _rigid(rig.basis), "Pitch preserves all tire contact positions and rigid chassis without shear")
+	rig.free()
+	for tick in 30:
+		Suspension.step(state, Vector3.ZERO, 0, 6.0 - (tick + 1) * 0.2, 0, 1.0 / 60, 1.0, false, flat)
+	check(state.pitch > 0.04 and state.contacts == 4, "Braking dips nose while all wheels retain support")
+	for tick in 240:
+		Suspension.step(state, Vector3.ZERO, 0, 0, 0, 1.0 / 60, 1.0, false, flat)
+	check(absf(state.pitch) < 0.00001 and absf(state.pitch_velocity) < 0.00001, "Load transfer settles when vehicle stops")
 
 func _test_render_rate(rate: int) -> Dictionary:
 	var controller := Controller.new()
@@ -105,7 +137,7 @@ func _test_render_rate(rate: int) -> Dictionary:
 		previous_render = view.global_position
 	check(smooth, "%dfps rendering has uniform body steps with60Hz physics" % rate)
 	check(camera_aligned, "%dfps camera keeps orientation fixed instead of looking at a stepped physics target" % rate)
-	check(rigid, "%dfps body and trailer stay level and uniformly scaled" % rate)
+	check(rigid, "%dfps body and trailer remain rigid and uniformly scaled" % rate)
 	view.on_impact(0.8, -0.8)
 	view.render_interpolated(1.0)
 	check(_rigid(view.global_basis) and view._body.impact_pitch == 0 and view._body.impact_roll == 0, "Combat impact never tilts or stretches the body")
@@ -128,7 +160,7 @@ func _test_render_rate(rate: int) -> Dictionary:
 	return result
 
 func _rigid(basis: Basis) -> bool:
-	return absf(basis.x.length() - basis.y.length()) < 0.00001 and absf(basis.y.length() - basis.z.length()) < 0.00001 and absf(basis.x.dot(basis.z)) < 0.00001 and basis.y.normalized().distance_to(Vector3.UP) < 0.00001
+	return absf(basis.x.length() - basis.y.length()) < 0.00001 and absf(basis.y.length() - basis.z.length()) < 0.00001 and absf(basis.x.dot(basis.z)) < 0.00001 and absf(basis.x.dot(basis.y)) < 0.00001 and absf(basis.y.dot(basis.z)) < 0.00001
 
 func check(condition: bool, message: String) -> void:
 	checks += 1

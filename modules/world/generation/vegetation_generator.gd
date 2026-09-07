@@ -1,6 +1,9 @@
 extends RefCounted
 
 const Random = preload("res://modules/world/activities/source_random.gd")
+const Biomes = preload("res://modules/world/biome_rules.gd")
+const DRY_GROVE_DENSITY := 0.38
+const TREE_SIZE_SCALE := 1.18
 const SPECIES := ["spruceTrees", "birchTrees"]
 const CROWNS := [2.6, 2.3]
 const TREE_BUDGET := 1800
@@ -49,8 +52,13 @@ func _grove(center: Vector2, radius: float, attempts: int, species: int, size: f
 		var angle: float = _random.between(0, TAU)
 		var offset := sqrt(_random.next()) * radius
 		var point := center + Vector2(cos(angle), sin(angle)) * offset
+		var biome := Biomes.kind_at(Vector3(point.x, 0, point.y))
+		if biome == Biomes.Kind.BADLANDS and float(index) / attempts > DRY_GROVE_DENSITY:
+			continue
 		var variation := (species + 1) % SPECIES.size() if _random.next() < 0.23 else species
-		var scale: float = _random.between(0.76, 1.18) * size
+		if biome == Biomes.Kind.TUNDRA:
+			variation = 0
+		var scale: float = _random.between(0.76, 1.18) * size * TREE_SIZE_SCALE
 		if not _open(point, CROWNS[variation] * scale):
 			continue
 		var rotation := Vector3(0, _random.between(0, TAU), _random.between(-0.025, 0.025))

@@ -16,7 +16,8 @@ OUT = ROOT / "assets/models/wagons"
 GAME = ROOT / "assets/vehicles"
 sys.path.insert(0, str(Path(__file__).parent))
 from pickup_geometry import MeshBuilder, PALETTE, wheel_mesh
-from wagon_bodywork import add_bodywork
+from wagon_bodywork import add_bodywork, add_chassis_detail
+from equipment_panels import panel
 
 TYPES = ("cargo", "repair", "weapon", "fuel", "anti_tank", "anti_air")
 # Muted role paint; tires, chassis and metal keep their shared neutral palette.
@@ -34,7 +35,14 @@ class WagonBuilder(MeshBuilder):
     """Accept Godot X/Y/Z coordinates while emitting Blender X/Y/Z geometry."""
     def box(self, center, size, color):
         x, y, z = center
-        super().box((x, -z, y), (size[0], size[2], size[1]), color)
+        # The generic panel function must receive an unconverted builder to avoid
+        # recursively re-entering this coordinate adapter.
+        temp = MeshBuilder()
+        panel(temp, (x, -z, y), (size[0], size[2], size[1]), color)
+        offset = len(self.vertices)
+        self.vertices.extend(temp.vertices)
+        self.faces.extend(tuple(index+offset for index in face) for face in temp.faces)
+        self.colors.extend(temp.colors)
 
 
 def gltf_point(point):
@@ -102,6 +110,7 @@ def base_mesh(material, wagon_type):
     b.box((0, .94, -2.10), (.34, .24, .55), "steel")
     b.box((0, 1.02, 1.62), (.22, .16, 1.75), "trim")
     for side in (-1, 1): b.box((side * .28, 1.02, 2.35), (.12, .16, 1.75), "trim")
+    add_chassis_detail(b)
     return b.finish("MilitaryWagon_%s" % wagon_type, material)
 
 

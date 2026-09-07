@@ -1,6 +1,9 @@
 extends Node3D
 signal screen_impact(power: float)
 signal body_impact(pitch: float, roll: float)
+const BodySplash = preload("res://presentation/combat/fx/body_splash.gd")
+const SPARK_COUNT := 6
+const SPARK_LIFE := 0.22
 const Ground = preload("res://presentation/world/ground_surface_view.gd")
 const Pool = preload("res://presentation/combat/fx/effect_pool.gd")
 const MathRules = preload("res://presentation/combat/fx/effect_math.gd")
@@ -79,7 +82,9 @@ func on_event(event: Dictionary) -> void:
 			var size := float(event.get("visual_scale", 1.1 if projectile_kind == "grenade" else 0.9))
 			explosion(point, size)
 		"shot": spawn_muzzle_flash(point, str(event.get("projectile_kind", "bullet")))
-		"hit": impact_burst(point)
+		"hit":
+			if event.get("type", "") != "soldier":
+				impact_burst(point)
 		"projectile_ground":
 			var sabot: bool = event.get("projectile_kind") == "sabot"
 			spawn_dust(Vector3(point.x, 0.04, point.z), 2 if sabot else 1, 0.34 if sabot else 0.2, Color("9d7653"))
@@ -91,10 +96,12 @@ func on_event(event: Dictionary) -> void:
 				wrecks.spawn(event)
 			if type == "soldier":
 				spawn_blood_mark(point, 0.72)
+				BodySplash.spawn(transient, random, point)
 			elif type == "drone":
 				explosion(point, 1.15 if event.get("enemy_kind") == "kamikaze" else 0.72, true, maxf(0.7, float(event.get("radius", 1.0)) * 2.0))
 			elif type == "bike":
 				spawn_blood_mark(point, 0.9)
+				BodySplash.spawn(transient, random, point, 1.15)
 				point.y = 0.65
 				explosion(point, 0.8, true, maxf(0.7, float(event.get("radius", 1.0)) * 2.0))
 			else:
@@ -251,14 +258,12 @@ func _spawn_smoke(point: Vector3, size: float, color: Color, opacity: float, den
 	_apply_smoke(entry)
 
 func impact_burst(point: Vector3) -> void:
-	for index in 3:
-		var size: float = random.between(0.045, 0.09)
-		var origin := point + Vector3(random.between(-0.2, 0.2), random.between(0.1, 0.4), random.between(-0.2, 0.2))
-		var velocity := Vector3(random.between(-3, 3), random.between(1, 4), random.between(-3, 3))
-		var effect: Dictionary = transient.acquire({"position": origin, "velocity": velocity, "life": 0.28, "max_life": 0.28, "shrink": 2.6, "gravity": 4.0, "drag": 0.1})
-		var color := Color("ffd58a") if index < 2 else Color.WHITE
-		color.a = 0.9
-		transient.set_part(effect, 0, "sphere", Vector3.ONE * size, color)
+	for index in SPARK_COUNT:
+		var velocity := Vector3(random.between(-4.0, 4.0), random.between(1.5, 4.0), random.between(-4.0, 4.0))
+		var effect: Dictionary = transient.acquire({"position": point, "velocity": velocity, "life": SPARK_LIFE, "max_life": SPARK_LIFE, "shrink": 2.0, "gravity": 7.0, "drag": 0.35})
+		var color := Color("ffd17a") if index % 2 == 0 else Color("fff1ca")
+		transient.set_part(effect, 0, "box", Vector3(0.022, random.between(0.16, 0.32), 0.022), color, Vector3.ZERO, Vector3.ZERO, false, true)
+		effect.parts[0].quaternion = Quaternion(Vector3.UP, velocity.normalized())
 
 func spawn_healing_burst(point: Vector3) -> void:
 	spawn_shockwave(point, 1.2, Color("6eff9a"))

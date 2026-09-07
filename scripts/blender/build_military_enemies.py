@@ -1,4 +1,8 @@
-"""Original compact military enemy set. Z-up, front -Y, one shared palette."""
+"""Authored military enemy set. Z-up, front -Y, one shared palette.
+
+Body seams, wheel hardware and role-specific equipment follow player pickup
+construction. Decorative geometry is merged into existing animation pivots.
+"""
 import bpy
 import bmesh
 import math
@@ -71,7 +75,22 @@ def wedge(parent, name, loc, size, color="paint"):
     return finish(obj,color)
 
 def wheel(parent, name, x, y, z, r=.42, width=.22):
-    return cyl(parent, name, (x,y,z), r, width, "rubber", (0,math.pi/2,0), 12)
+    tire = cyl(parent, name, (x,y,z), r, width, "rubber", (0,math.pi/2,0), 16)
+    parts = []
+    for side in (-1, 1):
+        face = x + side * (width * .5 + .006)
+        parts.append(cyl(parent, "WheelRim", (face,y,z), r*.59, .025, "steel", (0,math.pi/2,0), 12))
+        parts.append(cyl(parent, "WheelHub", (face+side*.02,y,z), r*.23, .045, "shadow", (0,math.pi/2,0), 8))
+        for step in range(6):
+            angle = step * math.tau / 6
+            parts.append(cyl(parent, "Lug", (face+side*.025,y+math.sin(angle)*r*.39,z+math.cos(angle)*r*.39), r*.047,.025,"cream",(0,math.pi/2,0),6))
+    for step in range(16):
+        angle = step * math.tau / 16
+        tread = cube(parent,"Tread",(x,y+math.sin(angle)*r,z+math.cos(angle)*r),(width*1.04,r*.19,r*.075),"shadow")
+        tread.rotation_euler.x = -angle
+        parts.append(tread)
+    join_into(tire, parts)
+    return tire
 
 def strut(parent, name, a, b, thick=.07, color="steel"):
     ax,ay,az=a; bx,by,bz=b; dx,dy,dz=bx-ax,by-ay,bz-az
@@ -94,18 +113,21 @@ def bike():
     cube(p,"Handlebar",(-.38,-.55,1.05),(.86,.08,.08),"steel")
     cube(p,"Headlamp",(-.38,-.83,.84),(.32,.07,.22),"cream")
     cube(p,"RearRack",(-.38,.76,.83),(.58,.35,.08),"steel")
-    return p
-
-def buggy():
-    p=group("buggy"); add_wheels(p,[(-.82,-.88,.38),(.82,-.88,.38),(-.82,.86,.38),(.82,.86,.38)],.42)
-    wedge(p,"ArmoredNose",(0,-.8,.68),(1.55,.72,.55),"paint")
-    cube(p,"Hull",(0,.12,.7),(1.55,1.36,.44),"paint",.06)
-    for x in (-.63,.63):
-        strut(p,"RollCage",(x,-.16,.86),(x,.57,1.5),.07,"steel"); strut(p,"RollBar",(x,.57,1.5),(x,.84,.88),.07,"steel")
-    cube(p,"Turret",(0,.34,1.18),(.62,.58,.28),"dark")
-    cyl(p,"WeaponPitch",(0,-.2,1.22),.09,.95,"steel",(math.pi/2,0,0),8)
-    cube(p,"AmmoBox",(.58,.56,.98),(.26,.38,.30),"amber")
-    cube(p,"Bumper",(0,-1.18,.48),(1.72,.12,.18),"steel")
+    # Seated rider, baked into the shared body draw call.
+    cube(p,"RiderPelvis",(-.38,.36,1.04),(.42,.32,.27),"shadow",.035)
+    torso=cube(p,"RiderVest",(-.38,.16,1.40),(.48,.32,.58),"shadow",.04)
+    torso.rotation_euler.x=-.22
+    cube(p,"RiderPouches",(-.38,-.025,1.35),(.42,.12,.22),"paint")
+    cyl(p,"RiderHelmet",(-.38,.025,1.84),.235,.26,"paint",(0,0,0),10)
+    cube(p,"RiderVisor",(-.38,-.18,1.82),(.34,.09,.12),"glass",.02)
+    for side in [-1,1]:
+        x=-.38+side*.27
+        strut(p,"RiderThigh",(x,.34,1.02),(x,-.08,.74),.12,"paint")
+        strut(p,"RiderCalf",(x,-.08,.74),(x,.26,.40),.09,"paint")
+        cube(p,"RiderBoot",(x,.17,.35),(.19,.36,.16),"rubber")
+        strut(p,"RiderUpperArm",(x,.10,1.60),(x,-.20,1.29),.085,"paint")
+        strut(p,"RiderForearm",(x,-.20,1.29),(x,-.54,1.09),.075,"paint")
+        cube(p,"RiderGlove",(x,-.55,1.08),(.15,.15,.13),"rubber")
     return p
 
 def drone(name="drone", kamikaze=False):
@@ -125,7 +147,14 @@ def drone(name="drone", kamikaze=False):
 
 def truck(name, feature):
     p=group(name); add_wheels(p,[(-.84,-1.35,.43),(.84,-1.35,.43),(-.84,1.36,.43),(.84,1.36,.43)],.46)
-    wedge(p,"Cab",(0,-1.05,.9),(1.55,1.25,1.15),"paint"); cube(p,"Windshield",(0,-1.63,1.1),(1.1,.07,.42),"glass")
+    cab_vertices=[(-.775,-1.7,.40),(.775,-1.7,.40),(.775,-.425,.40),(-.775,-.425,.40),(-.775,-1.25,1.48),(.775,-1.25,1.48),(.775,-.425,1.48),(-.775,-.425,1.48)]
+    data=bpy.data.meshes.new("CabMesh");data.from_pydata(cab_vertices,[],[(0,3,2,1),(0,1,5,4),(1,2,6,5),(2,3,7,6),(3,0,4,7),(4,5,6,7)]);data.update()
+    cab=bpy.data.objects.new("Cab",data);bpy.context.collection.objects.link(cab);cab.parent=p;finish(cab,"paint")
+    cube(p,"Hood",(0,-1.5,.73),(1.52,.50,.27),"paint",.03)
+    for side in (-1,1):
+        points=[(side*.055,-1.7+(.94-.40)*.45/1.08-.013,.94),(side*.66,-1.7+(.94-.40)*.45/1.08-.013,.94),(side*.66,-1.7+(1.35-.40)*.45/1.08-.013,1.35),(side*.055,-1.7+(1.35-.40)*.45/1.08-.013,1.35)]
+        data=bpy.data.meshes.new("WindshieldPane");data.from_pydata(points,[],[(0,1,2,3) if side > 0 else (3,2,1,0)]);data.update()
+        pane=bpy.data.objects.new("WindshieldPane",data);bpy.context.collection.objects.link(pane);pane.parent=p;finish(pane,"glass")
     cube(p,"Chassis",(0,.52,.62),(1.56,2.15,.36),"steel")
     cube(p,"RearBody",(0,.72,1.0),(1.48,1.7,.92),"paint",.05)
     cube(p,"Grille",(0,-1.7,.72),(1.05,.06,.25),"dark")
@@ -140,54 +169,55 @@ def truck(name, feature):
         cyl(p,"WeaponPitch",(0,-.35,1.28),.08,.85,"steel",(math.pi/2,0,0),8)
     return p
 
-def crawler():
-    p=group("repairCrawler")
-    for x in (-1.12,1.12):
-        cube(p,"Track_%s"%x,(x,0,.4),(.48,2.9,.62),"rubber",.07)
-        for y in (-.95,0,.95): wheel(p,"RoadWheel",x,y,.37,.26,.18)
-    wedge(p,"CrawlerHull",(0,-.15,.88),(2.25,2.8,1.05),"paint")
-    cube(p,"Workshop",(0,.54,1.32),(1.72,1.25,.72),"light")
-    cyl(p,"RepairArm",(.92,-.36,1.45),.10,1.65,"steel",(0,math.pi/3,0),8)
-    cube(p,"ToolHead",(1.58,-.72,1.28),(.30,.32,.27),"amber")
-    cube(p,"RearCrane",(-.55,1.12,1.82),(.11,.11,.95),"steel")
-    return p
-
-def boss():
-    p=group("boss")
+def vehicle_details(parent):
+    """Purposeful silhouette details at native modelling scale, before batching."""
+    name = parent.name
+    if name in ("drone", "kamikaze"):
+        for x in (-.32,.32):
+            strut(parent,"LandingLeg",(x,.22,-.08),(x,-.30,-.38),.025)
+            strut(parent,"LandingSki",(x,-.46,-.39),(x,.48,-.39),.025)
+        for y in (-.22,-.08,.06,.20): cube(parent,"CoolingVent",(0,y,.182),(.38,.032,.014),"dark")
+        cyl(parent,"SensorGimbal",(0,-.54,-.26),.14,.16,"steel",(0,0,0),12)
+        cyl(parent,"Lens",(0,-.635,-.27),.083,.026,"glass",vertices=12)
+        for rotor in [o for o in parent.children if o.name.startswith("Rotor_")]:
+            hub=cyl(parent,"Motor",tuple(rotor.location),.085,.13,"steel",(0,0,0),10)
+            join_into(rotor,[hub])
+        return
+    if name == "bike":
+        for side in (-1,1):
+            x=-.38+side*.23
+            strut(parent,"FrameRail",(x,-.53,.54),(x,.58,.52),.04)
+            cyl(parent,"Exhaust",(x,.49,.46),.07,.82,"steel")
+            cube(parent,"SaddleBag",(x+side*.12,.59,.77),(.21,.43,.36),"paint",.045)
+            cube(parent,"BagStrap",(x+side*.235,.59,.78),(.025,.07,.35),"cream")
+            cyl(parent,"EngineCover",(x,.12,.53),.18,.05,"steel",(0,math.pi/2,0),12)
+        for z in (.44,.49,.54,.59): cube(parent,"CoolingFin",(-.38,.13,z),(.47,.29,.017),"steel")
+        return
+    sizes={"jammerTruck":(.77,-1.72,1.50,1.1),"minelayer":(.77,-1.72,1.50,1.1)}
+    if name not in sizes: return
+    half, front, back, height = sizes[name]
     for side in (-1,1):
-        cube(p,"Component_%sDrive"%("Left" if side<0 else "Right"),(side*2.25,0,.62),(1.08,4.2,1.18),"rubber",.10)
-        for y in (-1.38,0,1.38): wheel(p,"BossRoadWheel",side*2.25,y,.52,.43,.28)
-    wedge(p,"BossHull",(0,-.22,1.42),(4.05,4.5,1.9),"paint")
-    cube(p,"Component_Core",(0,.15,2.25),(1.55,1.5,.95),"amber",.08)
-    cube(p,"Component_MissilePod",(-1.2,-.82,2.25),(1.05,1.25,.60),"steel")
-    cube(p,"Component_GunPod",(1.2,-.82,2.2),(1.05,1.25,.60),"steel")
-    for x in (-1.2,1.2):
-        for y in (-1.18,-.82): cyl(p,"PodTube",(x,y,2.22),.12,.75,"dark",(math.pi/2,0,0),8)
-    cyl(p,"MainCannon",(0,-2.38,1.84),.16,1.85,"steel",(math.pi/2,0,0),10)
-    cube(p,"CommandTurret",(0,.7,2.45),(1.28,1.1,.48),"light")
-    return p
+        x=half*side
+        cube(parent,"RockerRail",(x,0,.46),(.09,back-front-.28,.12),"steel",.015)
+        cube(parent,"AccessPanel",(x+side*.018,.03,height),(.035,.63,.39),"shadow",.012)
+        cube(parent,"DoorSkin",(x+side*.04,.03,height),(.022,.56,.31),"paint",.008)
+        cube(parent,"Handle",(x+side*.068,.22,height+.05),(.043,.13,.03),"cream")
+        for y in (-.24,.26):
+            for z in (height-.13,height+.13): cyl(parent,"PanelBolt",(x+side*.063,y,z),.02,.015,"steel",(0,math.pi/2,0),6)
+        cube(parent,"FootStep",(side*(half+.08),.04,.53),(.22,.66,.055),"shadow")
+        cube(parent,"TailLamp",(side*half*.77,back+.06,.76),(.13,.045,.12),"red")
+        strut(parent,"TowEye",(side*half*.55,front-.08,.43),(side*half*.55,front-.08,.63),.04)
+    for x in (-.34,-.20,-.06,.08,.22,.36):
+        cube(parent,"GrilleSlat",(x,front-.027,.76),(.037,.038,.20),"steel")
+    for y in (.60,.72,.84): cube(parent,"EngineLouvre",(0,y,height+.47),(.64,.04,.025),"dark")
+    if name in ("jammerTruck","minelayer"):
+        for side in (-1,1):
+            cube(parent,"CabSideGlass",(side*.79,-.90,1.15),(.026,.50,.31),"glass")
+            strut(parent,"MirrorArm",(side*.79,-1.47,1.1),(side*1.0,-1.43,1.22),.022)
+            cube(parent,"WingMirror",(side*1.02,-1.43,1.25),(.055,.18,.20),"steel",.014)
+        cube(parent,"RoofHatch",(0,-.97,1.47),(.67,.62,.075),"shadow",.035)
+        cube(parent,"FrontBumper",(0,front-.14,.5),(1.8,.16,.18),"steel",.025)
 
-def raider():
-    p=group("raider")
-    # A rolling desert fort: wider than a buggy but clearly below Leviathan scale.
-    add_wheels(p,[(-1.35,-1.38,.48),(1.35,-1.38,.48),(-1.35,1.25,.48),(1.35,1.25,.48)],.52)
-    wedge(p,"FortHull",(0,-.15,1.02),(2.65,3.5,1.32),"paint")
-    cube(p,"FortCab",(0,.42,1.72),(2.05,1.42,.78),"light",.07)
-    cube(p,"FortWindshield",(0,-.34,1.78),(1.48,.06,.31),"glass")
-    cube(p,"RocketRack",(-.75,-.88,2.02),(.76,.92,.46),"steel")
-    for y in (-1.12,-.82,-.52): cyl(p,"FortRocket",(-.75,y,2.04),.10,.62,"amber",(math.pi/2,0,0),8)
-    cyl(p,"FortCannon",(.72,-1.92,1.65),.13,1.45,"steel",(math.pi/2,0,0),10)
-    cube(p,"FortBumper",(0,-1.98,.62),(2.84,.14,.24),"steel")
-    return p
-
-def wreck(name, source, size):
-    p=group(name); x,y,z=size
-    wedge(p,"WreckHull",(0,0,.24),(x,y,.48),"shadow")
-    cube(p,"WreckFrame",(.12,-.08,.52),(x*.72,y*.62,.13),"steel")
-    cube(p,"WreckFirebox",(-.18,.18,.58),(x*.34,y*.28,.2),"dark")
-    if source != "bike":
-        for sx,sy in ((-.35,-.32),(.35,.32)): wheel(p,"WreckWheel",sx*x,sy*y,.2,min(x,y)*.13,.16)
-    return p
 
 def write_palette():
     image=bpy.data.images.new("enemy_palette",4,4)
@@ -211,6 +241,11 @@ def join_into(target, sources):
 def optimize(parent):
     """One palette-UV body mesh; retain only animated or removable pivots."""
     children = list(parent.children)
+    if parent.name.startswith("wreck_"):
+        leader = children[0]
+        join_into(leader, children[1:])
+        leader.name = "Body"
+        return
     if parent.name == "boss":
         left = next(item for item in children if item.name == "Component_LeftDrive")
         right = next(item for item in children if item.name == "Component_RightDrive")
@@ -233,16 +268,18 @@ def bake_scale(parent, amount):
         item.scale *= amount
 
 def align_boss_components(parent):
+    # Move origins only. Geometry stays integrated with the chassis while runtime
+    # damage hitboxes and removable component animations retain their anchors.
     anchors = {"Component_MissilePod": (0.0, 1.584, 8.316), "Component_GunPod": (1.98, -1.716, 7.26), "Component_LeftDrive": (-4.686, 0.462, 2.97), "Component_RightDrive": (4.686, 0.462, 2.97), "Component_Core": (0.0, -0.264, 5.874)}
-    def child(name): return next(item for item in parent.children if item.name == name)
-    for name, location in anchors.items(): child(name).location = location
-    missile = child("Component_MissilePod")
-    gun = child("Component_GunPod")
-    strut(parent, "MissileSupportA", (0.0, 0.0, 3.4), (0.0, 1.584, 8.05), .13, "steel")
-    strut(parent, "MissileSupportB", (-.72, .10, 3.25), (0.0, 1.584, 7.82), .11, "steel")
-    strut(parent, "GunSupport", (1.05, -.55, 3.25), (1.98, -1.716, 7.02), .12, "steel")
-    join_into(missile, [child("MissileSupportA"), child("MissileSupportB")])
-    join_into(gun, [child("GunSupport")])
+    from mathutils import Vector
+    for name, location in anchors.items():
+        child = next(item for item in parent.children if item.name == name)
+        old_world = child.matrix_world.copy()
+        child.location = Vector(location)
+        bpy.context.view_layer.update()
+        offset = child.matrix_world.inverted() @ old_world
+        child.data.transform(offset)
+
 
 def bake_object_transforms(models):
     # Keep object locations as Godot pivots, while baking axes/scales into mesh data.
@@ -252,15 +289,6 @@ def bake_object_transforms(models):
             item.select_set(True)
             bpy.context.view_layer.objects.active = item
             bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
-
-def extend_boss_drives(parent):
-    for name in ("Component_LeftDrive", "Component_RightDrive"):
-        drive = next(item for item in parent.children if item.name == name)
-        lowest = min(vertex.co.z for vertex in drive.data.vertices)
-        if lowest < 0.0:
-            factor = 2.97 / -lowest
-            for vertex in drive.data.vertices: vertex.co.z *= factor
-            drive.data.update()
 
 def recalculate_normals(models):
     for parent in models:
@@ -290,6 +318,7 @@ def export_obj(parent):
 
 def main():
     global MAT
+    bpy.context.preferences.filepaths.save_version = 0
     os.makedirs(OUT,exist_ok=True); os.makedirs(ACTORS,exist_ok=True)
     bpy.ops.object.select_all(action='SELECT'); bpy.ops.object.delete(use_global=False)
     write_palette(); MAT=material()
@@ -297,11 +326,13 @@ def main():
     models += [wreck("wreck_bike","bike",(.9,2.1,.5)),wreck("wreck_buggy","buggy",(2.1,2.25,.7)),wreck("wreck_jammerTruck","jammerTruck",(2.3,3.25,.8)),wreck("wreck_repairCrawler","repairCrawler",(2.65,3.45,.85)),wreck("wreck_minelayer","minelayer",(2.3,3.0,.75))]
     scales = {"bike": 1.12, "buggy": 1.60, "drone": 1.60, "kamikaze": 1.60, "raider": 2.20, "jammerTruck": 1.72, "repairCrawler": 2.45, "minelayer": 1.72, "boss": 2.10, "wreck_bike": 1.12, "wreck_buggy": 1.60, "wreck_jammerTruck": 1.72, "wreck_repairCrawler": 2.45, "wreck_minelayer": 1.72}
     for item in models:
+        if item.name not in ("buggy", "raider", "repairCrawler", "boss"):
+            vehicle_details(item)
         optimize(item)
         bake_scale(item, scales[item.name])
-    align_boss_components(next(item for item in models if item.name == "boss"))
+    bpy.context.view_layer.update()
     bake_object_transforms(models)
-    extend_boss_drives(next(item for item in models if item.name == "boss"))
+    align_boss_components(next(item for item in models if item.name == "boss"))
     for item in models: ground_model(item)
     recalculate_normals(models)
     for item in models: export_obj(item)
@@ -310,6 +341,18 @@ def main():
     layout_source_file(models)
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT,"military_enemies.blend"))
 
+def install_bodywork():
+    import importlib.util
+    path = os.path.join(os.path.dirname(__file__), "enemy_vehicle_bodywork.py")
+    spec = importlib.util.spec_from_file_location("enemy_vehicle_bodywork", path)
+    bodywork = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(bodywork)
+    bodywork.install(globals())
+    originals = {"bike": bike, "jammerTruck": lambda: truck("wreck_source", "jammer"), "minelayer": lambda: truck("wreck_source", "mine")}
+    globals().update(buggy=bodywork.buggy, raider=bodywork.raider, crawler=bodywork.crawler, boss=bodywork.boss,
+                     wreck=lambda name, source, size: bodywork.wreck(name, source, size, originals))
+
 if __name__=='__main__':
     import mathutils
+    install_bodywork()
     main()

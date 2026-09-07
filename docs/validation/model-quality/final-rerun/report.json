@@ -1,0 +1,48 @@
+{
+  "mode": "headless automated; no GPU rendering, listening or balance-playthrough claim",
+  "project": "/Users/fosterushka/Work/vibe/roguelike_godot/new-game-project",
+  "results": [
+    {
+      "test": "item_preview_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35
+    },
+    {
+      "test": "model_gallery_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.7
+    },
+    {
+      "test": "military_enemies_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25
+    },
+    {
+      "test": "military_people_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25
+    },
+    {
+      "test": "crew_seating_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25
+    },
+    {
+      "test": "military_field_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25
+    },
+    {
+      "test": "world_quality_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.64
+    }
+  ]
+}

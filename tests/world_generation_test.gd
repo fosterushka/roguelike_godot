@@ -9,7 +9,10 @@ var failures := 0
 func _initialize() -> void:
 	var golden: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/world_generation.json"))
 	for fixture: Dictionary in golden.fixtures:
-		compare(Layout.generate(int(fixture.seed)), fixture.layout, "layout:" + str(fixture.seed))
+		var widened: Dictionary = fixture.layout.duplicate(true)
+		for road: Dictionary in widened.roads:
+			road.width *= Layout.ROAD_WIDTH_SCALE
+		compare(Layout.generate(int(fixture.seed)), widened, "layout:" + str(fixture.seed))
 		for index in fixture.layout.roads.size():
 			var road: Dictionary = fixture.layout.roads[index]
 			var actual := Roads.ribbon_data(road.points, road.width)

@@ -3,6 +3,7 @@ const Context = preload("res://modules/world/generation/generation_context.gd")
 const Natural = preload("res://modules/world/generation/natural_props.gd")
 const Authored = preload("res://modules/world/generation/authored_props.gd")
 const Primitives = preload("res://presentation/world/world_primitive_catalog.gd")
+const Quality = preload("res://presentation/world/world_quality_models.gd")
 const Renderer = preload("res://presentation/world/generated_world_view.gd")
 const Trees = preload("res://presentation/world/tree_meshes.gd")
 
@@ -21,9 +22,13 @@ func _run() -> void:
 		authored.callv(fixture.name, fixture.args)
 		var label := "%s seed=%d" % [fixture.name, fixture.seed]
 		if fixture.name == "critter":
-			compare(context.random.state, fixture.state, label + " retired figure preserves RNG")
-			compare(context.groups.size(), 0, label + " no human geometry")
-			compare(context.ambient_critters.size(), 0, label + " no human ambient entity")
+			compare(context.random.state, fixture.state, label + " sheep flock preserves world RNG")
+			compare(context.groups.size(), context.ambient_critters.size(), label + " one batched model per sheep")
+			compare(context.ambient_critters.size() > 0 and context.ambient_critters.size() <= Authored.Wildlife.FLOCK_SIZE, true, label + " bounded sheep flock")
+			for critter: Dictionary in context.ambient_critters:
+				compare(critter.kind, "grazer", label + " sheep replaces retired human")
+			for group: Node3D in context.groups:
+				group.free()
 			compare(context.props.size(), 0, label + " no replacement prop")
 			continue
 		compare(context.random.state, fixture.state, label + " RNG")
@@ -65,6 +70,10 @@ func _run() -> void:
 
 func _node(actual: Node3D, expected: Dictionary, label: String) -> void:
 	compare(Renderer.matrix(actual.transform), expected.matrix, label + " XYZ matrix", 0.0001)
+	var quality_model := _quality_model(actual)
+	if not quality_model.is_empty():
+		compare(_has_quality_mesh(actual, quality_model), true, label + " authored quality mesh " + quality_model)
+		return
 	compare(actual is MeshInstance3D, expected.mesh != null, label + " mesh presence")
 	if expected.mesh != null and actual is MeshInstance3D:
 		var definition: Dictionary = expected.mesh
@@ -109,6 +118,20 @@ func _node(actual: Node3D, expected: Dictionary, label: String) -> void:
 	compare(actual.get_child_count(), expected.children.size(), label + " hierarchy count")
 	for index in mini(actual.get_child_count(), expected.children.size()):
 		_node(actual.get_child(index), expected.children[index], label + "/" + str(index))
+
+func _quality_model(node: Node) -> String:
+	for model: String in ["utility_pole", "wreck", "well", "market_stall", "loot_scrap", "grazer", "house", "satellite_dish", "windmill", "windmill_blades", "pumpjack_arm"]:
+		if _has_quality_mesh(node, model):
+			return model
+	return ""
+
+func _has_quality_mesh(node: Node, model: String) -> bool:
+	if node is MeshInstance3D and (node as MeshInstance3D).mesh == Quality.mesh_for(model):
+		return true
+	for child: Node in node.get_children():
+		if _has_quality_mesh(child, model):
+			return true
+	return false
 
 func _buffers() -> void:
 	var source: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/visual_models/world_primitives.json"))

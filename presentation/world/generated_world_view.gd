@@ -1,4 +1,5 @@
 extends Node3D
+const Biomes = preload("res://modules/world/biome_rules.gd")
 const TreeReplacements = preload("res://presentation/world/tree_replacements.gd")
 const SourceModel = preload("res://presentation/combat/source_model.gd")
 const NaturalMeshes = preload("res://presentation/world/natural_meshes.gd")
@@ -17,6 +18,7 @@ func build(generated: RefCounted) -> Dictionary:
 		batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		var instances := MultiMesh.new()
 		instances.transform_format = MultiMesh.TRANSFORM_3D
+		instances.use_colors = Biomes.VEGETATION_POOLS.has(pool)
 		var natural_mesh: Mesh = NaturalMeshes.mesh_for(pool)
 		instances.mesh = natural_mesh if natural_mesh != null else template.mesh
 		if natural_mesh == null:
@@ -26,6 +28,8 @@ func build(generated: RefCounted) -> Dictionary:
 		instances.instance_count = values.size()
 		for index in values.size():
 			instances.set_instance_transform(index, values[index])
+			if instances.use_colors:
+				instances.set_instance_color(index, Biomes.tint_at(values[index].origin))
 		batch.multimesh = instances
 		pool_indices[pool] = get_child_count()
 		add_child(batch)

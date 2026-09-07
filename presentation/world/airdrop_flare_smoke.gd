@@ -2,7 +2,8 @@ extends Node3D
 const Smoke = preload("res://presentation/combat/fx/smoke.gdshader")
 const Terrain = preload("res://modules/caravan/terrain_surface.gd")
 const CAPACITY := 12
-const RED := Color("ef563e")
+const RED := Color("df291d")
+const FLARE_HEIGHT := 2.9
 const GREEN := Color("60de8b")
 var plumes: Array[MeshInstance3D] = []
 var _warmup := false
@@ -31,10 +32,9 @@ func apply_drop(drop: Dictionary, time: float) -> void:
 		return
 	visible = true
 	var point: Vector3 = drop.position
-	point.y = Terrain.height_at(point.x, point.z) + float(drop.get("height", 0)) + 3.55
+	point.y = Terrain.height_at(point.x, point.z) + float(drop.get("height", 0)) + FLARE_HEIGHT
 	point += Basis(Vector3.UP, float(drop.get("yaw", 0))) * Vector3(0.62, 0, 0.58)
-	var landed := bool(drop.get("landed", false))
-	var color := GREEN if landed else RED
+	var color := RED
 	for index in CAPACITY:
 		var age := fposmod(time * 0.32 + index / float(CAPACITY), 1.0)
 		var radius := 0.3 + age * 0.65
@@ -44,7 +44,7 @@ func apply_drop(drop: Dictionary, time: float) -> void:
 		plume.scale = Vector3(0.55 + age * 2.4, 0.8 + age * 3.1, 1)
 		var material: ShaderMaterial = plume.material_override
 		material.set_shader_parameter("uColor", Vector3(color.r, color.g, color.b))
-		material.set_shader_parameter("uOpacity", sin(age * PI) * 0.64)
+		material.set_shader_parameter("uOpacity", sin(age * PI) * 0.78)
 		material.set_shader_parameter("uSeed", index * 0.371)
 		material.set_shader_parameter("uTime", time + index * 1.73)
 

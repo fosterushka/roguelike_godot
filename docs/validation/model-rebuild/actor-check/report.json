@@ -1,0 +1,12 @@
+{
+  "mode": "headless automated; no GPU rendering, listening or balance-playthrough claim",
+  "project": "/Users/fosterushka/Work/vibe/roguelike_godot/new-game-project",
+  "results": [
+    {
+      "test": "military_enemies_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35
+    }
+  ]
+}

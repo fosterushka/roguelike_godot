@@ -5,6 +5,9 @@ const SCENE := preload("res://assets/actors/military_enemies.glb")
 const PaintedMaterials = preload("res://presentation/style/painted_materials.gd")
 const PALETTE_TEXTURE := preload("res://assets/actors/military_enemies_palette.png")
 const MODELS := ["bike", "buggy", "drone", "kamikaze", "raider", "jammerTruck", "repairCrawler", "minelayer", "boss", "wreck_bike", "wreck_buggy", "wreck_jammerTruck", "wreck_repairCrawler", "wreck_minelayer"]
+## Detailed bodywork retains a single static body draw and existing pivots.
+const TRIANGLE_BUDGET := 6000
+const BOSS_TRIANGLE_BUDGET := 7000
 static var _cache: Dictionary = {}
 static var _body_material: StandardMaterial3D
 

@@ -107,15 +107,15 @@ func _run() -> void:
 	activity.apply_state(state)
 	check(smoke.visible and smoke.plumes.size() == 12, "Flying airdrop has bounded twelve-plume smoke trail")
 	for plume: MeshInstance3D in smoke.plumes:
-		check(plume.position.y >= 15.55 and plume.position.y < 22.1, "Descending flare smoke remains airborne above crate")
+		check(plume.position.y >= 12.0 + Flare.FLARE_HEIGHT and plume.position.y < 12.0 + Flare.FLARE_HEIGHT + 6.5, "Descending flare smoke remains airborne above crate")
 		check(plume.material_override.get_shader_parameter("uColor").is_equal_approx(Vector3(Flare.RED.r, Flare.RED.g, Flare.RED.b)), "Descending flare smoke is red")
 		check(plume.material_override.render_priority == 0 and not plume.material_override.shader.code.contains("depth_test_disabled"), "Smoke uses normal depth tested transparency")
 	state.support.airdrops[0].height = 0
 	state.support.airdrops[0].landed = true
 	activity.apply_state(state)
-	check(activity._flare_light.visible and activity._flare_light.light_color == Flare.GREEN, "Landed collectible flare glows green")
+	check(activity._flare_light.visible and activity._flare_light.light_color == Flare.RED, "Landed collectible keeps red reference flare")
 	for plume: MeshInstance3D in smoke.plumes:
-		check(plume.material_override.get_shader_parameter("uColor").is_equal_approx(Vector3(Flare.GREEN.r, Flare.GREEN.g, Flare.GREEN.b)), "Landed plume palette switches green")
+		check(plume.material_override.get_shader_parameter("uColor").is_equal_approx(Vector3(Flare.RED.r, Flare.RED.g, Flare.RED.b)), "Landed plume stays signal red")
 	var plume_pose: Transform3D = smoke.plumes[0].transform
 	var plume_time: float = smoke.plumes[0].material_override.get_shader_parameter("uTime")
 	activity.process_mode = Node.PROCESS_MODE_PAUSABLE

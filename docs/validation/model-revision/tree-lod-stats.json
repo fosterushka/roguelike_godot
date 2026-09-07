@@ -1,0 +1,32 @@
+{
+  "birchTrees": {
+    "lods": [
+      {
+        "edge_length": 0.204122766852379,
+        "triangles": 1862
+      },
+      {
+        "edge_length": 0.306184142827988,
+        "triangles": 930
+      },
+      {
+        "edge_length": 0.45927619934082,
+        "triangles": 464
+      },
+      {
+        "edge_length": 1.81640136241913,
+        "triangles": 160
+      }
+    ],
+    "primary_triangles": 3724
+  },
+  "spruceTrees": {
+    "lods": [
+      {
+        "edge_length": 0.0799999982118607,
+        "triangles": 1444
+      }
+    ],
+    "primary_triangles": 3724
+  }
+}

@@ -1,6 +1,9 @@
 extends SceneTree
 
 const Models = preload("res://presentation/combat/military_field_props.gd")
+const BaseVariants = preload("res://presentation/combat/base_variants.gd")
+const Catalog = preload("res://modules/combat/enemy_catalog.gd")
+const BaseDefenseRules = preload("res://modules/world/activities/base_defense_rules.gd")
 const Source = preload("res://presentation/combat/source_model.gd")
 const AnimationRules = preload("res://presentation/combat/source_animation.gd")
 const Mines = preload("res://presentation/combat/mine_views.gd")
@@ -30,6 +33,24 @@ func _run() -> void:
 		for index in parts.size():
 			check(model.get_child(index).mesh == parts[index].mesh, name + " uses shared library mesh")
 		model.free()
+	var canonical_mine := Models.templates("mine_enemy")
+	for alias: String in ["mine_friendly", "mine_unarmed"]:
+		var state_mine := Models.templates(alias)
+		check(state_mine.size() == canonical_mine.size(), alias + " keeps the canonical mine part layout")
+		for index in canonical_mine.size():
+			check(state_mine[index].mesh == canonical_mine[index].mesh, alias + " reuses the one physical mine mesh")
+	for name: String in ["garrison_1", "garrison_2", "garrison_3"]:
+		var names: Array[String] = []
+		for part: Dictionary in Models.templates(name):
+			names.append(str(part.name))
+		var prefix: String = "Bunker" if name == "garrison_1" else "Barracks" if name == "garrison_2" else "Factory"
+		check(names.any(func(part_name: String) -> bool: return part_name.begins_with(prefix)), name + " has its own readable silhouette module")
+		var within_collider := true
+		for part: Dictionary in BaseVariants.templates(name):
+			for corner in 8:
+				var point: Vector3 = part.transform * part.mesh.get_aabb().get_endpoint(corner)
+				within_collider = within_collider and Vector2(point.x, point.z).length() <= float(Catalog.DEFINITIONS[name].radius) and point.y >= 0.0 and point.y <= float(Catalog.DEFINITIONS[name].height)
+		check(within_collider, name + " silhouette fits its combat collider")
 	var cart := Models.templates("heal_cart")
 	var wheels := 0
 	for part: Dictionary in cart:
@@ -42,7 +63,7 @@ func _run() -> void:
 	for part: Dictionary in Models.templates("airdrop"):
 		if part.name == "Canopy":
 			var landed := AnimationRules.transform_for(part, {"binding_overrides": {"airdrop_canopyRig": {"position": Vector3(-2.6, 0.35, -1.5), "rotation": Vector3(0, 0, 1.08), "scale": Vector3(0.68, 0.16, 0.68)}}})
-			check(landed.origin.is_equal_approx(Vector3(-2.6, 0.35, -1.5)), "Landed canopy keeps support animation anchor")
+			check(landed.origin.is_equal_approx(Vector3(-2.6, 12.35, -1.5)), "Landed canopy preserves model origin above support animation anchor")
 			check(landed.basis.y.length() < 0.17, "Landed canopy deflates")
 	var mines := Mines.new()
 	root.add_child(mines)

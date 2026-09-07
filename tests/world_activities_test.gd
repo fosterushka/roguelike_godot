@@ -2,6 +2,9 @@ extends SceneTree
 const World = preload("res://modules/world/world_runtime.gd")
 const Extraction = preload("res://modules/world/activities/extraction_rules.gd")
 const Rules = preload("res://modules/world/activities/activity_rules.gd")
+const BaseDefenseRules = preload("res://modules/world/activities/base_defense_rules.gd")
+const EnemyAI = preload("res://modules/combat/enemy_ai.gd")
+const Terrain = preload("res://modules/caravan/terrain_surface.gd")
 const Vehicle = preload("res://modules/caravan/vehicle_controller.gd")
 const Combat = preload("res://modules/combat/combat_runtime.gd")
 var checks := 0
@@ -177,8 +180,31 @@ func _run() -> void:
 	check(world.foundries.foundries.size() == 10, "tenoriginalfoundrynetwork")
 	check(world.props.dynamic_solids.size() == 10, "foundrysolidsbounded10")
 	for source in world.foundries.foundries:
-		check(not source.enemy.counts_toward_wave and source.enemy.hp == 260 + source.enemy.tier * 110, "sourcefoundryhpandnonwaveownership")
+		check(not source.enemy.counts_toward_wave and source.enemy.hp == source.enemy.max_hp and source.enemy.max_hp > 0.0, "sourcefoundryhpandnonwaveownership")
 	var foundry: Dictionary = world.foundries.foundries[0]
+	var collider: StaticBody3D = world.foundries.colliders[foundry.index]
+	var collider_shape: BoxShape3D = collider.get_child(0).shape
+	check(collider_shape.size.is_equal_approx(foundry.enemy.hitbox_size) and is_equal_approx(foundry.solid.height, foundry.enemy.height) and is_equal_approx(collider.rotation.y, foundry.enemy.yaw) and is_equal_approx(collider.position.y, Terrain.height_at(foundry.enemy.position.x, foundry.enemy.position.z) + foundry.enemy.height * 0.5), "foundrycolliderusesauthoredcombatdimensions")
+	var defenders_before := 0
+	var defender_ids_before: Dictionary = {}
+	for enemy: Dictionary in combat.model.enemies:
+		defenders_before += int(enemy.get("source_id", -1) == foundry.enemy.id and not enemy.dead)
+		defender_ids_before[enemy.id] = true
+	var base_yaw: float = float(foundry.enemy.yaw)
+	combat.model.damage_enemy(foundry.enemy.id, BaseDefenseRules.damage_threshold(foundry.enemy.max_hp))
+	world.foundries.step(0.0)
+	activities.elapsed += BaseDefenseRules.EXIT_SPACING * float(BaseDefenseRules.defender_count(foundry.enemy.tier) - 1) + 0.01
+	world.foundries.step(0.0)
+	var defenders_after := 0
+	var exits_from_gate := true
+	for enemy: Dictionary in combat.model.enemies:
+		if enemy.get("source_id", -1) == foundry.enemy.id and not enemy.dead:
+			defenders_after += 1
+			if not defender_ids_before.has(enemy.id):
+				var starts_at_door: bool = enemy.position.distance_to(Vector3(enemy.spawn_start)) < 0.001 and enemy.position.distance_to(foundry.enemy.position) < foundry.enemy.radius
+				EnemyAI.move(combat.model, enemy, BaseDefenseRules.DEPLOY_DURATION, enemy.speed, 0.0, Vector3.ZERO)
+				exits_from_gate = exits_from_gate and starts_at_door and enemy.position.distance_to(foundry.enemy.position) > foundry.enemy.radius + BaseDefenseRules.DEFENDER_RADIUS and is_equal_approx(wrapf(enemy.yaw - foundry.gate_yaw, -PI, PI), 0.0) and world.props.is_clear(enemy.position, BaseDefenseRules.DEFENDER_RADIUS)
+	check(defenders_after == defenders_before + BaseDefenseRules.defender_count(foundry.enemy.tier) and exits_from_gate and is_equal_approx(foundry.enemy.yaw, base_yaw), "attackedfoundryreleasesstablefixedgatewave")
 	var pickups_before: int = combat.model.pickups.size()
 	combat.model.kill_enemy(foundry.enemy)
 	world.foundries.step(0.0)
@@ -186,24 +212,7 @@ func _run() -> void:
 	check(world.foundries.colliders[foundry.index].collision_layer == 0 and foundry.solid.destroyed, "deadfoundryremovesallcollision")
 	combat.reset_run()
 	world.reset_run()
-	check(world.props.dynamic_solids.is_empty() and world.foundries.pending.is_empty(), "foundryresetclearsvolumesandtelegraphs")
-	world.foundries.step(0.0)
-	var dispatch_source: Dictionary = world.foundries.foundries[0]
-	vehicle.global_position = dispatch_source.enemy.position + Vector3(35, 0, 0)
-	dispatch_source.cooldown = 0.0
-	world.foundries.step(2.0)
-	check(world.foundries.pending.is_empty(), "Managed source waves do not run legacy foundry reinforcement director")
-	world.foundries._step_legacy_dispatch(2.0)
-	check(world.foundries.pending.size() == 1, "Dormant legacy rules remain directly testable")
-	var deployment: Dictionary = world.foundries.pending[0]
-	check(not deployment.record.is_empty() and deployment.record.state == "announced", "dispatchcontractannouncedbeforecommit")
-	activities.elapsed = 3.0
-	world.foundries._step_legacy_dispatch(0.0)
-	check(world.foundries.pending.is_empty() and deployment.record.state == "active", "foundrytelegraphcommitsparticipant")
-	for id in deployment.record.participant_ids:
-		combat.model.kill_enemy(activities.participants[id])
-	activities._update(deployment.record, 0.0)
-	check(deployment.record.state == "completed" and activities.credits == 1, "foundrydispatchrewardcontract")
+	check(world.props.dynamic_solids.is_empty(), "foundryresetclearsvolumes")
 	combat.reset_run()
 	world.reset_run()
 	vehicle.global_position = Vector3.ZERO

@@ -1,0 +1,1770 @@
+[
+	{
+		"factory": 0,
+		"id": "NPC / enemies/rifleman",
+		"key": "rifleman",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "rifleman"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/ak",
+		"key": "ak",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "ak"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/bazooka",
+		"key": "bazooka",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "bazooka"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/bomber",
+		"key": "bomber",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "bomber"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/shooter",
+		"key": "drone",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "shooter"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/kamikaze",
+		"key": "kamikaze",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "kamikaze"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/bike",
+		"key": "bike",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "bike"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/buggy",
+		"key": "buggy",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "buggy"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/keep",
+		"key": "raider",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "keep"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/garrison_1",
+		"key": "garrison_1",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "garrison_1"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/garrison_2",
+		"key": "garrison_2",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "garrison_2"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/garrison_3",
+		"key": "garrison_3",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "garrison_3"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/jammerTruck",
+		"key": "jammerTruck",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "jammerTruck"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/repairCrawler",
+		"key": "repairCrawler",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "repairCrawler"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/minelayer",
+		"key": "minelayer",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "minelayer"
+	},
+	{
+		"factory": 0,
+		"id": "NPC / enemies/leviathan",
+		"key": "boss",
+		"note": "",
+		"section": "NPC / enemies",
+		"title": "leviathan"
+	},
+	{
+		"factory": 1,
+		"id": "Player / wagons/player_pickup",
+		"key": "",
+		"note": "",
+		"section": "Player / wagons",
+		"title": "player_pickup"
+	},
+	{
+		"factory": 2,
+		"id": "Player / wagons/cargo",
+		"key": "cargo",
+		"note": "",
+		"section": "Player / wagons",
+		"title": "cargo"
+	},
+	{
+		"factory": 2,
+		"id": "Player / wagons/repair",
+		"key": "repair",
+		"note": "",
+		"section": "Player / wagons",
+		"title": "repair"
+	},
+	{
+		"factory": 2,
+		"id": "Player / wagons/weapon",
+		"key": "weapon",
+		"note": "",
+		"section": "Player / wagons",
+		"title": "weapon"
+	},
+	{
+		"factory": 2,
+		"id": "Player / wagons/fuel",
+		"key": "fuel",
+		"note": "",
+		"section": "Player / wagons",
+		"title": "fuel"
+	},
+	{
+		"factory": 2,
+		"id": "Player / wagons/anti_tank",
+		"key": "anti_tank",
+		"note": "",
+		"section": "Player / wagons",
+		"title": "anti_tank"
+	},
+	{
+		"factory": 2,
+		"id": "Player / wagons/anti_air",
+		"key": "anti_air",
+		"note": "",
+		"section": "Player / wagons",
+		"title": "anti_air"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/akTurret",
+		"key": "akTurret",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "akTurret"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/anti_air_station",
+		"key": "anti_air_station",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "anti_air_station"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/anti_tank_station",
+		"key": "anti_tank_station",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "anti_tank_station"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/armor",
+		"key": "armor",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "armor"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/assaultRifle",
+		"key": "assaultRifle",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "assaultRifle"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/bazooka",
+		"key": "bazooka",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "bazooka"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/bumper",
+		"key": "bumper",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "bumper"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/cargo_rack",
+		"key": "cargo_rack",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "cargo_rack"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/counterDroneJammer",
+		"key": "counterDroneJammer",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "counterDroneJammer"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/flamethrower",
+		"key": "flamethrower",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "flamethrower"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/fuel_pump",
+		"key": "fuel_pump",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "fuel_pump"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/grenadeLauncher",
+		"key": "grenadeLauncher",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "grenadeLauncher"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/mineHacker",
+		"key": "mineHacker",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "mineHacker"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/minigun",
+		"key": "minigun",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "minigun"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/missileRack",
+		"key": "missileRack",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "missileRack"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/radar",
+		"key": "radar",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "radar"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/railgun",
+		"key": "railgun",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "railgun"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/reinforced_hitch",
+		"key": "reinforced_hitch",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "reinforced_hitch"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/repair_station",
+		"key": "repair_station",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "repair_station"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/salvage_arm",
+		"key": "salvage_arm",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "salvage_arm"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/treasury",
+		"key": "treasury",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "treasury"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/turret",
+		"key": "turret",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "turret"
+	},
+	{
+		"factory": 3,
+		"id": "Weapons / equipment/workshop",
+		"key": "workshop",
+		"note": "",
+		"section": "Weapons / equipment",
+		"title": "workshop"
+	},
+	{
+		"factory": 4,
+		"id": "Crew / shared appearances/mechanic standing",
+		"key": "mechanic",
+		"note": "Authored role equipment / shared body rig",
+		"section": "Crew / shared appearances",
+		"title": "mechanic standing"
+	},
+	{
+		"factory": 5,
+		"id": "Crew / shared appearances/mechanic seated",
+		"key": "mechanic",
+		"note": "Shared seated body and role kit; bench belongs to the pickup",
+		"section": "Crew / shared appearances",
+		"title": "mechanic seated"
+	},
+	{
+		"factory": 4,
+		"id": "Crew / shared appearances/shooter standing",
+		"key": "shooter",
+		"note": "Authored role equipment / shared body rig",
+		"section": "Crew / shared appearances",
+		"title": "shooter standing"
+	},
+	{
+		"factory": 5,
+		"id": "Crew / shared appearances/shooter seated",
+		"key": "shooter",
+		"note": "Shared seated body and role kit; bench belongs to the pickup",
+		"section": "Crew / shared appearances",
+		"title": "shooter seated"
+	},
+	{
+		"factory": 4,
+		"id": "Crew / shared appearances/loader standing",
+		"key": "loader",
+		"note": "Authored role equipment / shared body rig",
+		"section": "Crew / shared appearances",
+		"title": "loader standing"
+	},
+	{
+		"factory": 5,
+		"id": "Crew / shared appearances/loader seated",
+		"key": "loader",
+		"note": "Shared seated body and role kit; bench belongs to the pickup",
+		"section": "Crew / shared appearances",
+		"title": "loader seated"
+	},
+	{
+		"factory": 4,
+		"id": "Crew / shared appearances/looter standing",
+		"key": "looter",
+		"note": "Authored role equipment / shared body rig",
+		"section": "Crew / shared appearances",
+		"title": "looter standing"
+	},
+	{
+		"factory": 5,
+		"id": "Crew / shared appearances/looter seated",
+		"key": "looter",
+		"note": "Shared seated body and role kit; bench belongs to the pickup",
+		"section": "Crew / shared appearances",
+		"title": "looter seated"
+	},
+	{
+		"factory": 4,
+		"id": "Crew / shared appearances/fuel standing",
+		"key": "fuel",
+		"note": "Authored role equipment / shared body rig",
+		"section": "Crew / shared appearances",
+		"title": "fuel standing"
+	},
+	{
+		"factory": 5,
+		"id": "Crew / shared appearances/fuel seated",
+		"key": "fuel",
+		"note": "Shared seated body and role kit; bench belongs to the pickup",
+		"section": "Crew / shared appearances",
+		"title": "fuel seated"
+	},
+	{
+		"factory": 4,
+		"id": "Crew / shared appearances/anti_tank standing",
+		"key": "anti_tank",
+		"note": "Authored role equipment / shared body rig",
+		"section": "Crew / shared appearances",
+		"title": "anti_tank standing"
+	},
+	{
+		"factory": 5,
+		"id": "Crew / shared appearances/anti_tank seated",
+		"key": "anti_tank",
+		"note": "Shared seated body and role kit; bench belongs to the pickup",
+		"section": "Crew / shared appearances",
+		"title": "anti_tank seated"
+	},
+	{
+		"factory": 4,
+		"id": "Crew / shared appearances/anti_air standing",
+		"key": "anti_air",
+		"note": "Authored role equipment / shared body rig",
+		"section": "Crew / shared appearances",
+		"title": "anti_air standing"
+	},
+	{
+		"factory": 5,
+		"id": "Crew / shared appearances/anti_air seated",
+		"key": "anti_air",
+		"note": "Shared seated body and role kit; bench belongs to the pickup",
+		"section": "Crew / shared appearances",
+		"title": "anti_air seated"
+	},
+	{
+		"factory": 4,
+		"id": "Crew / shared appearances/civilian standing",
+		"key": "civilian",
+		"note": "Authored role equipment / shared body rig",
+		"section": "Crew / shared appearances",
+		"title": "civilian standing"
+	},
+	{
+		"factory": 5,
+		"id": "Crew / shared appearances/civilian seated",
+		"key": "civilian",
+		"note": "Shared seated body and role kit; bench belongs to the pickup",
+		"section": "Crew / shared appearances",
+		"title": "civilian seated"
+	},
+	{
+		"factory": 0,
+		"id": "Supplies / loot/airdrop",
+		"key": "airdrop",
+		"note": "",
+		"section": "Supplies / loot",
+		"title": "airdrop"
+	},
+	{
+		"factory": 0,
+		"id": "Supplies / loot/heal_cart",
+		"key": "heal_cart",
+		"note": "",
+		"section": "Supplies / loot",
+		"title": "heal_cart"
+	},
+	{
+		"factory": 0,
+		"id": "Supplies / loot/pickup_fuel",
+		"key": "pickup_fuel",
+		"note": "",
+		"section": "Supplies / loot",
+		"title": "pickup_fuel"
+	},
+	{
+		"factory": 0,
+		"id": "Supplies / loot/pickup_salvage",
+		"key": "pickup_salvage",
+		"note": "",
+		"section": "Supplies / loot",
+		"title": "pickup_salvage"
+	},
+	{
+		"factory": 0,
+		"id": "Supplies / loot/mine",
+		"key": "mine_enemy",
+		"note": "One physical mine; enemy, friendly and unarmed are runtime states",
+		"section": "Supplies / loot",
+		"title": "mine"
+	},
+	{
+		"factory": 8,
+		"id": "Supplies / loot/scrap",
+		"key": "scrap",
+		"note": "",
+		"section": "Supplies / loot",
+		"title": "scrap"
+	},
+	{
+		"factory": 8,
+		"id": "Supplies / loot/circuit",
+		"key": "circuit",
+		"note": "",
+		"section": "Supplies / loot",
+		"title": "circuit"
+	},
+	{
+		"factory": 8,
+		"id": "Supplies / loot/relic",
+		"key": "relic",
+		"note": "",
+		"section": "Supplies / loot",
+		"title": "relic"
+	},
+	{
+		"factory": 8,
+		"id": "Supplies / loot/repair_kit",
+		"key": "repair_kit",
+		"note": "",
+		"section": "Supplies / loot",
+		"title": "repair_kit"
+	},
+	{
+		"factory": 8,
+		"id": "Supplies / loot/fuel_cell",
+		"key": "fuel_cell",
+		"note": "",
+		"section": "Supplies / loot",
+		"title": "fuel_cell"
+	},
+	{
+		"factory": 8,
+		"id": "Supplies / loot/weapon_parts",
+		"key": "weapon_parts",
+		"note": "Canonical mesh: ammo_feed",
+		"section": "Supplies / loot",
+		"title": "weapon_parts"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/treeTrunks",
+		"key": "treeTrunks",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "treeTrunks"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/treeCrowns",
+		"key": "treeCrowns",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "treeCrowns"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/treeCrownsAlt",
+		"key": "treeCrownsAlt",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "treeCrownsAlt"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/treeBranches",
+		"key": "treeBranches",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "treeBranches"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/rockInstances",
+		"key": "rockInstances",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "rockInstances"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/stoneInstances",
+		"key": "stoneInstances",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "stoneInstances"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/scrubInstances",
+		"key": "scrubInstances",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "scrubInstances"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/deadBrushInstances",
+		"key": "deadBrushInstances",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "deadBrushInstances"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/grassTufts",
+		"key": "grassTufts",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "grassTufts"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/flowerInstances",
+		"key": "flowerInstances",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "flowerInstances"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/barrelInstances",
+		"key": "barrelInstances",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "barrelInstances"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/crateInstances",
+		"key": "crateInstances",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "crateInstances"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/fencePosts",
+		"key": "fencePosts",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "fencePosts"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/fenceRails",
+		"key": "fenceRails",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "fenceRails"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/ironStructure",
+		"key": "ironStructure",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "ironStructure"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/metalStructure",
+		"key": "metalStructure",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "metalStructure"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/woodStructure",
+		"key": "woodStructure",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "woodStructure"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/redStructure",
+		"key": "redStructure",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "redStructure"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/tankInstances",
+		"key": "tankInstances",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "tankInstances"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/earthStructure",
+		"key": "earthStructure",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "earthStructure"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/ruinStructure",
+		"key": "ruinStructure",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "ruinStructure"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/scarStructure",
+		"key": "scarStructure",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "scarStructure"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/cliffFaces",
+		"key": "cliffFaces",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "cliffFaces"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/cliffStrata",
+		"key": "cliffStrata",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "cliffStrata"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/spruceTrees",
+		"key": "spruceTrees",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "spruceTrees"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/birchTrees",
+		"key": "birchTrees",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "birchTrees"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/deadTrees",
+		"key": "deadTrees",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "deadTrees"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/rockMass0",
+		"key": "rockMass0",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "rockMass0"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/rockMass1",
+		"key": "rockMass1",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "rockMass1"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/rockMass2",
+		"key": "rockMass2",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "rockMass2"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/rockMass3",
+		"key": "rockMass3",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "rockMass3"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/rockMass4",
+		"key": "rockMass4",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "rockMass4"
+	},
+	{
+		"factory": 6,
+		"id": "Trees / rocks / vegetation/rockMass5",
+		"key": "rockMass5",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "rockMass5"
+	},
+	{
+		"factory": 9,
+		"id": "Trees / rocks / vegetation/trenches",
+		"key": "trenches",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "trenches"
+	},
+	{
+		"factory": 9,
+		"id": "Trees / rocks / vegetation/bowls",
+		"key": "bowls",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "bowls"
+	},
+	{
+		"factory": 9,
+		"id": "Trees / rocks / vegetation/rims",
+		"key": "rims",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "rims"
+	},
+	{
+		"factory": 9,
+		"id": "Trees / rocks / vegetation/decals",
+		"key": "decals",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "decals"
+	},
+	{
+		"factory": 9,
+		"id": "Trees / rocks / vegetation/char",
+		"key": "char",
+		"note": "",
+		"section": "Trees / rocks / vegetation",
+		"title": "char"
+	},
+	{
+		"factory": 12,
+		"id": "World props / landmarks/dead_tree",
+		"key": "dead_tree",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "dead_tree"
+	},
+	{
+		"factory": 12,
+		"id": "World props / landmarks/boulder",
+		"key": "boulder",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "boulder"
+	},
+	{
+		"factory": 12,
+		"id": "World props / landmarks/scrub",
+		"key": "scrub",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "scrub"
+	},
+	{
+		"factory": 12,
+		"id": "World props / landmarks/fence",
+		"key": "fence",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "fence"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/utility_pole",
+		"key": "utility_pole",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "utility_pole"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/wreck",
+		"key": "wreck",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "wreck"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/prop_cluster",
+		"key": "prop_cluster",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "prop_cluster"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/well",
+		"key": "well",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "well"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/market_stall",
+		"key": "market_stall",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "market_stall"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/windmill",
+		"key": "windmill",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "windmill"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/grazer",
+		"key": "grazer",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "grazer"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/house",
+		"key": "house",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "house"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/watchtower",
+		"key": "watchtower",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "watchtower"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/pumpjack",
+		"key": "pumpjack",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "pumpjack"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/rock_spire",
+		"key": "rock_spire",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "rock_spire"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/dead_grove",
+		"key": "dead_grove",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "dead_grove"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/scrap_yard",
+		"key": "scrap_yard",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "scrap_yard"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/water_tower",
+		"key": "water_tower",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "water_tower"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/recycling_factory",
+		"key": "recycling_factory",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "recycling_factory"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/cargo_crane",
+		"key": "cargo_crane",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "cargo_crane"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/refinery",
+		"key": "refinery",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "refinery"
+	},
+	{
+		"factory": 7,
+		"id": "World props / landmarks/satellite_array",
+		"key": "satellite_array",
+		"note": "",
+		"section": "World props / landmarks",
+		"title": "satellite_array"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/projectile_bullet",
+		"key": "projectile_bullet",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "projectile_bullet"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/projectile_enemy_bullet",
+		"key": "projectile_enemy_bullet",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "projectile_enemy_bullet"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/projectile_sabot",
+		"key": "projectile_sabot",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "projectile_sabot"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/projectile_enemy_sabot",
+		"key": "projectile_enemy_sabot",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "projectile_enemy_sabot"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/projectile_rocket",
+		"key": "projectile_rocket",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "projectile_rocket"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/projectile_enemy_rocket",
+		"key": "projectile_enemy_rocket",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "projectile_enemy_rocket"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/projectile_grenade",
+		"key": "projectile_grenade",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "projectile_grenade"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/projectile_enemy_grenade",
+		"key": "projectile_enemy_grenade",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "projectile_enemy_grenade"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_sphere",
+		"key": "fx_sphere",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_sphere"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_chunk",
+		"key": "fx_chunk",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_chunk"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_gear",
+		"key": "fx_gear",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_gear"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_collapse_gear",
+		"key": "fx_collapse_gear",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_collapse_gear"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_masonry",
+		"key": "fx_masonry",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_masonry"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_shockwave",
+		"key": "fx_shockwave",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_shockwave"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_cylinder4",
+		"key": "fx_cylinder4",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_cylinder4"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_cone4",
+		"key": "fx_cone4",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_cone4"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_cylinder5",
+		"key": "fx_cylinder5",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_cylinder5"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_cone5",
+		"key": "fx_cone5",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_cone5"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_cylinder6",
+		"key": "fx_cylinder6",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_cylinder6"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_cone6",
+		"key": "fx_cone6",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_cone6"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_cylinder7",
+		"key": "fx_cylinder7",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_cylinder7"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_cone7",
+		"key": "fx_cone7",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_cone7"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_cylinder8",
+		"key": "fx_cylinder8",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_cylinder8"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_cone8",
+		"key": "fx_cone8",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_cone8"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_cylinder9",
+		"key": "fx_cylinder9",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_cylinder9"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/fx_cone9",
+		"key": "fx_cone9",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "fx_cone9"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/wreck_bike",
+		"key": "wreck_bike",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "wreck_bike"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/wreck_buggy",
+		"key": "wreck_buggy",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "wreck_buggy"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/wreck_jammerTruck",
+		"key": "wreck_jammerTruck",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "wreck_jammerTruck"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/wreck_repairCrawler",
+		"key": "wreck_repairCrawler",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "wreck_repairCrawler"
+	},
+	{
+		"factory": 0,
+		"id": "Projectiles / wrecks / FX meshes/wreck_minelayer",
+		"key": "wreck_minelayer",
+		"note": "Static mesh preview",
+		"section": "Projectiles / wrecks / FX meshes",
+		"title": "wreck_minelayer"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.240000:3.500000:0.240000:iron",
+		"key": "box:0.240000:3.500000:0.240000:iron",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.240000:3.500000:0.240000:iron"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:1.600000:0.140000:0.140000:metal",
+		"key": "box:1.600000:0.140000:0.140000:metal",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:1.600000:0.140000:0.140000:metal"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/cone:0.280000:0.420000:5.000000:gold",
+		"key": "cone:0.280000:0.420000:5.000000:gold",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "cone:0.280000:0.420000:5.000000:gold"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:1.250000:0.040000:0.040000:woodDark",
+		"key": "box:1.250000:0.040000:0.040000:woodDark",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:1.250000:0.040000:0.040000:woodDark"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.780000:0.480000:0.080000:enemyRed",
+		"key": "box:0.780000:0.480000:0.080000:enemyRed",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.780000:0.480000:0.080000:enemyRed"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:1.450000:0.600000:2.200000:stoneDark",
+		"key": "box:1.450000:0.600000:2.200000:stoneDark",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:1.450000:0.600000:2.200000:stoneDark"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.950000:0.550000:1.000000:metal",
+		"key": "box:0.950000:0.550000:1.000000:metal",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.950000:0.550000:1.000000:metal"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.700000:0.180000:0.500000:enemyRed",
+		"key": "box:0.700000:0.180000:0.500000:enemyRed",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.700000:0.180000:0.500000:enemyRed"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.900000:0.220000:1.100000:iron",
+		"key": "box:0.900000:0.220000:1.100000:iron",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.900000:0.220000:1.100000:iron"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.550000:0.340000:0.380000:enemyRed",
+		"key": "box:0.550000:0.340000:0.380000:enemyRed",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.550000:0.340000:0.380000:enemyRed"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/cylinder:1.000000:1.200000:2.200000:10.000000:metal",
+		"key": "cylinder:1.000000:1.200000:2.200000:10.000000:metal",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "cylinder:1.000000:1.200000:2.200000:10.000000:metal"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/cylinder:1.080000:1.080000:0.120000:10.000000:iron",
+		"key": "cylinder:1.080000:1.080000:0.120000:10.000000:iron",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "cylinder:1.080000:1.080000:0.120000:10.000000:iron"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.160000:1.600000:0.160000:woodDark",
+		"key": "box:0.160000:1.600000:0.160000:woodDark",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.160000:1.600000:0.160000:woodDark"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/cylinder:0.100000:0.100000:1.700000:6.000000:iron",
+		"key": "cylinder:0.100000:0.100000:1.700000:6.000000:iron",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "cylinder:0.100000:0.100000:1.700000:6.000000:iron"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/sphere:0.120000:gold",
+		"key": "sphere:0.120000:gold",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "sphere:0.120000:gold"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:2.500000:0.240000:1.400000:woodDark",
+		"key": "box:2.500000:0.240000:1.400000:woodDark",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:2.500000:0.240000:1.400000:woodDark"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.120000:2.100000:0.120000:iron",
+		"key": "box:0.120000:2.100000:0.120000:iron",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.120000:2.100000:0.120000:iron"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:2.900000:0.160000:1.660000:clothRed",
+		"key": "box:2.900000:0.160000:1.660000:clothRed",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:2.900000:0.160000:1.660000:clothRed"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:2.900000:0.160000:1.660000:clothBlue",
+		"key": "box:2.900000:0.160000:1.660000:clothBlue",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:2.900000:0.160000:1.660000:clothBlue"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.480000:0.380000:0.480000:wood",
+		"key": "box:0.480000:0.380000:0.480000:wood",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.480000:0.380000:0.480000:wood"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:1.450000:5.900000:1.450000:iron",
+		"key": "box:1.450000:5.900000:1.450000:iron",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:1.450000:5.900000:1.450000:iron"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:2.200000:0.180000:0.180000:metal",
+		"key": "box:2.200000:0.180000:0.180000:metal",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:2.200000:0.180000:0.180000:metal"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.160000:2.100000:0.120000:metal",
+		"key": "box:0.160000:2.100000:0.120000:metal",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.160000:2.100000:0.120000:metal"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.340000:1.050000:0.080000:enemyRed",
+		"key": "box:0.340000:1.050000:0.080000:enemyRed",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.340000:1.050000:0.080000:enemyRed"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:1.800000:1.100000:1.300000:stoneDark",
+		"key": "box:1.800000:1.100000:1.300000:stoneDark",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:1.800000:1.100000:1.300000:stoneDark"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/cylinder:0.280000:0.280000:1.300000:8.000000:metal",
+		"key": "cylinder:0.280000:0.280000:1.300000:8.000000:metal",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "cylinder:0.280000:0.280000:1.300000:8.000000:metal"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:4.800000:0.260000:0.320000:iron",
+		"key": "box:4.800000:0.260000:0.320000:iron",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:4.800000:0.260000:0.320000:iron"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.720000:1.500000:0.500000:enemyRed",
+		"key": "box:0.720000:1.500000:0.500000:enemyRed",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.720000:1.500000:0.500000:enemyRed"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/cylinder:0.420000:0.620000:5.400000:10.000000:woodDark",
+		"key": "cylinder:0.420000:0.620000:5.400000:10.000000:woodDark",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "cylinder:0.420000:0.620000:5.400000:10.000000:woodDark"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/cylinder:0.180000:0.300000:3.400000:8.000000:iron",
+		"key": "cylinder:0.180000:0.300000:3.400000:8.000000:iron",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "cylinder:0.180000:0.300000:3.400000:8.000000:iron"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/cylinder:1.650000:1.650000:0.220000:18.000000:metal",
+		"key": "cylinder:1.650000:1.650000:0.220000:18.000000:metal",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "cylinder:1.650000:1.650000:0.220000:18.000000:metal"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/sphere:0.200000:gold",
+		"key": "sphere:0.200000:gold",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "sphere:0.200000:gold"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.520000:1.120000:0.420000:stoneDark",
+		"key": "box:0.520000:1.120000:0.420000:stoneDark",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.520000:1.120000:0.420000:stoneDark"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/sphere:0.180000:skin",
+		"key": "sphere:0.180000:skin",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "sphere:0.180000:skin"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.240000:0.080000:0.240000:iron",
+		"key": "box:0.240000:0.080000:0.240000:iron",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.240000:0.080000:0.240000:iron"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.080000:0.620000:0.080000:woodDark",
+		"key": "box:0.080000:0.620000:0.080000:woodDark",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.080000:0.620000:0.080000:woodDark"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.220000:0.320000:0.200000:clothBlue",
+		"key": "box:0.220000:0.320000:0.200000:clothBlue",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.220000:0.320000:0.200000:clothBlue"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/sphere:0.550000:sheep",
+		"key": "sphere:0.550000:sheep",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "sphere:0.550000:sheep"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/sphere:0.280000:stoneDark",
+		"key": "sphere:0.280000:stoneDark",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "sphere:0.280000:stoneDark"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.090000:0.550000:0.090000:woodDark",
+		"key": "box:0.090000:0.550000:0.090000:woodDark",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.090000:0.550000:0.090000:woodDark"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:3.000000:1.800000:2.800000:stoneDark",
+		"key": "box:3.000000:1.800000:2.800000:stoneDark",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:3.000000:1.800000:2.800000:stoneDark"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:1.600000:0.160000:2.200000:metal",
+		"key": "box:1.600000:0.160000:2.200000:metal",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:1.600000:0.160000:2.200000:metal"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:3.350000:0.160000:3.050000:metal",
+		"key": "box:3.350000:0.160000:3.050000:metal",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:3.350000:0.160000:3.050000:metal"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:1.150000:0.080000:1.400000:enemyRed",
+		"key": "box:1.150000:0.080000:1.400000:enemyRed",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:1.150000:0.080000:1.400000:enemyRed"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:1.000000:0.070000:1.050000:woodDark",
+		"key": "box:1.000000:0.070000:1.050000:woodDark",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:1.000000:0.070000:1.050000:woodDark"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.750000:1.180000:0.140000:woodDark",
+		"key": "box:0.750000:1.180000:0.140000:woodDark",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.750000:1.180000:0.140000:woodDark"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.520000:0.420000:0.080000:goldBright",
+		"key": "box:0.520000:0.420000:0.080000:goldBright",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.520000:0.420000:0.080000:goldBright"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/cylinder:0.420000:0.420000:1.500000:8.000000:metal",
+		"key": "cylinder:0.420000:0.420000:1.500000:8.000000:metal",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "cylinder:0.420000:0.420000:1.500000:8.000000:metal"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/cylinder:0.080000:0.080000:1.800000:6.000000:iron",
+		"key": "cylinder:0.080000:0.080000:1.800000:6.000000:iron",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "cylinder:0.080000:0.080000:1.800000:6.000000:iron"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/box:0.550000:0.180000:0.550000:woodDark",
+		"key": "box:0.550000:0.180000:0.550000:woodDark",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "box:0.550000:0.180000:0.550000:woodDark"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/cylinder:0.080000:0.120000:3.200000:8.000000:metal",
+		"key": "cylinder:0.080000:0.120000:3.200000:8.000000:metal",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "cylinder:0.080000:0.120000:3.200000:8.000000:metal"
+	},
+	{
+		"factory": 10,
+		"id": "Technical primitives / components/sphere:0.200000:enemyRed",
+		"key": "sphere:0.200000:enemyRed",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "sphere:0.200000:enemyRed"
+	},
+	{
+		"factory": 11,
+		"id": "Technical primitives / components/Component_Core",
+		"key": "Component_Core",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "Component_Core"
+	},
+	{
+		"factory": 11,
+		"id": "Technical primitives / components/Component_GunPod",
+		"key": "Component_GunPod",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "Component_GunPod"
+	},
+	{
+		"factory": 11,
+		"id": "Technical primitives / components/Component_LeftDrive",
+		"key": "Component_LeftDrive",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "Component_LeftDrive"
+	},
+	{
+		"factory": 11,
+		"id": "Technical primitives / components/Component_MissilePod",
+		"key": "Component_MissilePod",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "Component_MissilePod"
+	},
+	{
+		"factory": 11,
+		"id": "Technical primitives / components/Component_RightDrive",
+		"key": "Component_RightDrive",
+		"note": "",
+		"section": "Technical primitives / components",
+		"title": "Component_RightDrive"
+	}
+]

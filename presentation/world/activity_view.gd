@@ -175,9 +175,9 @@ func _place_airdrop(drop: Dictionary) -> void:
 	SourceModel.set_pool_instance(_airdrop, 0, transform, {"binding_overrides": overrides})
 	_opacity(_airdrop, 0, {"airdrop_aura": 0.2 + sin(time * 3.4) * 0.08, "airdrop_flareGlow": 0.24 + pulse * 0.22, "airdrop_signalBeam": 0.08 + pulse * 0.09})
 	_flare_smoke.apply_drop(drop, time)
-	_tint_flare(Color("60de8b") if landed else Color("ef563e"))
+	_tint_flare(Color("df291d"))
 	_flare_light.visible = landed
-	_flare_light.position = _grounded(drop.position) + Basis(Vector3.UP, float(drop.get("yaw", 0))) * Vector3(0.62, 3.62, 0.58)
+	_flare_light.position = _grounded(drop.position) + Basis(Vector3.UP, float(drop.get("yaw", 0))) * Vector3(0.62, 2.9, 0.58)
 	_flare_light.light_energy = 3.6 + pulse * 2.8
 
 static func airdrop_overrides(drop: Dictionary, time: float, since_state: float = 0.0) -> Dictionary:

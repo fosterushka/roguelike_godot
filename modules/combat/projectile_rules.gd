@@ -54,3 +54,24 @@ static func hit_fraction(start: Vector3, end: Vector3, center: Vector3, radius: 
 		return -1.0
 	var fraction := (-b - sqrt(discriminant)) / (2.0 * a)
 	return fraction if fraction >= 0.0 and fraction <= 1.0 else -1.0
+
+# Slab intersection against a rotated hull. Origin is its ground-level center.
+static func box_hit_fraction(start: Vector3, end: Vector3, origin: Vector3, size: Vector3, yaw: float = 0.0, padding: float = 0.0) -> float:
+	var inverse := Basis(Vector3.UP, -yaw)
+	var local := inverse * (start - origin) - Vector3.UP * size.y * 0.5
+	var direction := inverse * (end - start)
+	var half_size := size * 0.5 + Vector3.ONE * maxf(0.0, padding)
+	var entry := 0.0
+	var exit_fraction := 1.0
+	for axis in 3:
+		if absf(direction[axis]) < 0.000001:
+			if absf(local[axis]) > half_size[axis]:
+				return -1.0
+			continue
+		var first: float = (-half_size[axis] - local[axis]) / direction[axis]
+		var last: float = (half_size[axis] - local[axis]) / direction[axis]
+		entry = maxf(entry, minf(first, last))
+		exit_fraction = minf(exit_fraction, maxf(first, last))
+		if entry > exit_fraction:
+			return -1.0
+	return entry

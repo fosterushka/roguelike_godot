@@ -1,0 +1,238 @@
+{
+  "grazer": {
+    "triangles": 868,
+    "surfaces": 1
+  },
+  "house": {
+    "triangles": 2780,
+    "surfaces": 1
+  },
+  "well": {
+    "triangles": 3032,
+    "surfaces": 1
+  },
+  "market_stall": {
+    "triangles": 3376,
+    "surfaces": 1
+  },
+  "utility_pole": {
+    "triangles": 944,
+    "surfaces": 1
+  },
+  "wreck": {
+    "triangles": 4012,
+    "surfaces": 1
+  },
+  "barrelInstances": {
+    "triangles": 448,
+    "surfaces": 1
+  },
+  "crateInstances": {
+    "triangles": 696,
+    "surfaces": 1
+  },
+  "tankInstances": {
+    "triangles": 476,
+    "surfaces": 1
+  },
+  "satellite_dish": {
+    "triangles": 744,
+    "surfaces": 1
+  },
+  "deadTrees": {
+    "triangles": 840,
+    "surfaces": 1
+  },
+  "fencePosts": {
+    "triangles": 128,
+    "surfaces": 1
+  },
+  "fenceRails": {
+    "triangles": 84,
+    "surfaces": 1
+  },
+  "windmill": {
+    "triangles": 1052,
+    "surfaces": 1
+  },
+  "windmill_blades": {
+    "triangles": 656,
+    "surfaces": 1
+  },
+  "BunkerAuthored": {
+    "triangles": 1988,
+    "surfaces": 1
+  },
+  "BarracksAuthored": {
+    "triangles": 3288,
+    "surfaces": 1
+  },
+  "rockMass0": {
+    "triangles": 140,
+    "surfaces": 1
+  },
+  "rockMass1": {
+    "triangles": 140,
+    "surfaces": 1
+  },
+  "rockMass2": {
+    "triangles": 140,
+    "surfaces": 1
+  },
+  "rockMass3": {
+    "triangles": 140,
+    "surfaces": 1
+  },
+  "rockMass4": {
+    "triangles": 140,
+    "surfaces": 1
+  },
+  "rockMass5": {
+    "triangles": 140,
+    "surfaces": 1
+  },
+  "rockInstances": {
+    "triangles": 140,
+    "surfaces": 1
+  },
+  "stoneInstances": {
+    "triangles": 140,
+    "surfaces": 1
+  },
+  "detail_watchtower": {
+    "triangles": 1456,
+    "surfaces": 1
+  },
+  "detail_water_tower": {
+    "triangles": 912,
+    "surfaces": 1
+  },
+  "detail_factory": {
+    "triangles": 1812,
+    "surfaces": 1
+  },
+  "detail_crane": {
+    "triangles": 452,
+    "surfaces": 1
+  },
+  "detail_refinery": {
+    "triangles": 1800,
+    "surfaces": 1
+  },
+  "detail_pumpjack": {
+    "triangles": 584,
+    "surfaces": 1
+  },
+  "detail_satellite": {
+    "triangles": 476,
+    "surfaces": 1
+  },
+  "loot_scrap": {
+    "triangles": 572,
+    "surfaces": 1
+  },
+  "loot_circuit": {
+    "triangles": 2332,
+    "surfaces": 1
+  },
+  "loot_relic": {
+    "triangles": 320,
+    "surfaces": 1
+  },
+  "loot_repair_kit": {
+    "triangles": 440,
+    "surfaces": 1
+  },
+  "loot_fuel_cell": {
+    "triangles": 568,
+    "surfaces": 1
+  },
+  "projectile_bullet": {
+    "triangles": 198,
+    "surfaces": 1
+  },
+  "projectile_enemy_bullet": {
+    "triangles": 198,
+    "surfaces": 1
+  },
+  "projectile_sabot": {
+    "triangles": 374,
+    "surfaces": 1
+  },
+  "projectile_enemy_sabot": {
+    "triangles": 374,
+    "surfaces": 1
+  },
+  "projectile_rocket": {
+    "triangles": 374,
+    "surfaces": 1
+  },
+  "projectile_enemy_rocket": {
+    "triangles": 374,
+    "surfaces": 1
+  },
+  "projectile_grenade": {
+    "triangles": 300,
+    "surfaces": 1
+  },
+  "projectile_enemy_grenade": {
+    "triangles": 300,
+    "surfaces": 1
+  },
+  "pumpjack_arm": {
+    "triangles": 724,
+    "surfaces": 1
+  },
+  "scrubInstances": {
+    "triangles": 612,
+    "surfaces": 1
+  },
+  "deadBrushInstances": {
+    "triangles": 756,
+    "surfaces": 1
+  },
+  "grassTufts": {
+    "triangles": 24,
+    "surfaces": 1
+  },
+  "flowerInstances": {
+    "triangles": 888,
+    "surfaces": 1
+  },
+  "ironStructure": {
+    "triangles": 300,
+    "surfaces": 1
+  },
+  "metalStructure": {
+    "triangles": 300,
+    "surfaces": 1
+  },
+  "woodStructure": {
+    "triangles": 428,
+    "surfaces": 1
+  },
+  "redStructure": {
+    "triangles": 300,
+    "surfaces": 1
+  },
+  "earthStructure": {
+    "triangles": 44,
+    "surfaces": 1
+  },
+  "ruinStructure": {
+    "triangles": 232,
+    "surfaces": 1
+  },
+  "scarStructure": {
+    "triangles": 176,
+    "surfaces": 1
+  },
+  "cliffFaces": {
+    "triangles": 176,
+    "surfaces": 1
+  },
+  "cliffStrata": {
+    "triangles": 176,
+    "surfaces": 1
+  }
+}

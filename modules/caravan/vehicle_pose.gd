@@ -13,9 +13,10 @@ static func interpolate(previous: Dictionary, current: Dictionary, fraction: flo
 	pose.wind_roll = lerpf(float(previous.get("wind_roll", 0.0)), float(current.get("wind_roll", 0.0)), alpha)
 	for field in ["scale", "speed", "steer", "wheel_angle"]:
 		pose[field] = lerpf(previous[field], current[field], alpha)
+	pose.suspension.pitch = lerpf(float(previous.suspension.pitch), float(current.suspension.pitch), alpha)
 	for index in 4:
 		pose.suspension.wheel_offsets[index] = lerpf(previous.suspension.wheel_offsets[index], current.suspension.wheel_offsets[index], alpha)
 	return pose
 
 static func transform(pose: Dictionary) -> Transform3D:
-	return Transform3D((Basis(Vector3.UP, pose.heading) * Basis(Vector3.BACK, float(pose.get("wind_roll", 0.0)))).scaled(Vector3.ONE * float(pose.scale)), pose.position)
+	return Transform3D((Basis(Vector3.UP, pose.heading) * Basis(Vector3.BACK, float(pose.get("wind_roll", 0.0))) * Basis(Vector3.RIGHT, float(pose.suspension.pitch))).scaled(Vector3.ONE * float(pose.scale)), pose.position)

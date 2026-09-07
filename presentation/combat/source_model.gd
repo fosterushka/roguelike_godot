@@ -13,7 +13,9 @@ static var _materials: Dictionary = {}
 static func preload_models() -> void:
 	var catalog: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/visual_models/catalog.json"))
 	for entry in catalog.models:
-		_prepare(str(entry.name))
+		var name := str(entry.name)
+		if MilitaryEnemies.has_model(name) or MilitaryPeople.has_model(name) or MilitaryFieldProps.has_model(name) or FileAccess.file_exists("res://data/visual_models/%s.json" % name):
+			_prepare(name)
 
 
 static func instantiate(model_name: String) -> Node3D:
@@ -49,6 +51,11 @@ static func instantiate(model_name: String) -> Node3D:
 static func _prepare(model_name: String) -> void:
 	if _templates.has(model_name):
 		return
+	if model_name.begins_with("projectile_"):
+		var library = preload("res://presentation/world/world_quality_models.gd")
+		if library.has_model(model_name):
+			_templates[model_name] = [{"name": model_name, "mesh": library.mesh_for(model_name), "transform": Transform3D.IDENTITY, "animation": "", "rig": {}, "bindings": [], "instances": null, "cast_shadow": false}]
+			return
 	if MilitaryEnemies.has_model(model_name):
 		_templates[model_name] = MilitaryEnemies.templates(model_name)
 		return

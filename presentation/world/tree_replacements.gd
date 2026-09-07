@@ -2,6 +2,7 @@ extends RefCounted
 
 const Trees = preload("res://presentation/world/tree_meshes.gd")
 const Source = preload("res://presentation/combat/source_model.gd")
+const TREE_SIZE_SCALE := 1.18
 const HIDDEN := Transform3D(Basis(Vector3.ZERO, Vector3.ZERO, Vector3.ZERO), Vector3.ZERO)
 
 static func _pool(point: Vector3) -> String:
@@ -12,7 +13,7 @@ static func _pose(point: Vector3, scale: float, parts: Array, dead: bool) -> Tra
 	var heading := 0.0
 	if not parts.is_empty() and parts[0].has("transform"):
 		heading = Transform3D(parts[0].transform).basis.get_euler().y
-	return Transform3D(Basis(Vector3.UP, heading).scaled(Vector3.ONE * scale * (0.62 if dead else 0.55)), point)
+	return Transform3D(Basis(Vector3.UP, heading).scaled(Vector3.ONE * scale * TREE_SIZE_SCALE * (0.62 if dead else 0.55)), point)
 
 static func prepare(context: RefCounted) -> Dictionary:
 	var instances: Dictionary = context.instances.duplicate()
@@ -22,7 +23,7 @@ static func prepare(context: RefCounted) -> Dictionary:
 		var visible_parts: Array = tree.parts.filter(func(part: Dictionary) -> bool: return int(part.instance) >= 0)
 		if visible_parts.is_empty():
 			continue
-		var pool := _pool(tree.position)
+		var pool: String = Trees.DEAD_POOL if tree.dead else _pool(tree.position)
 		if not copied.has(pool):
 			instances[pool] = instances[pool].duplicate()
 			copied[pool] = true
@@ -60,7 +61,7 @@ static func replace_reference(world: Node3D, layout: Dictionary) -> void:
 		if prop.kind not in ["tree", "deadTree"]:
 			continue
 		var point := Vector3(prop.position.x, 0, prop.position.z)
-		var pool := _pool(point)
+		var pool: String = Trees.DEAD_POOL if prop.kind == "deadTree" else _pool(point)
 		var parts: Array = []
 		for part: Dictionary in prop.parts:
 			var visual := world.get_child(int(part.mesh)) as MultiMeshInstance3D

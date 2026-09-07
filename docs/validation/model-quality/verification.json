@@ -1,0 +1,665 @@
+{
+  "mode": "Aggregate full suite plus final targeted rerun, not a repeated full suite",
+  "passed": 94,
+  "total": 94,
+  "results": [
+    {
+      "test": "model_gallery_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.7,
+      "evidence": "final-rerun/report.json"
+    },
+    {
+      "test": "world_quality_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.64,
+      "evidence": "final-rerun/report.json"
+    },
+    {
+      "test": "base_collision_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "handling_wildlife_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 3.64,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "world_landscape_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "combat_upgrade_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "ui_icons_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "item_preview_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "evidence": "final-rerun/report.json"
+    },
+    {
+      "test": "case_rewards_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "case_opening_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.76,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "trailer_ui_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 11.39,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "caravan_loadout_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "caravan_combat_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "armory_unit_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "military_pickup_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "convoy_assets_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "caravan_formation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.73,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "crew_runtime_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.64,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "crew_encounter_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.54,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "crew_seating_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "evidence": "final-rerun/report.json"
+    },
+    {
+      "test": "screen_tracers_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "tornado_interaction_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.1,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "caravan_crew_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.45,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "caravan_integration_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 12.37,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "natural_mesh_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "vegetation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 15.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "military_environment_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 3.64,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "military_people_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "evidence": "final-rerun/report.json"
+    },
+    {
+      "test": "military_enemies_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "evidence": "final-rerun/report.json"
+    },
+    {
+      "test": "military_field_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "evidence": "final-rerun/report.json"
+    },
+    {
+      "test": "mission_catalog_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "mission_tracker_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "crew_missions_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "mission_board_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.54,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "mission_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 7.99,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "extraction_defense_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.26,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "extraction_zone_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 20.2,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "meta_economy_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "combo_rewards_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "expedition_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 12.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "vehicle_motion_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "offline_session_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 19.48,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "combat_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "advanced_combat_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "enemy_ai_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "progression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "world_generation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.64,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "natural_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.45,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "authored_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.96,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "world_builder_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 11.15,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "world_gameplay_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.0,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "world_activities_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.09,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "ambient_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.89,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "world_rebuild_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 4.31,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "world_result_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 17.39,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 10.32,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "visual_smoke.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.92,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "ui_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 17.29,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "integration_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 17.26,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "composed_world_seed_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 32.1,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "full_run_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 22.95,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "combat_soak_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 6.06,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "combat_presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.73,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "source_fx_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.45,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "world_presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "run_clock_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "session_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 20.01,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "presentation_details_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.45,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "loading_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 3.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "minimap_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "ui_menu_regression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.54,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "ui_language_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 10.33,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "hud_layout_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.54,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "ground_effect_depth_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.45,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "countdown_ui_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.25,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "reward_radar_mount_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 3.46,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "armory_tiles_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 10.3,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "ground_surface_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.54,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "wheel_vehicle_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.22,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "radar_progression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "radar_armory_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 10.25,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "vehicle_response_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "vehicle_render_runtime_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 4.31,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "tire_trails_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.44,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "road_speed_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.93,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "enemy_factory_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.45,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "weather_transition_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.54,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "support_feedback_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.64,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "support_wave_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.45,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "jammer_gameplay_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "jammer_feedback_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.64,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "mine_hacking_module_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 10.24,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "village_destruction_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.57,
+      "evidence": "full-suite/report.json"
+    },
+    {
+      "test": "village_decoration_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 11.42,
+      "evidence": "full-suite/report.json"
+    }
+  ]
+}

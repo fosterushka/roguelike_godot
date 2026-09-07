@@ -10,6 +10,8 @@ import tempfile
 import time
 
 TESTS = [
+	'model_dedup_test.gd', 'model_gallery_test.gd', 'environment_lod_test.gd', 'world_quality_test.gd',
+    'base_collision_test.gd', 'handling_wildlife_test.gd', 'world_landscape_test.gd', 'combat_upgrade_test.gd',
     'ui_icons_test.gd',
 	'item_preview_test.gd',
     'case_rewards_test.gd', 'case_opening_test.gd', 'trailer_ui_test.gd',

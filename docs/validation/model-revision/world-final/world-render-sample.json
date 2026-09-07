@@ -1,0 +1,8 @@
+{
+	"draw_calls": 75.0,
+	"frames": 120,
+	"median_frame_ms": 37.797,
+	"p95_frame_ms": 42.251,
+	"rendered_primitives": 3175874.0,
+	"scenario": "Generated seed72841, static camera, Metal rendering; no combat load or before/after comparison"
+}

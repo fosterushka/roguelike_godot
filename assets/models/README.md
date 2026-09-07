@@ -9,13 +9,13 @@
 | `equipment/` | Оружие, модули и оборудование | `assets/vehicles/military_equipment.glb` |
 | `people/` | Rifleman, AK, bazooka, bomber | `assets/actors/military_people.glb` |
 | `enemies/` | Девять видов техники и пять обломков | `assets/actors/military_enemies.glb` |
-| `field_props/` | Три гарнизона, мины, припасы, ремонтная машина, груз с парашютом | `assets/actors/military_field_props.glb` |
+| `field_props/` | Гарнизон 3, одна мина с runtime-состояниями, припасы и ремонтная машина | `assets/actors/military_field_props.glb` |
+| `airdrop/` | Отдельный груз с парашютом | `assets/actors/airdrop.glb` |
 | `environment/` | Кусты, трава и цветы | `assets/environment/military_environment.glb` |
 | `trees_rebuilt/` | Ровная ель и берёза с однотонной окраской и мягким градиентом | `assets/environment/textured_trees.glb` |
-| `monuments/` | Десять типов достопримечательностей и шесть построек | Генераторы `modules/world/generation/authored_*.gd` |
-| `trees/` | Ранние отдельные экспорты деревьев | Архив, актуальные деревья находятся в `trees_rebuilt/` |
+| `world_quality/` | Дома, wreck, животные, камни, loot и world-prop kit | `assets/environment/world_quality.glb` |
 
-NPC и техника используют общие меши и материалы через существующие пулы. Колёса, роторы, части босса и семь частей пехотного рига сохраняют отдельные узлы для анимации. Статические части построек объединяются внутри исходных групп, поэтому разрушение и механизмы сохраняют своих владельцев. Камни остаются процедурными, с общей приглушённой палитрой.
+NPC и техника используют общие меши и материалы через существующие пулы. Колёса, роторы, части босса и семь частей пехотного рига сохраняют отдельные узлы для анимации. Статические части построек объединяются внутри исходных групп, поэтому разрушение и механизмы сохраняют своих владельцев. Terrain остаётся процедурным; камни и world props берутся из общего `world_quality` kit.
 
 ## Пересборка
 
@@ -31,7 +31,7 @@ NPC и техника используют общие меши и материа
 
 Деревья пересобираются командой `Blender --background --factory-startup --python scripts/blender/build_textured_trees.py`. Общий атлас `tree_atlas.png` имеет размер 32×32 и содержит только мягкие градиенты без узоров; каждый вид использует один меш и один материал. Стволы при генерации стоят вертикально.
 
-Памятники экспортируются из настоящих генераторов Godot, затем преобразуются в Blender и OBJ:
+`monuments/` не содержит source-моделей для runtime. Это необязательный round-trip export из Godot генераторов `authored_*.gd`, который можно создать для внешней проверки:
 
 ```sh
 /Users/fosterushka/Downloads/Godot.app/Contents/MacOS/Godot --headless --path . --script scripts/blender/export_monuments.gd

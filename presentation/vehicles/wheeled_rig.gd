@@ -25,13 +25,15 @@ static func build_trailer(type: String = "cargo") -> Node3D:
 	return rig
 
 static func animate(rig: Node3D, suspension: Dictionary, steer: float, speed: float, wheel_angle: float, trailer: bool = false) -> void:
+	# Counter-rotate wheel hubs so load transfer tilts the chassis, not tire contacts.
+	var wheel_basis := Basis(Vector3.RIGHT, -float(suspension.get("pitch", 0.0)))
 	var angles := Suspension.steering_angles(steer, speed, trailer)
 	var wheels: Array = rig.get_meta("wheels", [])
 	var springs: Array = rig.get_meta("springs", [])
 	for index in wheels.size():
 		var pivot: Node3D = wheels[index]
-		pivot.position = pivot.get_meta("anchor") + Vector3.UP * float(suspension.wheel_offsets[index])
-		pivot.rotation.y = angles[index] if index < 2 else 0.0
+		pivot.position = wheel_basis * (Vector3(pivot.get_meta("anchor")) + Vector3.UP * float(suspension.wheel_offsets[index]))
+		pivot.basis = wheel_basis * Basis(Vector3.UP, angles[index] if index < 2 else 0.0)
 		pivot.get_child(0).rotation.x = wheel_angle
 		var spring: Node3D = springs[index]
 		spring.position = spring.get_meta("anchor") + Vector3.UP * float(suspension.wheel_offsets[index]) * 0.5

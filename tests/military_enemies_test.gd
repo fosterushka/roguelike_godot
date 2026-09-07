@@ -45,7 +45,8 @@ func _run() -> void:
 				var material := part.mesh.surface_get_material(0) as StandardMaterial3D
 				body_material_ok = material != null and material.albedo_texture != null
 				body_normals_ok = _outward_winding(part.mesh)
-		check(triangles > (15 if model_name.begins_with("wreck_") else 40) and triangles < (4000 if model_name == "boss" else 2500), model_name + " uses real optimized geometry")
+		print("ACTOR_BUDGET ", model_name, " triangles=", triangles, " parts=", parts.size())
+		check(triangles > (15 if model_name.begins_with("wreck_") else 40) and triangles < (Enemies.BOSS_TRIANGLE_BUDGET if model_name == "boss" else Enemies.TRIANGLE_BUDGET), model_name + " uses real optimized geometry")
 		check(bounds.size.length() > 0.45 and (model_name in ["drone", "kamikaze"] or absf(bounds.position.y) < 0.15), model_name + " has grounded mesh contacts")
 		if MIN_WIDTH.has(model_name):
 			check(bounds.size.x >= float(MIN_WIDTH[model_name]), model_name + " silhouette matches combat scale")

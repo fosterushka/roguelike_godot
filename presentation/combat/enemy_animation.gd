@@ -15,7 +15,8 @@ static func advance(enemy: Dictionary, pose: Dictionary, delta: float, elapsed: 
 	for component: Dictionary in enemy.get("components", []):
 		pose.components[component.kind] = component.get("exposed", false) and not component.get("dead", false)
 	var pulse := sin(clampf(float(enemy.get("hit_time", 0.0)) * 6.0, 0.0, 1.0) * PI)
-	var scale_value := 1.0 + pulse * (0.12 if type == "soldier" else 0.07 if type == "drone" else 0.06 if type in ["bike", "buggy"] else 0.055 if type in ["garrison", "priorityVehicle"] else 0.045)
+	# Bases are buildings: damage feedback must not make their hull bounce or deform.
+	var scale_value := 1.0 if type == "garrison" else 1.0 + pulse * (0.12 if type == "soldier" else 0.07 if type == "drone" else 0.06 if type in ["bike", "buggy"] else 0.055 if type == "priorityVehicle" else 0.045)
 	var scale_vector := Vector3(scale_value, 1.0 / scale_value, scale_value) if type == "soldier" else Vector3.ONE * scale_value
 	var point: Vector3 = enemy.position
 	if type == "drone":

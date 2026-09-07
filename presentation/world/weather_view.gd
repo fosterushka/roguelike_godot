@@ -1,5 +1,6 @@
 extends Node3D
 
+const DayCycle = preload("res://modules/world/day_cycle.gd")
 const Rules = preload("res://modules/world/weather_rules.gd")
 const Ground = preload("res://presentation/world/ground_surface_view.gd")
 const MUD_TEXTURES := [preload("res://assets/textures/weather/mud-patch-a.png"), preload("res://assets/textures/weather/mud-rut-b.png"), preload("res://assets/textures/weather/mud-splash-c.png")]
@@ -107,12 +108,19 @@ func _apply_weather_mix() -> void:
 		exposure += float(preset.exposure) * weight
 	# FogExp2 -> exponential native fog, calibrated at the 65-unit camera distance.
 	_environment.fog_density = density * density * 65.0
-	_environment.fog_light_color = fog_color.linear_to_srgb()
-	_environment.background_color = background.linear_to_srgb()
+	var day := DayCycle.sample(float(_state.get("game_time", 0.0)))
+	_environment.ambient_light_energy = day.ambient
+	_environment.fog_light_color = DayCycle.NIGHT_FOG.lerp(fog_color.linear_to_srgb(), day.daylight)
+	_environment.background_color = DayCycle.NIGHT_SKY.lerp(background.linear_to_srgb(), day.daylight)
+	# Color ambient avoids regenerating a sky cubemap on every clock update.
+	_environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	_environment.ambient_light_color = DayCycle.MOON_COLOR.lerp(Color("c6d7df"), day.daylight)
 	_environment.tonemap_exposure = exposure
-	_sun.light_energy = sun / PI
+	_sun.light_energy = sun / PI * float(day.light)
+	_sun.light_color = DayCycle.MOON_COLOR.lerp(DayCycle.SUN_COLOR, day.daylight)
+	_sun.rotation = Basis.looking_at(day.direction, Vector3.UP).get_euler()
 	if _rim != null:
-		_rim.light_energy = rim / PI
+		_rim.light_energy = rim / PI * lerpf(0.45, 1.0, day.daylight)
 
 func _process(delta: float) -> void:
 	if not externally_driven:

@@ -28,7 +28,7 @@ func _run() -> void:
 	_check(is_instance_valid(thumbnail._model) and thumbnail._model.get_child_count() > 0, "Vehicle thumbnail builds the runtime wagon model")
 	thumbnail.set_preview("loot", "relic")
 	await process_frame
-	_check(is_instance_valid(thumbnail._model) and thumbnail._model.name == "LootModel_relic" and thumbnail._model.get_child_count() == 2, "Rare loot thumbnail has its own physical silhouette")
+	_check(is_instance_valid(thumbnail._model) and thumbnail._model.name == "LootModel_relic" and thumbnail._model.get_child_count() == 1 and thumbnail._model.get_child(0).mesh == preload("res://presentation/world/world_quality_models.gd").mesh_for("loot_relic"), "Rare loot thumbnail has its own physical silhouette")
 	thumbnail.set_preview("module", "bumper")
 	thumbnail.size = Vector2(160, 52)
 	await process_frame

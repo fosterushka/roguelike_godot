@@ -41,6 +41,8 @@ func _run() -> void:
 	near(Dimensions.target_scale(8), 1.405, "Source level 8 visual scale")
 	near(Dimensions.target_scale(50), 1.42, "Source scale ceiling")
 	near(Dimensions.radius(0.88), 3.5, "Source circular base hull radius")
+	var base_pose := EnemyAnimation.advance({"id": 1, "type": "garrison", "position": Vector3.ZERO, "speed": 0.0, "hit_time": 1.0 / 12.0}, {}, 0.0, 0.0)
+	check(base_pose.basis.get_scale().is_equal_approx(Vector3.ONE), "Garrison hit feedback keeps its building hull still")
 	near(Dimensions.radius(1.42), 5.647727272727, "Source max circular hull radius")
 	var model = Model.new()
 	model.spawn_queue.clear()

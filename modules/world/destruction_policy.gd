@@ -1,5 +1,6 @@
 extends RefCounted
 
+const TREE_KINDS := ["tree", "deadTree"]
 static var _data: Dictionary = {}
 
 static func settings() -> Dictionary:

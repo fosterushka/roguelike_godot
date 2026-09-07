@@ -1,4 +1,5 @@
 extends RefCounted
+const Catalog = preload("res://modules/combat/enemy_catalog.gd")
 const Terrain = preload("res://modules/caravan/terrain_surface.gd")
 
 const Evasion = preload("res://modules/combat/drone_evasion.gd")
@@ -138,7 +139,7 @@ static func attack(model, enemy: Dictionary, delta: float, cadence: float, dista
 			height = 2.35
 			lead = 0.24
 		"garrison":
-			height = enemy.height
+			height = enemy.height * Catalog.GARRISON_AIM_HEIGHT_RATIO
 			lead = 0.32
 		"keep":
 			height = 4.0

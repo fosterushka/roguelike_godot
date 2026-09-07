@@ -38,6 +38,7 @@ func _run() -> void:
 	combat.set_running(true)
 	_test_tree_fall()
 	_test_prop_flight()
+	_test_tree_landing()
 	_test_npc_flight()
 	_test_natural_activities()
 	_test_player_entry()
@@ -122,6 +123,31 @@ func _test_prop_flight() -> void:
 	check(launched >= 2 and shattered >= 2, "Real tornado captures demonstrate both fixed launch and shatter outcomes")
 	check(combat.model.pickups.size() == rewards, "Natural shatter never awards salvage")
 	world.reset_run()
+
+func _test_tree_landing() -> void:
+	var tree: Dictionary = world.props.records.values().filter(func(prop: Dictionary) -> bool: return prop.kind == "tree")[0]
+	var original: Vector3 = tree.position
+	var destination := original + Vector3(40, 0, 20)
+	var rewards: int = combat.model.pickups.size()
+	world.props.lift(tree)
+	world._flush_prop_events()
+	world.prop_motion_view.step(0.1, {str(tree.id): {"position": destination + Vector3.UP, "roll": 0.7}})
+	var airborne: Node3D = world.prop_motion_view.moving[tree.id].node
+	var rotation: Quaternion = airborne.quaternion
+	world.props.land(tree, destination, 1.0)
+	world._flush_prop_events()
+	check(tree.destroyed and not tree.airborne and tree.hp == 0.0, "Even a gentle tornado tree landing remains destroyed")
+	check(not world.props.grid.nearby(destination, 1).has(tree), "Fallen tree never becomes an upright obstacle again")
+	check(world.prop_motion_view.moving[tree.id].node == airborne and airborne.quaternion.is_equal_approx(rotation), "Landing retains airborne visual and rotation without upright reset")
+	for frame in 360:
+		world.prop_motion_view.step(1.0 / 60.0, {})
+	check(absf((airborne.basis * Vector3.UP).y) < 0.12 and airborne.position.distance_to(destination) > 0.5, "Tree tumbles onto its side and slides after landing")
+	check(combat.model.pickups.size() == rewards, "Weather landing grants no player salvage")
+	world.prop_motion_view.step(15.0, {})
+	check(not world.prop_motion_view.moving.has(tree.id), "Settled debris returns to bounded pool")
+	world.reset_run()
+	check(not tree.destroyed and tree.position == original, "New run restores thrown tree at original position")
+
 
 func _test_npc_flight() -> void:
 	combat.model.enemies.clear()

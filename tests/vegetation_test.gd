@@ -24,7 +24,7 @@ func check(value: bool, message: String) -> void:
 
 func _run() -> void:
 	var signatures := {}
-	for pool: String in Trees.POOLS:
+	for pool: String in Trees.POOLS.filter(func(pool: String) -> bool: return pool != Trees.DEAD_POOL):
 		var mesh := Trees.mesh_for(pool)
 		check(mesh == Trees.mesh_for(pool), "Tree meshes reuse cached geometry")
 		check(mesh.get_surface_count() == 1, "Whole tree species batches as a single surface")
@@ -33,7 +33,7 @@ func _run() -> void:
 		var tree_material := mesh.surface_get_material(0) as StandardMaterial3D
 		check(tree_material.albedo_texture != null, "Trees retain their soft color ramp material")
 		check(arrays[Mesh.ARRAY_VERTEX].size() == arrays[Mesh.ARRAY_COLOR].size(), "Trunk and foliage colors survive instancing")
-		check(arrays[Mesh.ARRAY_INDEX].size() < 6000, "Tree geometry remains bounded below 2000 triangles")
+		check(arrays[Mesh.ARRAY_INDEX].size() <= Trees.Library.TREE_TRIANGLE_BUDGET * 3, "Detailed tree geometry stays inside the exported triangle budget")
 		signatures[str(mesh.get_aabb())] = true
 	check(signatures.size() == 2, "Birch and spruce have distinct crown proportions")
 	_check_replacements()
@@ -105,7 +105,7 @@ func _check_replacements() -> void:
 	natural.dead_tree(70, 20)
 	var prepared := Replacements.prepare(context)
 	check(context.get_meta("legacy_tree_views").size() == 3, "Replacement records include non-destructible trees and aggregate dead groves")
-	check(prepared.instances.spruceTrees.size() + prepared.instances.birchTrees.size() == 3, "All legacy tree forms become birch or spruce")
+	check(prepared.instances.spruceTrees.size() + prepared.instances.birchTrees.size() == 2 and prepared.instances.deadTrees.size() == 1, "Dead groves keep their own bare-tree model")
 	context.setup(92)
 	check(not context.has_meta("legacy_tree_views"), "Reusing generator context clears legacy presentation records")
 	var world := Source.instantiate("world_72841")
@@ -121,7 +121,7 @@ func _check_replacements() -> void:
 		for instance_index in batch.multimesh.instance_count:
 			check(covered.has("%d:%d" % [mesh_index, instance_index]), "Reference world has no unregistered generic tree geometry left outside replacements")
 	Replacements.replace_reference(world, layout)
-	check(world.get_child_count() == initial_children + 2, "Reference world adds exactly two tree batches")
+	check(world.get_child_count() == initial_children + Trees.POOLS.size(), "Reference world adds one batch per complete tree species")
 	var lookup := {}
 	for prop: Dictionary in layout.props:
 		lookup[prop.id] = prop
@@ -131,4 +131,5 @@ func _check_replacements() -> void:
 		check(prop.parts.size() == 1 and prop.parts[0].mesh >= initial_children, "Reference destroy/reset record owns exactly one new complete tree instance")
 		var batch := world.get_child(int(prop.parts[0].mesh)) as MultiMeshInstance3D
 		check(str(batch.name) in Trees.POOLS, "Reference tree only uses retained species")
+		check((str(batch.name) == Trees.DEAD_POOL) == (original.kind == "deadTree"), "Dead reference trees retain a bare silhouette")
 	world.free()

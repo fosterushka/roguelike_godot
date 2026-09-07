@@ -2,6 +2,8 @@ extends RefCounted
 
 static var _meshes: Dictionary = {}
 static var _material: StandardMaterial3D
+static var _small_material: ShaderMaterial
+const ROCK_SHADER = preload("res://presentation/world/rock_detail.gdshader")
 const SIDES := 13
 const LEVELS := [-0.045, 0.09, 0.29, 0.51, 0.73, 0.9]
 const PROFILES := [
@@ -78,7 +80,10 @@ static func _build(variant: int, small: bool) -> ArrayMesh:
 		_material.roughness = 1.0
 		_material.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON
 		_material.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
-	mesh.surface_set_material(0, _material)
+	if small and _small_material == null:
+		_small_material = ShaderMaterial.new()
+		_small_material.shader = ROCK_SHADER
+	mesh.surface_set_material(0, _small_material if small else _material)
 	return mesh
 
 static func _triangle(a: Vector3, b: Vector3, c: Vector3, small: bool, base: Color, random: RandomNumberGenerator, vertices: PackedVector3Array, normals: PackedVector3Array, colors: PackedColorArray) -> void:

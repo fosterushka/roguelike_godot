@@ -1,5 +1,6 @@
 extends SceneTree
 const Suspension = preload("res://modules/caravan/wheel_suspension.gd")
+const TERRAIN_FLOAT_TOLERANCE := 0.0001 # Float32 mesh positions across a 3.4 km map.
 const Terrain = preload("res://modules/caravan/terrain_surface.gd")
 const Motion = preload("res://modules/caravan/vehicle_motion.gd")
 const MotionState = preload("res://modules/caravan/vehicle_motion_state.gd")
@@ -133,7 +134,7 @@ func _test_terrain() -> void:
 		var second := vertices[indices[index + 1]]
 		var third := vertices[indices[index + 2]]
 		var point := first * 0.2 + second * 0.3 + third * 0.5
-		accurate = accurate and absf(point.y - Terrain.height_at(point.x, point.z)) < 0.00002
+		accurate = accurate and absf(point.y - Terrain.height_at(point.x, point.z)) < TERRAIN_FLOAT_TOLERANCE
 	check(accurate, "Wheel sampler matches interior of the actual rendered terrain triangles")
 	var world := Node3D.new()
 	root.add_child(world)
@@ -230,7 +231,7 @@ func _test_dynamic_grounding() -> void:
 	var healer_transform: Transform3D = healer_batch.mesh.get_instance_transform(0) * source_animation.transform_for(healer_batch, {}).affine_inverse()
 	if DisplayServer.get_name() != "headless":
 		check(absf(healer_transform.origin.y - height) < 0.0001, "Rescue cart pool follows terrain")
-	check(absf(activities._flare_light.position.y - height - 3.62) < 0.0001, "Landed supply flare follows terrain baseline")
+	check(absf(activities._flare_light.position.y - height - preload("res://presentation/world/airdrop_flare_smoke.gd").FLARE_HEIGHT) < 0.0001, "Landed supply flare follows terrain baseline")
 	mines.queue_free()
 	combat_view.queue_free()
 	activities.queue_free()

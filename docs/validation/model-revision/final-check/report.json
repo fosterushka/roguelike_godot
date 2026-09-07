@@ -1,0 +1,66 @@
+{
+  "mode": "headless automated; no GPU rendering, listening or balance-playthrough claim",
+  "project": "/Users/fosterushka/Work/vibe/roguelike_godot/new-game-project",
+  "results": [
+    {
+      "test": "model_dedup_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.54
+    },
+    {
+      "test": "model_gallery_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.71
+    },
+    {
+      "test": "environment_lod_test.gd",
+      "passed": false,
+      "reason": "timeout after 180s",
+      "seconds": 180.01
+    },
+    {
+      "test": "military_environment_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 3.62
+    },
+    {
+      "test": "vegetation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 15.69
+    },
+    {
+      "test": "natural_mesh_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.26
+    },
+    {
+      "test": "world_quality_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.73
+    },
+    {
+      "test": "authored_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.96
+    },
+    {
+      "test": "world_presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.35
+    },
+    {
+      "test": "visual_smoke.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.9
+    }
+  ]
+}

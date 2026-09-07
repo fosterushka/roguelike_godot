@@ -1,5 +1,6 @@
 extends RefCounted
 const Primitives = preload("res://presentation/world/world_primitive_catalog.gd")
+const Quality = preload("res://presentation/world/world_quality_models.gd")
 var ctx: RefCounted
 var natural: RefCounted
 var rng: RefCounted
@@ -25,6 +26,11 @@ func _shape(parent: Node3D, kind: String, dimensions: Array, material: String, p
 
 func _box(parent: Node3D, dimensions: Array, material: String, position := Vector3.ZERO, rotation := Vector3.ZERO) -> MeshInstance3D:
 	return _shape(parent, "box", dimensions, material, position, rotation)
+
+func _quality(parent: Node3D, model: String) -> MeshInstance3D:
+	var visual := Quality.create(model)
+	parent.add_child(visual)
+	return visual
 
 func _finish(group: Node3D) -> void:
 	preload("res://presentation/world/structure_batch.gd").compact(group)
@@ -69,8 +75,7 @@ func pumpjack(x: float, z: float, angle: float = 0) -> void:
 	var point: Dictionary = ctx.rotate_offset(x, z, -0.25, 0, angle)
 	var pivot := _group(point.x, point.z, angle)
 	pivot.position.y = 3.3
-	_box(pivot, [4.8, 0.26, 0.32], "iron", Vector3(1.4, 0, 0))
-	_box(pivot, [0.72, 1.5, 0.5], "enemyRed", Vector3(3.58, -0.62, 0))
+	_quality(pivot, "pumpjack_arm")
 	_finish(pivot)
 	ctx.ambient_animators.append({"type": "pumpjack", "object": pivot, "phase": rng.between(0, TAU), "speed": rng.between(0.55, 0.85), "amplitude": rng.between(0.11, 0.2)})
 	var tank: Dictionary = ctx.rotate_offset(x, z, -4, 2.2, angle)
@@ -164,9 +169,8 @@ func satellite_array(x: float, z: float, angle: float = 0) -> void:
 	for index in 3:
 		var point: Dictionary = ctx.rotate_offset(x, z, (index - 1) * 5, rng.between(-2, 2), angle)
 		var group := _group(point.x, point.z, angle + index * 0.35)
-		_shape(group, "cylinder", [0.18, 0.3, 3.4, 8], "iron", Vector3(0, 1.7, 0))
-		_shape(group, "cylinder", [1.65, 1.65, 0.22, 18], "metal", Vector3(0, 3.6, 0), Vector3(PI / 2, 0, rng.between(-0.55, 0.55)))
-		_shape(group, "sphere", [0.2], "gold", Vector3(0, 3.8, 0.6))
+		var dish := _quality(group, "satellite_dish")
+		dish.rotation.z = rng.between(-0.55, 0.55)
 		ctx.groups.append(group)
 	_industrial_details("satellite", x, z, angle)
 
@@ -174,6 +178,11 @@ func _industrial_details(kind: String, x: float, z: float, angle: float) -> void
 	var group := _group(x, z, angle)
 	group.name = "MilitarySiteDetails"
 	group.set_meta("military_detail", true)
+	var quality_model := "detail_" + kind
+	if Quality.has_model(quality_model):
+		_quality(group, quality_model)
+		_finish(group)
+		return
 	var palette = preload("res://presentation/world/military_environment_palette.gd")
 	var iron: Material = palette.material_for("iron")
 	var metal: Material = palette.material_for("metal")
@@ -232,6 +241,11 @@ func _military_details(kind: String, x: float, z: float, angle: float) -> void:
 	var group := _group(x, z, angle)
 	group.name = "MilitarySiteDetails"
 	group.set_meta("military_detail", true)
+	var quality_model := "detail_" + kind
+	if Quality.has_model(quality_model):
+		_quality(group, quality_model)
+		_finish(group)
+		return
 	var height := 4.9 if kind == "watchtower" else 5.8
 	var depth := 1.65 if kind == "watchtower" else 1.9
 	var palette = preload("res://presentation/world/military_environment_palette.gd")

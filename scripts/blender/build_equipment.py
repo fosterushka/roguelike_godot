@@ -7,11 +7,14 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(Path(__file__).parent))
 import build_player
 from pickup_geometry import MeshBuilder
+from equipment_detail import detail
+from equipment_panels import panel
 OUT = ROOT / 'assets/models/equipment'
-TYPES = ['turret','repair_station','ammo_feed','cargo_rack','salvage_arm','fuel_pump','anti_tank_station','anti_air_station','armor_panels','reinforced_hitch', 'akTurret','armor','assaultRifle','bazooka','bumper','counterDroneJammer','flamethrower','grenadeLauncher','mineHacker','minigun','missileRack','radar','railgun','treasury','workshop']
+TYPES = ['turret','repair_station','ammo_feed','cargo_rack','salvage_arm','fuel_pump','anti_tank_station','anti_air_station','reinforced_hitch', 'akTurret','armor','assaultRifle','bazooka','bumper','counterDroneJammer','flamethrower','grenadeLauncher','mineHacker','minigun','missileRack','radar','railgun','treasury','workshop']
+AA_MOUNT_SCALE = 0.88
 GUNS = {'turret','anti_tank_station','anti_air_station','akTurret','assaultRifle','bazooka','flamethrower','grenadeLauncher','minigun','missileRack','railgun'}
 def p(v): return (v[0], -v[2], v[1])
-def box(b, at, size, color='paint'): b.box(p(at), (size[0],size[2],size[1]), color)
+def box(b, at, size, color='paint'): panel(b, p(at), (size[0],size[2],size[1]), color)
 def tube(b, at, radius, length, color='steel', axis=(0,1,0), segments=10, tip=None):
     n=Vector(p(axis)).normalized(); u=n.cross(Vector((1,0,0)) if abs(n.x)<.9 else Vector((0,1,0))).normalized(); v=n.cross(u); c=Vector(p(at))
     rings=[]
@@ -32,7 +35,26 @@ def gun(b,typ):
     tube(b,(0,.30,0),.29,.34,'paint_shadow')
     box(b,(0,.52,0),(.61,.40,.57),'paint')
     box(b,(0,.745,-.06),(.46,.06,.42),'paint_light')
-    count=2 if typ=='anti_air_station' else 1
+    if typ=='bazooka':
+        # Single recoilless launcher: long fat tube, open rear bell, shoulder guard.
+        tube(b,(0,.68,.50),.23,1.75,'paint',(0,0,1),12)
+        for z in [-.39,1.40]:
+            tube(b,(0,.68,z),.29,.16,'steel',(0,0,1),12)
+            tube(b,(0,.68,z+(.085 if z>0 else -.085)),.205,.012,'dark',(0,0,1),12)
+        box(b,(0,.40,.22),(.56,.12,.75),'paint_shadow')
+        box(b,(-.30,.93,.35),(.13,.12,.48),'trim')
+        return
+    if typ=='anti_air_station':
+        # Elevated twin autocannon with separated barrels and rear tracking radar.
+        box(b,(0,.73,0),(.95,.32,.68),'paint_shadow')
+        for x in [-.38,.38]:
+            tube(b,(x,.88,.93),.065,1.62,'trim',(0,.22,1),10)
+            tube(b,(x,1.06,1.73),.10,.18,'steel',(0,.22,1),10)
+            crate(b,(x*1.65,.51,-.08),(.30,.45,.63),'bed')
+        tube(b,(0,1.06,-.39),.035,.70,'steel')
+        box(b,(0,1.42,-.39),(.78,.36,.09),'glass')
+        return
+    count=1
     r=.072; length=1.13
     if typ in ['anti_tank_station','railgun']: r=.095; length=1.52
     if typ in ['bazooka','grenadeLauncher']: r=.16; length=.97
@@ -55,7 +77,7 @@ def gun(b,typ):
         for x in [-.24,.24]: tube(b,(x,.52,-.30),.13,.52,'red')
     else: crate(b,(-.40,.42,-.08),(.23,.33,.42),'bed')
     for x in [-.21,.21]: box(b,(x,.75,.10),(.025,.13,.055),'trim')
-def build(typ):
+def _build(typ):
     base, upper=MeshBuilder(),MeshBuilder()
     if typ=='bumper':
         box(base,(0,.20,0),(3.32,.32,.28),'paint_shadow')
@@ -69,6 +91,8 @@ def build(typ):
     if typ in GUNS:
         tube(base,(0,.16,0),.36,.10,'steel',segments=12)
         gun(upper,typ)
+        if typ == 'anti_air_station':
+            upper.vertices = [tuple(value * AA_MOUNT_SCALE for value in vertex) for vertex in upper.vertices]
     elif typ in ['cargo_rack','ammo_feed','treasury']:
         crate(base,(0,.44,0),(.75,.61,.70),'accent' if typ=='ammo_feed' else 'paint')
         if typ=='cargo_rack':
@@ -98,7 +122,7 @@ def build(typ):
         for x in [-.16,.16]:
             beam(base,(0,.99,.58),(x,.66,.61),.045,'steel')
             beam(base,(x,.66,.61),(x*.3,.55,.63),.045,'trim')
-    elif typ in ['armor','armor_panels']:
+    elif typ == 'armor':
         for z in [-.22,0,.22]:
             box(base,(0,.46,z),(.75,.64,.09),'paint')
             box(base,(0,.79,z),(.76,.045,.10),'steel')
@@ -123,8 +147,14 @@ def build(typ):
         for x in [-.10,0,.10]: tube(base,(x,.24,.30),.018,.025,'lamp',(0,0,1),6)
     return base,upper
 
+def build(typ):
+    base, upper = _build(typ)
+    detail(typ, base, upper, box, tube, beam)
+    return base, upper
+
 def main():
     OUT.mkdir(parents=True,exist_ok=True)
+    bpy.context.preferences.filepaths.save_version=0
     bpy.ops.object.select_all(action='SELECT'); bpy.ops.object.delete(use_global=False)
     build_player.OUT=OUT
     material=build_player.palette_material(); material.name='Military_Equipment_Palette'

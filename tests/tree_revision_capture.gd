@@ -18,4 +18,7 @@ func capture() -> void:
 	for frame in 8: await process_frame
 	var status := root.get_texture().get_image().save_png("res://docs/validation/trees-rebuilt/trees.png")
 	print("ENVIRONMENT_LIBRARY_CAPTURE status=", status)
+	for child in root.get_children(): child.queue_free()
+	await process_frame
+	await process_frame
 	quit()

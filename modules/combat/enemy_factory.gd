@@ -1,6 +1,7 @@
 extends RefCounted
 
 const Catalog = preload("res://modules/combat/enemy_catalog.gd")
+const BaseGeometry = preload("res://modules/world/activities/base_geometry_rules.gd")
 const TYPES := ["soldier", "drone", "bike", "buggy", "keep", "garrison", "priorityVehicle"]
 const REQUIRED := ["hp", "speed", "damage", "radius", "preferred", "range", "interval"]
 
@@ -22,6 +23,11 @@ static func from_definition(kind: String, definition: Dictionary, id: int, posit
 		data.flight_height = data.height
 		data.dodge_seed = random.randi()
 		data.dodge_sign = -1.0 if random.randf() < 0.5 else 1.0
+	if data.type == "garrison":
+		var profile := BaseGeometry.profile(int(data.tier))
+		data.height = profile.height
+		data.hitbox_size = profile.hitbox_size
+		data.door_distance = profile.door_distance
 	if recipe.has("speed_range"):
 		var limits: Array = recipe.speed_range
 		data.speed = random.randf_range(float(limits[0]), float(limits[1])) * float(recipe.get("speed_multiplier", 1.0))

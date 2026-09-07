@@ -2,6 +2,8 @@ extends Node3D
 const Policy = preload("res://modules/world/destruction_policy.gd")
 const Ground = preload("res://modules/caravan/terrain_surface.gd")
 const LIMIT := 48
+const DEBRIS_LIFETIME := 14.0
+const TreeDebris = preload("res://presentation/world/tree_debris_motion.gd")
 var arena: Node3D
 var moving: Dictionary = {}
 var stumps: Dictionary = {}
@@ -55,6 +57,14 @@ func on_event(event: Dictionary) -> void:
 		"prop_lifted": _begin(id, false, Vector3.ZERO)
 		"prop_landed": _remove(id)
 		"prop_destroyed":
+			if event.get("cause", "") == "landing" and str(event.get("prop_kind", "")) in Policy.TREE_KINDS and moving.has(id):
+				var debris: Dictionary = moving[id]
+				debris.falling = true
+				debris.tumbling = true
+				debris.age = 0.0
+				debris.base = event.position
+				debris.motion = TreeDebris.create(debris.node, event.position, debris.get("flight_velocity", Vector3(3, -float(event.get("impact_speed", 4)), 1)), float(debris.get("flight_spin", 2.0)))
+				return
 			_remove(id)
 			_remove_stump(id)
 			if event.get("tree_fall", false):
@@ -93,11 +103,19 @@ func step(delta: float, flights: Dictionary) -> void:
 		var entry: Dictionary = moving[id]
 		if entry.falling:
 			entry.age += delta
+			if entry.get("tumbling", false):
+				if entry.age >= DEBRIS_LIFETIME:
+					_remove(id)
+				else:
+					TreeDebris.step(entry.motion, delta, entry.node)
+				continue
 			var progress := clampf(float(entry.age) / float(Policy.settings().tree_fall_seconds), 0.0, 1.0)
 			entry.node.basis = Basis(entry.axis, progress * progress * PI * 0.49)
 			if entry.age >= 9.0:
 				_remove(id)
 		elif flights.has(id):
+			entry.flight_velocity = flights[id].get("velocity", Vector3(3, -4, 1))
+			entry.flight_spin = flights[id].get("spin", 2.0)
 			entry.node.position = flights[id].position
 			entry.node.basis = Basis(Vector3.BACK, flights[id].roll)
 
