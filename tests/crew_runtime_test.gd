@@ -41,12 +41,12 @@ func _run() -> void:
 	root.add_child(runtime)
 	runtime.setup(expedition, combat, world, vehicle, loot)
 	runtime.reset(713)
-	check(runtime.recruits.size() == 7 and runtime.targets().size() == 7, "Seven neutral roles are targetable from start")
+	check(runtime.recruits.size() == 8 and runtime.targets().size() == 8, "Eight neutral roles are targetable from start")
 	var positions: Array = runtime.recruits.map(func(person): return person.position)
 	runtime.reset(713)
 	check(runtime.recruits.map(func(person): return person.position) == positions, "Recruit placement deterministic by seed")
 	check(runtime.recruits.all(func(person): return world.props.is_clear(person.position, 1.2)), "All recruits spawn clear of solid buildings")
-	check(runtime.view.views.size() == 31 and runtime.view.views[0].root.visible, "Reusable human views exist before rescue")
+	check(runtime.view.views.size() == 32 and runtime.view.views[0].root.visible, "Reusable human views exist before rescue")
 	var before_warmup := runtime.recruits.duplicate(true)
 	var before_transform: Transform3D = runtime.view.views[0].root.transform
 	runtime.set_warmup(true, Vector3(100, 10, 100))
@@ -56,7 +56,9 @@ func _run() -> void:
 	var recruit: Dictionary = runtime.recruits[0]
 	combat.model.player.position = recruit.position
 	check(runtime.rescue_nearest() and expedition.caravan.crew.size() == 1, "Nearby stationary rescue boards real recruit")
-	check(runtime.targets().size() == 6 and not runtime.rescue_nearest(), "Boarded human excluded from foot targets and cannot be duplicated")
+	for frame in 60:
+		runtime.step(0.05)
+	check(runtime.targets().size() == 7 and not runtime.rescue_nearest(), "Boarded human excluded from foot targets and cannot be duplicated")
 	var neutral: Dictionary = runtime.recruits[0]
 	check(runtime.damage_target(neutral.id, 9999) and neutral.dead and not runtime.damage_target(neutral.id, 1), "Neutral can die once from enemy damage")
 	check(not combat.model.enemies.has(neutral), "Neutral never enters player auto-target enemy list")
@@ -74,7 +76,7 @@ func _run() -> void:
 	loot.spawn_items("wreck-once", Vector3(29, 0, 0), {"relic": 1})
 	loot.spawn_items("wreck-once", Vector3(29, 0, 0), {"relic": 1})
 	check(loot.crates.size() == 1 and loot.crates[0].has("id"), "Wagon cargo drops receive stable IDs and duplicate event is ignored")
-	runtime.step(0.5)
+	runtime.step(2.0)
 	check(scavenger.boarded and expedition.cargo_inventory().is_empty(), "Collectors remain aboard until explicit command")
 	runtime.toggle_collection()
 	for index in 150:
@@ -129,7 +131,7 @@ func _run() -> void:
 	world.tornado.intensity = 0
 	for index in 180:
 		runtime.step(0.05)
-	check(not air_person.get("airborne", false) and air_person.hp < air_person.max_hp, "Tornado throws actor and applies landing damage")
+	check(not air_person.get("airborne", false) and air_person.state == "stranded" and air_person.hp < air_person.max_hp, "Tornado throws actor and applies landing damage")
 	var health: float = air_person.hp
 	runtime.step(0.2)
 	check(air_person.hp == health, "Landing damage cannot repeat")

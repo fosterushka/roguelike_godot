@@ -6,6 +6,7 @@ const CaravanPanel = preload("res://presentation/ui/caravan_panel.gd")
 const Styles = preload("res://presentation/ui/ui_styles.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 var game: Node3D
+var encounter_panel: ColorRect
 var return_screen := "menu"
 
 func setup(owner: Node3D) -> void:
@@ -17,6 +18,10 @@ func setup(owner: Node3D) -> void:
 	game.add_child(game.crew_runtime)
 	game.crew_runtime.setup(game.expedition, game.combat, game.world, game.vehicle, game.raid_loot)
 	game.caravan.crew_runtime = game.crew_runtime
+	encounter_panel = preload("res://presentation/ui/crew_encounter_panel.gd").new()
+	game.hud.get_node("Screen").add_child(encounter_panel)
+	encounter_panel.decided.connect(decide_encounter)
+	game.crew_runtime.encounter_requested.connect(func(person: Dictionary): _open_encounter.call_deferred(person))
 	game.caravan.caravan_event.connect(_on_event)
 	game.caravan_panel = CaravanPanel.new()
 	game.hud.get_node("Screen").add_child(game.caravan_panel)
@@ -45,6 +50,11 @@ static func words(ru: String, en: String) -> String:
 func open() -> void:
 	if game.screen_state not in ["menu", "running", "pause", "armory", "result", "expedition"]:
 		return
+	if not game.expedition.active:
+		if game.screen_state != "expedition":
+			game._open_expedition()
+		game.hideout_hub.select_tab("garage")
+		return
 	return_screen = game.screen_state
 	game.hud.hide_menus()
 	game._set_screen("garage")
@@ -56,6 +66,9 @@ func open_trailers() -> void:
 	open()
 
 func close() -> void:
+	if not game.expedition.active and game.screen_state == "expedition":
+		game._close_expedition()
+		return
 	if return_screen == "menu":
 		game.show_start_menu()
 	elif return_screen == "expedition":
@@ -63,7 +76,7 @@ func close() -> void:
 		if game.expedition.active:
 			game.expedition_panel.show_state(game.expedition.snapshot(), "backpack")
 		else:
-			game.hideout_hub.attach(game.hud.armory, game.expedition_panel)
+			game.hideout_hub.attach(game.hud.armory, game.expedition_panel, game.caravan_panel)
 			game.hideout_hub.select_tab(game.hideout_hub.tab)
 	elif return_screen == "armory":
 		game._set_screen("armory")
@@ -79,6 +92,8 @@ func close() -> void:
 
 func refresh() -> void:
 	var state: Dictionary = game.expedition.snapshot()
+	if game.hideout_hub.visible:
+		game.hideout_hub.update_account(state)
 	var convoy: Dictionary = game.expedition.caravan.snapshot()
 	convoy.attachment_rows = {}
 	if not convoy.active:
@@ -87,7 +102,7 @@ func refresh() -> void:
 	game.caravan_panel.show_state(convoy, int(state.credits), int(state.stash.get("scrap", 0)))
 
 func _action(kind: String, id: String, target: String) -> void:
-	if game.screen_state != "garage":
+	if game.screen_state != "garage" and not (game.screen_state == "expedition" and game.hideout_hub.tab == "garage"):
 		return
 	var roster: RefCounted = game.expedition.caravan
 	match kind:
@@ -113,6 +128,7 @@ func _action(kind: String, id: String, target: String) -> void:
 				roster.remove_attachment(id, int(target))
 		"select_wagon": roster.select_wagon(id, target == "1")
 		"select_crew": roster.select_crew(id, target == "1")
+		"train_crew": roster.train_crew(id, target)
 		"assign_crew":
 			var parts := target.split(":")
 			if parts.size() == 2 and parts[1].is_valid_int():
@@ -157,9 +173,35 @@ func _on_event(event: Dictionary) -> void:
 		if is_instance_valid(game.combat_view):
 			game.combat_view.on_event({"kind": "death", "type": "buggy", "position": event.position, "radius": 2.2, "cause": "wagon_destroyed"})
 		game.hud.show_world_banner(words("ПРИЦЕП УНИЧТОЖЕН", "WAGON DESTROYED"), words("Хвост отсоединён. Выжившие прицепы можно вернуть.", "Tail detached. Surviving wagons can be recovered."))
-	elif event.kind == "crew_rescued":
-		game.hud.show_world_banner(words("ЧЕЛОВЕК СПАСЁН", "SURVIVOR RESCUED"), words("На борту. Назначения экипажа: J", "On board. Crew assignments: J"))
 	elif event.kind == "crew_died":
 		game.hud.show_world_banner(words("ПОТЕРЯ ЭКИПАЖА", "CREW LOST"), words("Сотрудник погиб.", "A crew member has died."))
 	elif event.kind == "wagon_detached":
 		game.hud.show_world_banner(words("СЦЕПКА РАЗОМКНУТА", "WAGON DETACHED"), words("Остановитесь рядом с прицепом и нажмите E.", "Stop near the wagon and press E."))
+
+func _open_encounter(person: Dictionary) -> void:
+	if game.screen_state != "running" or game.crew_runtime.pending != person or person.get("dead", false):
+		game.crew_runtime.cancel_encounter()
+		return
+	game._set_screen("encounter")
+	for action in ["drive_forward", "drive_backward", "drive_left", "drive_right", "handbrake"]:
+		Input.action_release(action)
+	game.vehicle.motion.speed = 0
+	game.vehicle.motion.throttle = 0
+	game.vehicle.motion.yaw_velocity = 0
+	game.vehicle.velocity = Vector3.ZERO
+	game.combat.model.player.speed = 0
+	encounter_panel.show_person(person, game.expedition.caravan)
+
+func decide_encounter(action: String) -> void:
+	if game.screen_state != "encounter":
+		return
+	if action == "hire":
+		if not game.crew_runtime.accept_encounter():
+			encounter_panel.show_error()
+			return
+	elif action == "decline":
+		game.crew_runtime.decline_encounter()
+	else:
+		game.crew_runtime.cancel_encounter()
+	encounter_panel.hide()
+	game._set_screen("running")

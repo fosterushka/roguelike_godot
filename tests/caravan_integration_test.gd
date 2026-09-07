@@ -43,7 +43,7 @@ func _run() -> void:
 	check(game.screen_state == "menu" and roster.data().wagons.is_empty(), "Isolated Main profile starts without free trailers")
 	game.progression.profile.expedition.credits = 3000
 	game._menu_action("garage", "")
-	check(game.screen_state == "garage" and game.caravan_panel.visible, "Real menu action opens garage panel")
+	check(game.screen_state == "expedition" and game.hideout_hub.tab == "garage" and game.caravan_panel.visible, "Real menu action opens garage panel")
 	for type: String in ["cargo", "repair", "weapon"]:
 		game.caravan_panel.action_requested.emit("buy_wagon", type, "")
 	var ids: Array = roster.data().selected_wagon_ids.duplicate()
@@ -58,32 +58,30 @@ func _run() -> void:
 	await _start(game)
 	check(roster.wagons.size() == 3 and game.combat.model.player.carriers.size() == 3, "Main departure hydrates selected wagon instances")
 	check(Store.new(path).load_profile().expedition.caravan.wagons.is_empty(), "Deployed wagons removed from saved garage atomically")
-	check(game.crew_runtime.recruits.size() == 7, "Main creates all seven field recruit roles")
+	check(game.crew_runtime.recruits.size() == 8, "Main creates specialists and an untrained recruit")
 	var mechanic: Dictionary = game.crew_runtime.recruits[0]
 	_place(game, mechanic.position)
 	_key(game, KEY_E)
-	check(roster.crew.size() == 1 and mechanic.boarded, "Actual E input rescues and boards starter mechanic")
+	await process_frame
+	check(game.screen_state == "encounter" and roster.crew.is_empty(), "One E opens dialogue without silently hiring")
+	game.caravan_flow.encounter_panel.hire.pressed.emit()
+	for frame in 100:
+		game.crew_runtime.step(0.05)
+	check(roster.crew.size() == 1 and mechanic.boarded, "Dialogue hire walks and boards starter mechanic")
 	var crew_id: String = mechanic.id
 	_key(game, KEY_J)
 	game.caravan_panel.tab = "crew"
 	game.caravan_panel._refresh()
 	var selectors: Array = game.caravan_panel.find_children("*", "OptionButton", true, false)
-	check(selectors.size() == 1 and not selectors[0].disabled, "Live J crew menu exposes usable assignment control")
-	if selectors.size() == 1:
-		selectors[0].select(2)
-		selectors[0].item_selected.emit(2)
-		check(mechanic.carrier_id == ids[0], "Actual crew selector assigns rescued mechanic to first wagon")
-		selectors = game.caravan_panel.find_children("*", "OptionButton", true, false)
-		selectors[0].select(0)
-		selectors[0].item_selected.emit(0)
-		check(mechanic.carrier_id == "crawler", "Crew selector returns mechanic to pickup without duplicating crew")
+	check(selectors.is_empty(), "Crew menu no longer exposes manual slot selectors")
+	check(mechanic.carrier_id == ids[1], "Mechanic is automatically assigned to the repair wagon")
+
 	_key(game, KEY_J)
-	game.vehicle.health -= 10
-	game.combat._sync_vehicle_to_model()
-	var health_before: float = game.vehicle.health
+	roster.wagons[1].hp -= 10
+	var health_before: float = roster.wagons[1].hp
 	game.session_flow.advance(0.5)
 	game.combat._physics_process(0.5)
-	check(game.vehicle.health > health_before, "Main support step applies real mechanic repair back to vehicle")
+	check(roster.wagons[1].hp > health_before, "Main support step applies real mechanic repair back to vehicle")
 	game.combat.model.player.coins = 1000
 	game.combat.model.player.pending_upgrades = 0
 	game._toggle_armory()
@@ -96,6 +94,9 @@ func _run() -> void:
 	game._resume()
 	check(game.expedition.collect_loot("scrap", 20), "Raid cargo fills pickup and cargo wagon")
 	var tail: Dictionary = roster.find_wagon(ids[2])
+	mechanic.boarded = false
+	mechanic.position = game.combat.model.player.position
+	mechanic.state = "returning"
 	check(game.caravan.damage_target(ids[1], 99999, "test_explosion"), "Real caravan damage route destroys middle wagon")
 	check(roster.find_wagon(ids[1]).dead and not tail.attached, "Middle destruction leaves surviving tail detached")
 	check(modules.size() == 1 and modules[0].get("disabled", false), "Detached wagon weapon immediately disabled in player build")
@@ -104,6 +105,11 @@ func _run() -> void:
 	_key(game, KEY_E)
 	game.caravan.step(0.01)
 	check(tail.attached and not modules[0].get("disabled", true), "Actual E recouples tail and restores existing weapon")
+	for frame in 240:
+		game.crew_runtime.step(0.05)
+		if mechanic.boarded:
+			break
+	check(mechanic.boarded and mechanic.carrier_id == "crawler", "Survivor outside a destroyed wagon automatically finds another seat")
 	var site: Dictionary = game.world.activities.get_extraction_state().sites[0]
 	_place(game, site.position)
 	_key(game, KEY_E)

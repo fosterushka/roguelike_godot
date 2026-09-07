@@ -109,7 +109,7 @@ func _test_extraction() -> void:
 	check(victory.metrics.crew_extracted == 3 and victory.metrics.wagons_extracted == 1, "Boss victory counts the same surviving manifest that the garage receives")
 
 func _test_persistence() -> void:
-	var path := "/private/tmp/crew-missions-%d.json" % Time.get_ticks_usec()
+	var path := "/private/tmp/crew-missions-%d-%d.json" % [OS.get_process_id(), Time.get_ticks_usec()]
 	var model := Model.new()
 	var owner := preload("res://modules/progression/progression.gd").new(path)
 	owner.setup(model)
@@ -130,6 +130,8 @@ func _test_persistence() -> void:
 	check(raid.caravan.rescue(rescued), "Second raid rescues a distinct real mechanic")
 	for event: Dictionary in raid.caravan.drain_events():
 		raid.record_event(event)
+	rescued.boarded = true # Begin the work interval after boarding.
+	rescued.recruit_boarding = false
 	model.player.hp = 100.0
 	var service := Service.new()
 	service.step(60.1, model.player, raid.caravan.wagons, raid.caravan.crew, [], [])

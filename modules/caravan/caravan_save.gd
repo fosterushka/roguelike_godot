@@ -65,6 +65,7 @@ static func normalize(value: Variant) -> Dictionary:
 			if not valid_id(id, "crew") or not raw is Dictionary or not Crew.ROLES.has(raw.get("role", "")):
 				continue
 			var person := CrewFactory.create(raw.role, id)
+			person.identity = clampi(int(number(raw.get("identity", person.identity), 7, person.identity)), 0, 7)
 			person.hp = number(raw.get("hp", person.max_hp), person.max_hp, person.max_hp)
 			if person.hp <= 0:
 				continue

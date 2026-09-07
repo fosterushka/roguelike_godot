@@ -3,6 +3,8 @@ const Catalog = preload("res://modules/caravan/wagon_catalog.gd")
 const Factory = preload("res://modules/caravan/wagon_factory.gd")
 const Save = preload("res://modules/caravan/caravan_save.gd")
 const CrewFactory = preload("res://modules/crew/crew_factory.gd")
+const Assignment = preload("res://modules/crew/crew_assignment.gd")
+const Encounter = preload("res://modules/crew/crew_encounter.gd")
 const CrewCatalog = preload("res://modules/crew/crew_catalog.gd")
 var progression: RefCounted
 var active := false
@@ -54,6 +56,22 @@ func select_wagon(id: String, selected: bool = true) -> bool:
 		data().selected_wagon_ids.append(id)
 	return _commit(before)
 
+
+func train_crew(id: String, role: String) -> bool:
+	if active or locked or role == "civilian" or not CrewCatalog.ROLES.has(role):
+		return false
+	var saved: Dictionary = data().crew.get(id, {})
+	if saved.is_empty() or saved.get("role", "") != "civilian" or int(progression.profile.expedition.stash.get("scrap", 0)) < CrewCatalog.TRAINING_COST:
+		return false
+	var before: Dictionary = progression.profile.expedition.duplicate(true)
+	var person := CrewFactory.restore(saved)
+	var ratio := float(person.hp) / float(person.max_hp)
+	person.role = role
+	person.hp = CrewCatalog.ROLES[role].hp * ratio
+	data().crew[id] = CrewFactory.save(person)
+	progression.profile.expedition.stash.scrap -= CrewCatalog.TRAINING_COST
+	return _commit(before)
+
 func select_crew(id: String, selected: bool = true) -> bool:
 	if active or not data().crew.has(id):
 		return false
@@ -69,6 +87,8 @@ func assign(id: String, carrier_id: String, seat: int) -> bool:
 	var person: Dictionary = find_crew(id) if active else data().crew.get(id, {})
 	var carrier: Dictionary = find_wagon(carrier_id) if active else data().wagons.get(carrier_id, {})
 	if person.is_empty() or (carrier_id != "crawler" and (carrier.is_empty() or carrier.get("dead", false) or not carrier.get("attached", true))):
+		return false
+	if person.get("role", "") == "civilian" and (carrier_id == "crawler" or carrier.get("type", "") != "cargo"):
 		return false
 	var people: Array = crew if active else data().crew.values()
 	for other: Dictionary in people:
@@ -138,23 +158,24 @@ func stage_begin() -> Dictionary:
 			staged.wagons.append(Factory.create(data().wagons[id].type, id, data().wagons[id]))
 			data().wagons.erase(id)
 	data().selected_wagon_ids.clear()
-	var occupied := {}
-	var allowed := {"crawler": true}
-	for wagon: Dictionary in staged.wagons:
-		allowed[wagon.id] = true
+	var selected_people: Array = []
+	var budget := int(progression.profile.expedition.stash.get("scrap", 0))
+	for id: String in data().selected_crew_ids:
+		if data().crew.has(id):
+			var person := CrewFactory.restore(data().crew[id])
+			selected_people.append(person)
+	var assignments := Assignment.plan(selected_people, staged.wagons, budget)
+
 	for id: String in data().selected_crew_ids.duplicate():
 		var saved: Dictionary = data().crew.get(id, {})
 		if saved.is_empty():
 			continue
 		var person := CrewFactory.restore(saved)
-		var carrier_id := str(person.carrier_id)
-		if not allowed.has(carrier_id):
+		if not assignments.has(id):
+			staged.unpaid.append(id)
 			continue
-		var seat := int(person.seat)
-		if seat < 0 or occupied.has(carrier_id + ":" + str(seat)):
-			seat = 0 if not occupied.has(carrier_id + ":0") else 1 if not occupied.has(carrier_id + ":1") else -1
-		if seat < 0:
-			continue
+		var carrier_id: String = assignments[id].carrier_id
+		var seat: int = assignments[id].seat
 		if int(progression.profile.expedition.stash.get("scrap", 0)) < int(person.wage):
 			staged.unpaid.append(id)
 			continue
@@ -162,7 +183,7 @@ func stage_begin() -> Dictionary:
 		if progression.profile.expedition.stash.scrap == 0:
 			progression.profile.expedition.stash.erase("scrap")
 		person.seat = seat
-		occupied[carrier_id + ":" + str(seat)] = true
+		person.carrier_id = carrier_id
 		staged.crew.append(person)
 		data().crew.erase(id)
 		data().selected_crew_ids.erase(id)
@@ -255,9 +276,9 @@ func rescue(npc: Dictionary, carrier_id: String = "") -> bool:
 	if not active or locked or npc.get("faction", "") != "neutral" or npc.get("dead", false) or float(npc.get("hp", 0)) <= 0 or not CrewCatalog.ROLES.has(npc.get("role", "")) or _next_rescue_id >= _rescue_id_limit or data().crew.size() + crew.size() >= Catalog.MAX_CREW:
 		return false
 	var source := str(npc.get("id", ""))
-	if source.is_empty() or _rescued_sources.has(source) or absf(float(_player.get("speed", 0))) > 1.5 or npc.position.distance_to(_player.get("position", Vector3.ZERO)) > 6.0:
+	if source.is_empty() or _rescued_sources.has(source) or Encounter.distance(npc, _player, wagons) > Encounter.RANGE or npc.get("airborne", false) or float(npc.get("tornado_recovery", 0)) > 0:
 		return false
-	var seat := free_seat(carrier_id)
+	var seat := Encounter.seat(self, str(npc.role)) if carrier_id.is_empty() else free_seat(carrier_id)
 	if seat.is_empty():
 		return false
 	_rescued_sources[source] = true
@@ -266,8 +287,10 @@ func rescue(npc: Dictionary, carrier_id: String = "") -> bool:
 	_next_rescue_id += 1
 	npc.faction = "ally"
 	npc.rescued = true
-	npc.boarded = true
-	npc.state = "boarded"
+	npc.boarded = false
+	npc.state = "approaching"
+	npc.recruit_boarding = true
+	npc.boarding_progress = 0.0
 	npc.carrier_id = seat.carrier_id
 	npc.seat = seat.seat
 	crew.append(npc)
@@ -331,7 +354,17 @@ func cargo_containers() -> Array[Dictionary]:
 	return result
 
 func snapshot() -> Dictionary:
-	return {"active": active, "locked": locked, "wagons": wagons.duplicate(true) if active else data().wagons.values().duplicate(true), "crew": crew.duplicate(true) if active else data().crew.values().duplicate(true), "selected_wagon_ids": data().selected_wagon_ids.duplicate(), "selected_crew_ids": data().selected_crew_ids.duplicate(), "types": Catalog.TYPES.duplicate(true), "attachments": Catalog.ATTACHMENTS.duplicate(true), "roles": CrewCatalog.ROLES.duplicate(true), "max_wagons": Catalog.MAX_WAGONS, "wage_currency": "stash_scrap", "notice": notice, "player_position": _player.get("position", Vector3.ZERO) if active else Vector3.ZERO, "player_speed": float(_player.get("speed", 0)) if active else 0.0}
+	var people: Array = crew.duplicate(true) if active else data().crew.values().duplicate(true)
+	if not active:
+		var selected: Array = people.filter(func(person): return data().selected_crew_ids.has(person.id))
+		for person: Dictionary in selected:
+			person.wage = CrewCatalog.ROLES[person.role].wage
+		var selected_wagons: Array = data().wagons.values().filter(func(wagon): return data().selected_wagon_ids.has(wagon.id))
+		var assignments := Assignment.plan(selected, selected_wagons, int(progression.profile.expedition.stash.get("scrap", 0)))
+		for person: Dictionary in people:
+			person.carrier_id = assignments.get(person.id, {}).get("carrier_id", "")
+			person.seat = assignments.get(person.id, {}).get("seat", -1)
+	return {"active": active, "locked": locked, "wagons": wagons.duplicate(true) if active else data().wagons.values().duplicate(true), "crew": people, "selected_wagon_ids": data().selected_wagon_ids.duplicate(), "selected_crew_ids": data().selected_crew_ids.duplicate(), "types": Catalog.TYPES.duplicate(true), "attachments": Catalog.ATTACHMENTS.duplicate(true), "roles": CrewCatalog.ROLES.duplicate(true), "max_wagons": Catalog.MAX_WAGONS, "wage_currency": "stash_scrap", "notice": notice, "player_position": _player.get("position", Vector3.ZERO) if active else Vector3.ZERO, "player_speed": float(_player.get("speed", 0)) if active else 0.0}
 
 func drain_events() -> Array[Dictionary]:
 	var result := events.duplicate(true)

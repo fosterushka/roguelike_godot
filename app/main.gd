@@ -199,6 +199,11 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if not ready_to_drive or screen_state in ["countdown", "death"] or (event is InputEventKey and event.echo):
 		return
+	if screen_state == "encounter":
+		if event.is_action_pressed("pause_game"):
+			caravan_flow.decide_encounter("later")
+			get_viewport().set_input_as_handled()
+		return
 	if screen_state == "case_opening":
 		if event.is_action_pressed("pause_game") or event.is_action_pressed("ui_accept"):
 			case_flow.panel.activate()
@@ -228,13 +233,15 @@ func _input(event: InputEvent) -> void:
 	elif event.is_action_pressed("armory"):
 		_toggle_armory()
 	elif event.is_action_pressed("crew_menu"):
-		if screen_state == "garage":
+		if screen_state == "expedition" and hideout_hub.tab == "garage":
+			_close_expedition()
+		elif screen_state == "garage":
 			_close_caravan()
 		else:
 			_open_caravan()
 	elif screen_state == "running":
 		if event.is_action_pressed("interact"):
-			if crew_runtime.rescue_nearest() or _recouple_nearest():
+			if crew_runtime.interact() or _recouple_nearest():
 				combat.model.player.interaction_claimed = true
 			elif world.has_method("interact"):
 				world.interact()
@@ -352,6 +359,10 @@ func _set_screen(value: String) -> void:
 	if is_instance_valid(hideout_hub) and hideout_hub.visible and value != "expedition":
 		hideout_hub.detach()
 	screen_state = value
+	if is_instance_valid(caravan_flow.encounter_panel) and value != "encounter":
+		caravan_flow.encounter_panel.hide()
+		if is_instance_valid(crew_runtime):
+			crew_runtime.cancel_encounter()
 	if value in ["loading", "menu", "result", "death"]:
 		case_flow.reset()
 	if value not in ["running", "countdown"]:
@@ -366,7 +377,7 @@ func _set_screen(value: String) -> void:
 	hud.touch_controls.set_enabled(value == "running")
 	var running := value == "running"
 	get_tree().paused = not running and value != "countdown"
-	if value in ["pause", "armory", "choice", "expedition", "garage", "case_opening", "options"]:
+	if value in ["pause", "armory", "choice", "expedition", "garage", "case_opening", "options", "encounter"]:
 		session_flow.clock.pause()
 	elif value == "running":
 		session_flow.clock.resume()
@@ -655,7 +666,9 @@ func _touch_command(command: String) -> void:
 				combat.focus_next()
 		"ability": combat.activate_ability(selected_ability)
 		"select": selected_ability = (selected_ability + 1) % 3
-		"interact": world.interact()
+		"interact":
+			if not crew_runtime.interact() and not _recouple_nearest():
+				world.interact()
 
 func _select_ability(slot: int) -> void:
 	if screen_state == "running" and slot in [0, 1, 2]:
@@ -774,13 +787,15 @@ func _open_expedition() -> void:
 	if expedition.active:
 		expedition_panel.show_state(expedition.snapshot(), "backpack")
 	else:
-		hideout_hub.attach(hud.armory, expedition_panel)
+		hideout_hub.attach(hud.armory, expedition_panel, caravan_panel)
 		hideout_hub.select_tab("armory")
 
 func _select_hideout_tab(tab: String) -> void:
 	hideout_hub.update_account(expedition.snapshot())
 	if tab == "armory":
 		_show_armory()
+	elif tab == "garage":
+		caravan_flow.refresh()
 	else:
 		expedition_panel.show_state(expedition.snapshot(), tab)
 

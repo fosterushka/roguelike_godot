@@ -21,7 +21,7 @@ func _run() -> void:
 		check(wagon.name == "SteeringWheelTrailer" and str(wagon.get_meta("wagon_type")) == type, "Wagon factory preserves runtime identity: " + type)
 		check(str(wagon.get_meta("model_path", "")) == "res://assets/vehicles/military_wagon_%s.glb" % type and wagon.get_meta("model", null) != null, "Wagon uses its authored GLB adapter: " + type)
 		var wagon_bounds := _bounds(wagon)
-		check(absf(wagon_bounds.position.y) < 0.015 and wagon_bounds.end.y < 2.6 and wagon_bounds.size.x > 2.8 and wagon_bounds.size.z > 3.2, "Wagon body is ground-aligned and keeps its low, wide deck proportions: " + type)
+		check(absf(wagon_bounds.position.y) < 0.015 and wagon_bounds.end.y < 4.0 and wagon_bounds.size.x > 2.8 and wagon_bounds.size.z > 3.2, "Wagon body is ground-aligned and keeps its chassis footprint with role-specific upper bodywork: " + type)
 		check(wagon.get_meta("wheels", []).size() == 4 and wagon.get_meta("springs", []).size() == 4, "Wagon retains four animated terrain-contact wheels: " + type)
 		var drawbar := wagon.get_meta("drawbar") as Node3D
 		var drawbar_valid := drawbar != null and drawbar.name.begins_with("SteeringDrawbar")

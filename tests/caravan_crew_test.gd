@@ -46,7 +46,9 @@ func _run() -> void:
 	var npc := CrewFactory.create_neutral("mechanic", "stranded-one", Vector3.ZERO)
 	check(roster.rescue(npc) and not roster.rescue(npc), "Neutral mechanic can be rescued once and boarded without first-raid wage")
 	var crew_id: String = npc.id
-	check(npc.faction == "ally" and npc.boarded and crew_id.begins_with("crew-"), "Rescue creates a permanent allied identity")
+	check(npc.faction == "ally" and not npc.boarded and npc.state == "approaching" and crew_id.begins_with("crew-"), "Rescue creates a permanent allied identity")
+	npc.boarded = true # Completed boarding fixture; runtime movement is tested separately.
+	npc.recruit_boarding = false
 	var far_npc := CrewFactory.create_neutral("shooter", "far", Vector3(90, 0, 0))
 	check(not roster.rescue(far_npc), "Remote rescue is rejected")
 	model.player.modules.append({"type": "bazooka", "level": 2, "mount": {"carrierId": ids[2], "slot": 0}})
@@ -85,6 +87,8 @@ func _run() -> void:
 	expedition.begin_run(model.player)
 	var recruit := CrewFactory.create_neutral("loader", "unpaid", Vector3.ZERO)
 	roster.rescue(recruit)
+	recruit.boarded = true
+	recruit.recruit_boarding = false
 	var unpaid_id: String = recruit.id
 	expedition.finish_run(true)
 	p.profile.expedition.stash.erase("scrap")

@@ -24,7 +24,7 @@ func _step_chunk(dt: float, player: Dictionary, wagons: Array, crew: Array, enem
 		if not person.get("dead", false) and person.has("pickup_id"):
 			_claims[str(person.pickup_id)] = person.id
 	for person: Dictionary in crew:
-		if person.get("airborne", false) or float(person.get("tornado_recovery", 0)) > 0 or person.get("dead", false) or float(person.get("hp", 0)) <= 0 or person.get("faction", "neutral") != "ally" or not Catalog.ROLES.has(person.get("role", "")):
+		if person.get("recruit_boarding", false) or person.get("airborne", false) or float(person.get("tornado_recovery", 0)) > 0 or person.get("dead", false) or float(person.get("hp", 0)) <= 0 or person.get("faction", "neutral") != "ally" or not Catalog.ROLES.has(person.get("role", "")):
 			continue
 		var definition: Dictionary = Catalog.ROLES[person.role]
 		var carrier := _carrier(person, player, wagons)

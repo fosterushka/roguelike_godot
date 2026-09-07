@@ -1,7 +1,7 @@
 # Blender 5.2.1 LTS MTL File: 'None'
 # www.blender.org
 
-newmtl Military_Wagon_Palette
+newmtl Military_Wagon_cargo_Palette
 Ns 32.400002
 Ka 1.000000 1.000000 1.000000
 Ks 0.500000 0.500000 0.500000
@@ -9,4 +9,14 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd palette.png
+map_Kd wagon_cargo_palette.png
+
+newmtl Military_Wagon_repair_Palette
+Ns 32.400002
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd wagon_repair_palette.png

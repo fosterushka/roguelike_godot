@@ -9,6 +9,12 @@ const Air = preload("res://modules/world/airborne_motion.gd")
 const Policy = preload("res://modules/world/destruction_policy.gd")
 const Ground = preload("res://modules/caravan/terrain_surface.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
+signal encounter_requested(person: Dictionary)
+const Encounter = preload("res://modules/crew/crew_encounter.gd")
+const Boarding = preload("res://modules/crew/crew_boarding.gd")
+var reactions: Array[Dictionary] = []
+var pending: Dictionary = {}
+var encounter_clock := 0.0
 var expedition: RefCounted
 var combat: Node
 var world: Node
@@ -35,6 +41,11 @@ func setup(expedition_value: RefCounted, combat_value: Node, world_value: Node, 
 func reset(seed_value: int) -> void:
 	_seed = seed_value
 	recruits.clear()
+	reactions.clear()
+	if is_instance_valid(view):
+		view.update_reactions(reactions)
+	pending = {}
+	encounter_clock = 0.0
 	service.reset()
 	navigation.paths.clear()
 	combat.model.player.crew_collect = false
@@ -68,10 +79,40 @@ func _enabled() -> bool:
 func step(delta: float) -> void:
 	if not _enabled() or not is_finite(delta) or delta <= 0:
 		return
+	encounter_clock += delta
+	var reactions_changed := false
+	for reaction: Dictionary in reactions.duplicate():
+		reaction.time -= delta
+		if reaction.time <= 0 or reaction.actor.get("dead", false):
+			reactions.erase(reaction)
+			reactions_changed = true
+	if reactions_changed:
+		view.update_reactions(reactions)
+	for person: Dictionary in _all_people():
+		person.reaction_time = maxf(0, float(person.get("reaction_time", 0)) - delta)
+	for recruit: Dictionary in recruits:
+		if Encounter.distance(recruit, combat.model.player, expedition.caravan.wagons) > Encounter.RANGE + 4:
+			recruit.auto_talk_blocked = false
 	for person: Dictionary in _all_people():
 		_step_airborne(person, delta)
+	for person: Dictionary in expedition.caravan.crew:
+		if not person.get("dead", false) and person.carrier_id != "crawler":
+			var carrier: Dictionary = expedition.caravan.find_wagon(person.carrier_id)
+			if carrier.is_empty() or carrier.get("dead", false) or not carrier.get("attached", true):
+				var replacement := Encounter.seat(expedition.caravan, str(person.role))
+				if not replacement.is_empty():
+					person.carrier_id = replacement.carrier_id
+					person.seat = replacement.seat
+					person.boarded = false
+					person.recruit_boarding = true
+					person.state = "approaching"
+		Boarding.step(person, expedition.caravan, combat.model.player, navigation, delta)
+	_step_refusals(delta)
 	service.step(delta, combat.model.player, expedition.caravan.wagons, expedition.caravan.crew, combat.model.enemies, _pickups(), {"move": navigation.move, "collect": _collect, "deliver": _deliver, "fire": _fire})
 	view.update_people(_all_people(), delta)
+	var candidate := _nearest_recruit()
+	if not candidate.is_empty() and pending.is_empty() and not candidate.get("auto_talk_blocked", false) and encounter_clock >= float(candidate.get("talk_after", 0)):
+		interact()
 
 func _all_people() -> Array:
 	var people: Array = recruits.duplicate()
@@ -120,19 +161,108 @@ func rescue_nearest() -> bool:
 	return false
 
 func interact() -> bool:
-	return rescue_nearest()
+	if not pending.is_empty():
+		return true
+	if not _enabled():
+		return false
+	var person := _nearest_recruit()
+	if person.is_empty():
+		return false
+	pending = person
+	encounter_requested.emit(person)
+	return true
+
+func accept_encounter() -> bool:
+	if pending.is_empty() or not recruits.has(pending):
+		return false
+	if not expedition.caravan.rescue(pending):
+		return false
+	pending.reaction_time = 5.0
+	recruits.erase(pending)
+	pending = {}
+	view.update_people(_all_people(), 0)
+	return true
+
+func cancel_encounter() -> void:
+	if not pending.is_empty():
+		pending.talk_after = encounter_clock + 10.0
+		pending.auto_talk_blocked = true
+	pending = {}
+
+func decline_encounter() -> String:
+	if pending.is_empty() or not recruits.has(pending) or pending.get("dead", false) or not expedition.active or expedition.caravan.locked:
+		return ""
+	var outcome := Encounter.refusal(Policy.roll(str(pending.id) + ":refusal"))
+	pending.state = outcome
+	pending.reaction_time = 5.0
+	var replies := {
+		"fleeing": ["Ладно… сам выберусь!", "Fine… I'll find my own way!"],
+		"joining_enemy": ["Тогда поищу других попутчиков.", "Then I'll find another crew."],
+		"hostile": ["Пожалеешь об этом!", "You'll regret this!"]}
+	pending.reaction_text = replies[outcome]
+	pending.refusal_elapsed = 0.0
+	pending = {}
+	return outcome
+
+func _step_refusals(delta: float) -> void:
+	for person: Dictionary in recruits.duplicate():
+		if person.get("dead", false) or person.get("airborne", false):
+			continue
+		var state := str(person.state)
+		if state not in ["fleeing", "joining_enemy", "hostile"]:
+			continue
+		person.refusal_elapsed = float(person.get("refusal_elapsed", 0)) + delta
+		if state == "hostile":
+			_turn_hostile(person)
+			continue
+		var away: Vector3 = person.position - combat.model.player.position
+		away.y = 0
+		if away.length_squared() < 0.01:
+			away = Vector3.RIGHT
+		var destination: Vector3 = person.position + away.normalized() * 30
+		if state == "joining_enemy":
+			var nearest := INF
+			for enemy: Dictionary in combat.model.enemies:
+				if enemy.get("dead", false) or enemy.get("allegiance", "enemy") == "friendly":
+					continue
+				var distance := Encounter.flat_distance(person.position, enemy.position)
+				if distance < nearest:
+					nearest = distance
+					destination = enemy.position
+			if nearest < 5 or float(person.refusal_elapsed) >= 8:
+				_turn_hostile(person)
+				continue
+		var previous: Vector3 = person.position
+		person.position = navigation.move(person, destination, 5.0, delta)
+		var motion: Vector3 = person.position - previous
+		if motion.length_squared() > 0.001:
+			person.heading = atan2(motion.x, motion.z)
+		if state == "fleeing" and float(person.refusal_elapsed) > 20 and Encounter.distance(person, combat.model.player, expedition.caravan.wagons) > 45:
+			recruits.erase(person)
+
+func _turn_hostile(person: Dictionary) -> void:
+	var enemy: Dictionary = combat.model.spawn_enemy("rifleman", person.position, {"counts_toward_wave": false})
+	if enemy.is_empty():
+		return
+	enemy.hp = person.hp
+	enemy.max_hp = person.max_hp
+	enemy.cooldown = 0.0
+	enemy.survivor_identity = person.get("identity", 0)
+	if float(person.get("reaction_time", 0)) > 0:
+		reactions.append({"actor": enemy, "text": person.reaction_text, "time": person.reaction_time})
+		view.update_reactions(reactions)
+	recruits.erase(person)
 
 func _nearest_recruit() -> Dictionary:
 	var found := {}
-	var distance := 6.0
+	var distance := Encounter.RANGE
 	for person: Dictionary in recruits:
-		if person.get("dead", false):
+		if person.get("dead", false) or person.get("state", "") != "stranded" or person.get("airborne", false) or float(person.get("tornado_recovery", 0)) > 0:
 			continue
-		var offset: Vector3 = person.position - combat.model.player.position
-		offset.y = 0
-		if offset.length() <= distance:
+		var separation := Encounter.distance(person, combat.model.player, expedition.caravan.wagons)
+		if separation <= distance:
 			found = person
-			distance = offset.length()
+			distance = separation
 	return found
 
 func hint() -> String:
@@ -140,11 +270,9 @@ func hint() -> String:
 		return ""
 	var person := _nearest_recruit()
 	if not person.is_empty():
-		if expedition.caravan.free_seat().is_empty():
+		if Encounter.seat(expedition.caravan, str(person.role)).is_empty():
 			return "Нет свободных мест" if Locale.language == "ru" else "No free seats"
-		if absf(float(combat.model.player.get("speed", 0))) > 1.5:
-			return "Остановитесь для спасения" if Locale.language == "ru" else "Stop to rescue"
-		return ("E: спасти · " + str(person.name)) if Locale.language == "ru" else ("E: rescue · " + str(person.name_en))
+		return ("E: поговорить · " + str(person.name)) if Locale.language == "ru" else ("E: talk · " + str(person.name_en))
 	return ""
 
 func toggle_collection() -> bool:
@@ -207,6 +335,8 @@ func _step_airborne(person: Dictionary, delta: float) -> void:
 			person.erase("tornado_flight")
 			person.airborne = false
 			person.lift_height = 0.0
+			person.state = str(person.get("tornado_previous_state", "stranded" if person.faction == "neutral" else "returning"))
+			person.erase("tornado_previous_state")
 			person.tornado_recovery = 0.8
 			person.tornado_cooldown = 4.0
 			person.roll = 0.0
@@ -215,6 +345,7 @@ func _step_airborne(person: Dictionary, delta: float) -> void:
 	if person.tornado_cooldown <= 0 and person.tornado_recovery <= 0 and world.tornado.influence(person.position).core:
 		person.tornado_flight = Air.create(person.position, "%d:%s" % [_seed, person.id], world.tornado.position)
 		person.airborne = true
+		person.tornado_previous_state = person.state
 		person.state = "airborne"
 
 func set_warmup(enabled: bool, point: Vector3 = Vector3.ZERO) -> void:

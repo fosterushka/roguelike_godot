@@ -2,9 +2,9 @@
   "asset_type": "military_wagons",
   "variants": {
     "cargo": {
-      "triangles": 1672,
+      "triangles": 1888,
       "mesh_count": 4,
-      "material_count": 1,
+      "material_count": 2,
       "bounds": {
         "min": [
           -2.242,
@@ -13,20 +13,20 @@
         ],
         "max": [
           2.242,
-          2.45,
+          2.93,
           3.39
         ],
         "size": [
           4.484,
-          2.45,
+          2.93,
           5.82
         ]
       }
     },
     "repair": {
-      "triangles": 1624,
+      "triangles": 1948,
       "mesh_count": 4,
-      "material_count": 1,
+      "material_count": 2,
       "bounds": {
         "min": [
           -2.242,
@@ -35,20 +35,20 @@
         ],
         "max": [
           2.242,
-          2.45,
+          3.828,
           3.39
         ],
         "size": [
           4.484,
-          2.45,
+          3.828,
           5.82
         ]
       }
     },
     "weapon": {
-      "triangles": 1672,
+      "triangles": 1972,
       "mesh_count": 4,
-      "material_count": 1,
+      "material_count": 2,
       "bounds": {
         "min": [
           -2.242,
@@ -68,9 +68,9 @@
       }
     },
     "fuel": {
-      "triangles": 1672,
+      "triangles": 1960,
       "mesh_count": 4,
-      "material_count": 1,
+      "material_count": 2,
       "bounds": {
         "min": [
           -2.242,
@@ -79,20 +79,20 @@
         ],
         "max": [
           2.242,
-          2.45,
+          3.183,
           3.39
         ],
         "size": [
           4.484,
-          2.45,
+          3.183,
           5.82
         ]
       }
     },
     "anti_tank": {
-      "triangles": 1648,
+      "triangles": 1876,
       "mesh_count": 4,
-      "material_count": 1,
+      "material_count": 2,
       "bounds": {
         "min": [
           -2.242,
@@ -101,20 +101,20 @@
         ],
         "max": [
           2.242,
-          2.45,
+          3.12,
           3.39
         ],
         "size": [
           4.484,
-          2.45,
+          3.12,
           5.82
         ]
       }
     },
     "anti_air": {
-      "triangles": 1636,
+      "triangles": 2032,
       "mesh_count": 4,
-      "material_count": 1,
+      "material_count": 2,
       "bounds": {
         "min": [
           -2.242,
@@ -123,12 +123,12 @@
         ],
         "max": [
           2.242,
-          2.45,
+          3.89,
           3.39
         ],
         "size": [
           4.484,
-          2.45,
+          3.89,
           5.82
         ]
       }

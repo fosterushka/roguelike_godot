@@ -90,6 +90,12 @@ static func soldier(rig: Dictionary, pose: Dictionary) -> Transform3D:
 				rotation.z += -0.18 if side > 0.0 else 0.18
 			elif side > 0.0:
 				rotation.x -= attack * 1.25
+			if pose.get("wave", false):
+				rotation.x = -0.2
+				rotation.z = side * (2.5 + sin(float(pose.get("animation_time", 0)) * 9 + side) * 0.35)
+			elif pose.get("climbing", false):
+				rotation.x = -2.4
+				rotation.z = side * 0.3
 		"weapon":
 			if rig.kind != "bomber":
 				rotation.x -= 0.72 + attack * 0.22

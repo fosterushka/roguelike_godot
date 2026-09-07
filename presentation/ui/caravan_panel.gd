@@ -12,6 +12,8 @@ const PreviewPip = preload("res://presentation/ui/item_preview_pip.gd")
 var state: Dictionary = {}
 var credits := 0
 var scrap := 0
+var embedded := false
+var top: HBoxContainer
 var heading: Label
 var content: VBoxContainer
 var tab := "wagons"
@@ -40,7 +42,7 @@ func _ready() -> void:
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 10)
 	margins.add_child(column)
-	var top := HBoxContainer.new()
+	top = HBoxContainer.new()
 	column.add_child(top)
 	heading = Styles.label("", 19)
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -105,7 +107,7 @@ func _refresh() -> void:
 		tabs.add_child(button)
 	var instruction := words("Купите прицеп → он прицепится к пикапу → выберите ОБОРУДОВАНИЕ.", "Buy a trailer → it attaches to your pickup → choose EQUIP.")
 	if tab == "crew":
-		instruction = words("Зарплата перед рейдом берётся ломом со склада. Без оплаты человек остаётся в убежище.", "Crew wages use vault scrap before departure. Unpaid crew stay at base.")
+		instruction = words("Места назначаются по профессии автоматически. Зарплата берётся со склада.", "Seats are assigned by profession. Wages use vault scrap.")
 	elif state.get("active", false):
 		instruction = words("Вы в рейде. Купить и прицепить новые прицепы можно после эвакуации, в гараже на базе.", "You are in a raid. Extract first to buy and attach trailers in the base garage.")
 	var info := Styles.label(instruction, 14)
@@ -338,42 +340,55 @@ func _crew() -> void:
 	var active: bool = state.get("active", false)
 	if people.is_empty():
 		content.add_child(Styles.label(words("Найдите нейтрального выжившего в рейде, спасите его и вывезите живым.", "Find a neutral survivor in a raid, rescue them and extract with them alive."), 16))
+	var grid := _grid()
 	for person: Dictionary in people:
 		var definition: Dictionary = state.get("roles", {}).get(person.role, {})
 		var title := str(definition.get("name" if Locale.language == "ru" else "name_en", person.role))
 		var selected: bool = state.get("selected_crew_ids", []).has(person.id)
-		var column := _row(title + " · " + str(person.id), words("Здоровье %.0f  |  Зарплата %d лома за рейд", "Health %.0f  |  Wage %d scrap per raid") % [person.hp, definition.get("wage", 0)])
+		var personal_name: String = preload("res://modules/crew/crew_encounter.gd").NAMES[clampi(int(person.get("identity", 0)), 0, 7)][0 if Locale.language == "ru" else 1]
+		var column := _row(personal_name + " · " + title, words("Здоровье %.0f  |  Зарплата %d лома за рейд", "Health %.0f  |  Wage %d scrap per raid") % [person.hp, definition.get("wage", 0)], grid)
 		if active:
 			column.add_child(Styles.label(_crew_state(str(person.get("state", ""))), 14))
 		else:
 			_action(column, words("ОСТАВИТЬ В УБЕЖИЩЕ", "LEAVE AT BASE") if selected else words("НАЗНАЧИТЬ В РЕЙД", "DEPLOY CREW"), "select_crew", person.id, "0" if selected else "1")
+		if not active and person.role == "civilian":
+			var training := OptionButton.new()
+			training.custom_minimum_size.y = 36
+			var professions: Array[String] = []
+			for role: String in state.get("roles", {}):
+				if role == "civilian":
+					continue
+				professions.append(role)
+				var entry: Dictionary = state.roles[role]
+				training.add_item(str(entry.name if Locale.language == "ru" else entry.name_en))
+			var training_row := HBoxContainer.new()
+			column.add_child(training_row)
+			training.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			training_row.add_child(training)
+			var learn := Styles.button(words("ОБУЧИТЬ · 30 ЛОМА", "TRAIN · 30 SCRAP"))
+			learn.disabled = scrap < preload("res://modules/crew/crew_catalog.gd").TRAINING_COST or state.get("locked", false)
+			learn.pressed.connect(func(): action_requested.emit("train_crew", person.id, professions[training.selected]))
+			training_row.add_child(learn)
 		if not active and selected and scrap < int(definition.get("wage", 0)):
 			column.add_child(Styles.label(words("Не хватает лома: останется в убежище.", "Insufficient scrap: will remain at base."), 14))
-		var assignment := OptionButton.new()
-		assignment.custom_minimum_size.y = 34
-		assignment.set_meta("crew_assignment", person.id)
-		assignment.disabled = person.get("dead", false) or state.get("locked", false) or (active and absf(float(state.get("player_speed", 0))) > 1.5)
-		var choices: Array[String] = []
-		var carriers := [{"id": "crawler", "type": "crawler"}]
-		carriers.append_array(state.get("wagons", []))
-		for carrier: Dictionary in carriers:
-			if carrier.get("dead", false) or not carrier.get("attached", true):
-				continue
-			for seat in 2:
-				var label := words("Пикап", "Pickup") if carrier.id == "crawler" else str(carrier.id)
-				assignment.add_item(label + " · " + words("место %d", "seat %d") % (seat + 1))
-				choices.append(str(carrier.id) + ":" + str(seat))
-				var occupied := people.any(func(other): return other.id != person.id and not other.get("dead", false) and other.get("carrier_id", "") == carrier.id and int(other.get("seat", -1)) == seat)
-				var point: Vector3 = state.get("player_position", Vector3.ZERO) if carrier.id == "crawler" else carrier.get("position", Vector3.ZERO)
-				var remote: bool = active and not person.get("boarded", false) and Vector3(person.position).distance_to(point) > 6.0
-				assignment.set_item_disabled(choices.size() - 1, occupied or remote)
-				if person.get("carrier_id", "crawler") == carrier.id and int(person.get("seat", -1)) == seat:
-					assignment.select(choices.size() - 1)
-		assignment.item_selected.connect(func(index: int) -> void: action_requested.emit("assign_crew", person.id, choices[index]))
-		column.add_child(assignment)
+		var assigned := str(person.get("carrier_id", ""))
+		var destination := words("Место подберётся автоматически", "Seat assigned automatically")
+		if assigned == "crawler":
+			destination = words("Пикап", "Pickup")
+		else:
+			for wagon: Dictionary in state.get("wagons", []):
+				if wagon.id == assigned:
+					var wagon_type: Dictionary = state.get("types", {}).get(wagon.type, {})
+					destination = str(wagon_type.get("name" if Locale.language == "ru" else "name_en", assigned))
+		column.add_child(Styles.label(destination, 13))
+
+func set_embedded(value: bool) -> void:
+	embedded = value
+	if is_instance_valid(top):
+		top.visible = not value
 
 func _crew_state(value: String) -> String:
-	var labels := {"boarded": ["На борту", "On board"], "repairing": ["Ремонтирует", "Repairing"], "shooting": ["Стреляет", "Firing"], "reloading": ["Заряжает", "Reloading"], "collecting": ["Идёт за добычей", "Collecting loot"], "returning": ["Возвращается", "Returning"], "waiting_carrier": ["Нужно новое место", "Needs a new assignment"], "cargo_full": ["Ждёт разгрузки у борта", "Waiting to unload"], "dead": ["Погиб", "Dead"], "airborne": ["Поднят торнадо", "Airborne"], "blocked": ["Путь перекрыт", "Route blocked"], "waiting_weapon": ["Ожидает оружие", "Waiting for weapon"], "stranded": ["Ждёт спасения", "Awaiting rescue"]}
+	var labels := {"boarded": ["На борту", "On board"], "repairing": ["Ремонтирует", "Repairing"], "shooting": ["Стреляет", "Firing"], "reloading": ["Заряжает", "Reloading"], "collecting": ["Идёт за добычей", "Collecting loot"], "returning": ["Возвращается", "Returning"], "waiting_carrier": ["Нужно новое место", "Needs a new assignment"], "cargo_full": ["Ждёт разгрузки у борта", "Waiting to unload"], "dead": ["Погиб", "Dead"], "airborne": ["Поднят торнадо", "Airborne"], "blocked": ["Путь перекрыт", "Route blocked"], "waiting_weapon": ["Ожидает оружие", "Waiting for weapon"], "stranded": ["Ждёт спасения", "Awaiting rescue"], "approaching": ["Идёт к вагону", "Walking to wagon"], "boarding": ["Залезает на борт", "Climbing aboard"]}
 	var pair: Array = labels.get(value, ["Ожидает", "Waiting"])
 	return words(pair[0], pair[1])
 

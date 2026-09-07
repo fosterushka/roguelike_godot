@@ -13,7 +13,7 @@ TESTS = [
     'ui_icons_test.gd',
 	'item_preview_test.gd',
     'case_rewards_test.gd', 'case_opening_test.gd', 'trailer_ui_test.gd',
-    'caravan_loadout_test.gd', 'caravan_combat_test.gd', 'armory_unit_test.gd', 'military_pickup_test.gd', 'convoy_assets_test.gd', 'caravan_formation_test.gd', 'crew_runtime_test.gd', 'crew_seating_test.gd',
+    'caravan_loadout_test.gd', 'caravan_combat_test.gd', 'armory_unit_test.gd', 'military_pickup_test.gd', 'convoy_assets_test.gd', 'caravan_formation_test.gd', 'crew_runtime_test.gd', 'crew_encounter_test.gd', 'crew_seating_test.gd',
     'screen_tracers_test.gd', 'tornado_interaction_test.gd', 'caravan_crew_test.gd', 'caravan_integration_test.gd',
     'natural_mesh_test.gd', 'vegetation_test.gd', 'military_environment_test.gd', 'military_people_test.gd', 'military_enemies_test.gd', 'military_field_props_test.gd',
     'mission_catalog_test.gd', 'mission_tracker_test.gd', 'crew_missions_test.gd', 'mission_board_test.gd', 'mission_flow_test.gd',

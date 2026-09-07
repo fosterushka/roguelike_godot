@@ -9,6 +9,7 @@ const Locale = preload("res://presentation/ui/ui_locale.gd")
 const Icons = preload("res://presentation/ui/ui_icons.gd")
 const TABS = {
 	"armory": ["АРСЕНАЛ", "ARMORY", "armory"],
+	"garage": ["ГАРАЖ", "GARAGE", "base"],
 	"loadout": ["СНАРЯЖЕНИЕ", "STASH", "stash"],
 	"stash": ["ХРАНИЛИЩЕ", "VAULT", "vault"],
 	"trade": ["ТОРГОВЛЯ", "TRADE", "trade"],
@@ -17,7 +18,7 @@ const TABS = {
 	"settings": ["НАСТРОЙКИ", "SETTINGS", "settings"],
 }
 var tab := "armory"
-var tabs: HBoxContainer
+var tabs: HFlowContainer
 var content: Control
 var heading: Label
 var close_button: Button
@@ -25,6 +26,7 @@ var garage_button: Button
 var resources: Label
 var _account: Dictionary = {}
 var _armory: Control
+var _garage: Control
 var _expedition: Control
 var _original_parent: Node
 
@@ -49,45 +51,43 @@ func _ready() -> void:
 	resources = Styles.label("", 14)
 	resources.add_theme_color_override("font_color", Color("f4d89d"))
 	header.add_child(resources)
-	garage_button = Styles.button("")
-	garage_button.custom_minimum_size.x = 110
-	garage_button.set_meta("hub_action", "garage")
-	Icons.apply(garage_button, "crew")
-	garage_button.pressed.connect(func() -> void: garage_requested.emit())
-	header.add_child(garage_button)
 	close_button = Styles.button("")
 	Icons.apply(close_button, "close")
 	close_button.pressed.connect(func() -> void: closed.emit())
 	header.add_child(close_button)
-	var scroll := ScrollContainer.new()
-	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	column.add_child(scroll)
-	tabs = HBoxContainer.new()
+	tabs = HFlowContainer.new()
 	tabs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(tabs)
+	column.add_child(tabs)
 	for key: String in TABS:
 		var button := Styles.button("")
 		button.set_meta("hub_tab", key)
-		button.custom_minimum_size = Vector2(82, 38)
+		button.custom_minimum_size = Vector2(82, 32)
 		button.add_theme_font_size_override("font_size", 12)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		Icons.apply(button, TABS[key][2], 18)
 		button.add_theme_constant_override("h_separation", 4)
 		button.pressed.connect(func() -> void: select_tab(key))
 		tabs.add_child(button)
+		if key == "garage":
+			garage_button = button
+			button.set_meta("hub_action", "garage")
 	content = Control.new()
 	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.add_child(content)
 	visible = false
 
-func attach(armory: Control, expedition: Control) -> void:
+func attach(armory: Control, expedition: Control, garage: Control = null) -> void:
 	if _armory != null:
 		return
 	_original_parent = armory.get_parent()
 	_armory = armory
 	_expedition = expedition
-	for panel: Control in [_armory, _expedition]:
+	_garage = garage
+	var panels: Array = [_armory, _expedition]
+	if _garage != null:
+		panels.append(_garage)
+	for panel: Control in panels:
 		panel.reparent(content, false)
 		panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		panel.set_embedded(true)
@@ -98,13 +98,17 @@ func detach() -> void:
 		visible = false
 		return
 	_armory.hide_panel()
-	for panel: Control in [_armory, _expedition]:
+	var panels: Array = [_armory, _expedition]
+	if _garage != null:
+		panels.append(_garage)
+	for panel: Control in panels:
 		panel.set_embedded(false)
 		panel.reparent(_original_parent, false)
 		panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		panel.visible = false
 	_armory = null
 	_expedition = null
+	_garage = null
 	visible = false
 
 func select_tab(value: String) -> void:
@@ -115,6 +119,8 @@ func select_tab(value: String) -> void:
 	if _armory != null:
 		_armory.hide_panel()
 		_expedition.visible = false
+		if _garage != null:
+			_garage.visible = false
 	tab_selected.emit(tab)
 
 func refresh_labels() -> void:
