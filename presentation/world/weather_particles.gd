@@ -3,6 +3,10 @@ extends Node3D
 const SHADERS := [preload("res://presentation/world/weather_rain.gdshader"), preload("res://presentation/world/weather_splash.gdshader"), preload("res://presentation/world/weather_mist.gdshader")]
 const CAPACITIES := [1100, 220, 20]
 const RADII := [46.0, 38.0, 48.0]
+const RAIN_LAYER := 0
+const RAIN_DEPTH_RANGE := Vector2(6.0, 110.0)
+const RAIN_SCREEN_MARGIN := 1.08
+const RAIN_WIDTH_PIXELS := Vector2(0.7, 1.2)
 var layers: Array[MultiMeshInstance3D] = []
 var materials: Array[ShaderMaterial] = []
 var elapsed := 0.0
@@ -31,6 +35,11 @@ func _ready() -> void:
 		visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		var material := ShaderMaterial.new()
 		material.shader = SHADERS[index]
+		if index == RAIN_LAYER:
+			material.set_shader_parameter("uSeedRadius", RADII[RAIN_LAYER])
+			material.set_shader_parameter("uDepthRange", RAIN_DEPTH_RANGE)
+			material.set_shader_parameter("uScreenMargin", RAIN_SCREEN_MARGIN)
+			material.set_shader_parameter("uStreakWidthPixels", RAIN_WIDTH_PIXELS)
 		material.render_priority = [4, 2, 3][index]
 		visual.material_override = material
 		materials.append(material)

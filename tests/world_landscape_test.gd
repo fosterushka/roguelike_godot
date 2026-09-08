@@ -67,7 +67,9 @@ func _run() -> void:
 	var day_rain: float = view._rain.rain
 	state.game_time = midnight
 	view.apply_state(state)
-	check(sun.light_energy < day_energy * 0.2 and sun.light_energy > 0.0, "Runtime lighting reaches readable moonlit night")
+	check(sun.light_energy >= day_energy * 0.4 and sun.light_energy < day_energy * 0.65, "Night retains readable directional light while remaining dimmer than day")
+	check(env.environment.ambient_light_energy >= 0.5 and env.environment.ambient_light_energy < Day.DAY_AMBIENT, "Night keeps shadows readable")
+	check(sun.light_color.b > sun.light_color.r * 1.5 and env.environment.ambient_light_color.b > env.environment.ambient_light_color.r * 1.5, "Moon and ambient illumination share the blue night tint")
 	check(view._rain.rain == day_rain, "Day/night keeps active weather precipitation intact")
 	check(env.environment.ambient_light_source == Environment.AMBIENT_SOURCE_COLOR, "Clock avoids per-tick sky cubemap regeneration")
 	arena.free()

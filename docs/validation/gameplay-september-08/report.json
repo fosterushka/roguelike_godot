@@ -1,0 +1,732 @@
+{
+  "mode": "Full 98-file headless run plus focused reruns after fixes and the weather/fuel follow-up. This is consolidated evidence, not one uninterrupted final run.",
+  "passed": 99,
+  "total": 99,
+  "runs": [
+    {
+      "path": "/private/tmp/iron-gameplay-full-suite/report.json",
+      "passed": 96,
+      "total": 98
+    },
+    {
+      "path": "/private/tmp/npc-final-tests/report.json",
+      "passed": 3,
+      "total": 3
+    },
+    {
+      "path": "/private/tmp/iron-gameplay-tornado-rerun/report.json",
+      "passed": 1,
+      "total": 1
+    },
+    {
+      "path": "/private/tmp/loot-final/report.json",
+      "passed": 3,
+      "total": 3
+    },
+    {
+      "path": "/private/tmp/fuel-final/report.json",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "path": "/private/tmp/iron-weather-final/report.json",
+      "passed": 6,
+      "total": 6
+    }
+  ],
+  "results": [
+    {
+      "test": "boundary_screen_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.83,
+      "report": "/private/tmp/iron-weather-final/report.json"
+    },
+    {
+      "test": "raid_loot_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34,
+      "report": "/private/tmp/loot-final/report.json"
+    },
+    {
+      "test": "fuel_station_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.15,
+      "report": "/private/tmp/iron-weather-final/report.json"
+    },
+    {
+      "test": "model_dedup_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.43,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "model_gallery_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.31,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "environment_lod_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.14,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "world_quality_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.53,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "base_collision_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "handling_wildlife_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.66,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "world_landscape_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.55,
+      "report": "/private/tmp/iron-weather-final/report.json"
+    },
+    {
+      "test": "combat_upgrade_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "ui_icons_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.14,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "item_preview_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "case_rewards_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.14,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "case_opening_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 5.82,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "trailer_ui_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 9.06,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "caravan_loadout_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.33,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "caravan_combat_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "armory_unit_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "military_pickup_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "convoy_assets_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "caravan_formation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.53,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "crew_runtime_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.53,
+      "report": "/private/tmp/npc-final-tests/report.json"
+    },
+    {
+      "test": "crew_encounter_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.43,
+      "report": "/private/tmp/npc-final-tests/report.json"
+    },
+    {
+      "test": "crew_seating_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "screen_tracers_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.23,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "tornado_interaction_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.57,
+      "report": "/private/tmp/fuel-final/report.json"
+    },
+    {
+      "test": "caravan_crew_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.33,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "caravan_integration_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 9.22,
+      "report": "/private/tmp/npc-final-tests/report.json"
+    },
+    {
+      "test": "natural_mesh_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.14,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "vegetation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 11.25,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "military_environment_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.66,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "military_people_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "military_enemies_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "military_field_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "mission_catalog_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.14,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "mission_tracker_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.33,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "crew_missions_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "mission_board_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.43,
+      "report": "/private/tmp/loot-final/report.json"
+    },
+    {
+      "test": "mission_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 5.87,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "extraction_defense_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 9.72,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "extraction_zone_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.96,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "meta_economy_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.33,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "combo_rewards_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "expedition_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 9.27,
+      "report": "/private/tmp/loot-final/report.json"
+    },
+    {
+      "test": "vehicle_motion_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "offline_session_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 16.34,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "combat_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "advanced_combat_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "enemy_ai_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "progression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "world_generation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.43,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "natural_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.33,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "authored_props_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.09,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "world_builder_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.0,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "world_gameplay_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.49,
+      "report": "/private/tmp/fuel-final/report.json"
+    },
+    {
+      "test": "world_activities_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.51,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "ambient_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.4,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "world_rebuild_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 3.19,
+      "report": "/private/tmp/fuel-final/report.json"
+    },
+    {
+      "test": "world_result_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.78,
+      "report": "/private/tmp/iron-weather-final/report.json"
+    },
+    {
+      "test": "presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.28,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "visual_smoke.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.4,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "ui_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.01,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "integration_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.01,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "composed_world_seed_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 26.67,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "full_run_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 18.64,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "combat_soak_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 4.5,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "combat_presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.53,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "source_fx_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "world_presentation_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.43,
+      "report": "/private/tmp/iron-weather-final/report.json"
+    },
+    {
+      "test": "run_clock_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "session_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 14.95,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "presentation_details_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "loading_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.57,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "minimap_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "ui_menu_regression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.43,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "ui_language_flow_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.47,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "hud_layout_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.43,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "ground_effect_depth_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "countdown_ui_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "reward_radar_mount_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 2.66,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "armory_tiles_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.54,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "ground_surface_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.43,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "wheel_vehicle_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.91,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "radar_progression_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.33,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "radar_armory_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.46,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "vehicle_response_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "vehicle_render_runtime_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 4.21,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "tire_trails_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "road_speed_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.82,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "enemy_factory_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "weather_transition_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.53,
+      "report": "/private/tmp/iron-weather-final/report.json"
+    },
+    {
+      "test": "support_feedback_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.53,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "support_wave_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.34,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "jammer_gameplay_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.24,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "jammer_feedback_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 0.53,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "mine_hacking_module_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.4,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "village_destruction_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 1.88,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    },
+    {
+      "test": "village_decoration_test.gd",
+      "passed": true,
+      "reason": "clean completion",
+      "seconds": 8.39,
+      "report": "/private/tmp/iron-gameplay-full-suite/report.json"
+    }
+  ]
+}

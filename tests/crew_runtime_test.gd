@@ -8,6 +8,12 @@ const Tornado = preload("res://modules/world/tornado_rules.gd")
 const Loot = preload("res://presentation/world/raid_loot.gd")
 const Roles = preload("res://modules/crew/crew_catalog.gd")
 const Factory = preload("res://modules/crew/crew_factory.gd")
+class FailedNavigation extends "res://modules/crew/crew_navigation.gd":
+	var route_attempts := 0
+	func _route(_start: Vector3, _goal: Vector3, _radius: float) -> Array[Vector3]:
+		route_attempts += 1
+		return []
+
 class TestWorld extends Node:
 	var props := Props.new()
 	var running := true
@@ -45,6 +51,11 @@ func _run() -> void:
 	var positions: Array = runtime.recruits.map(func(person): return person.position)
 	runtime.reset(713)
 	check(runtime.recruits.map(func(person): return person.position) == positions, "Recruit placement deterministic by seed")
+	check(runtime.recruits.all(func(person): return Vector2(person.position.x, person.position.z).length() <= preload("res://modules/world/world_bounds.gd").PLAYABLE_RADIUS - preload("res://modules/crew/crew_encounter.gd").SPAWN_EDGE_MARGIN), "Every survivor spawns inside the circular playable boundary")
+	check(runtime.recruits.all(func(person): return preload("res://modules/crew/crew_encounter.gd").flat_distance(person.position, combat.model.player.position) >= 180), "No survivor spawns in the initial player search area")
+	runtime.reset(714)
+	check(runtime.recruits.map(func(person): return person.position) != positions, "Different run seeds distribute survivors to different world positions")
+	runtime.reset(713)
 	check(runtime.recruits.all(func(person): return world.props.is_clear(person.position, 1.2)), "All recruits spawn clear of solid buildings")
 	check(runtime.view.views.size() == 32 and runtime.view.views[0].root.visible, "Reusable human views exist before rescue")
 	var before_warmup := runtime.recruits.duplicate(true)
@@ -63,6 +74,20 @@ func _run() -> void:
 	check(runtime.damage_target(neutral.id, 9999) and neutral.dead and not runtime.damage_target(neutral.id, 1), "Neutral can die once from enemy damage")
 	check(not combat.model.enemies.has(neutral), "Neutral never enters player auto-target enemy list")
 	var walker := Factory.create("looter", "walk-test", Vector3.ZERO)
+	var blocked_navigation := FailedNavigation.new()
+	blocked_navigation.setup(world.props)
+	for frame in 20:
+		blocked_navigation.move(walker, Vector3(6, 0, 0), 4, 0.05)
+	check(blocked_navigation.route_attempts == 0 and walker.position == Vector3.ZERO, "Blocked carrier entrance never builds an impossible path graph")
+	blocked_navigation.move(walker, Vector3(12, 0, 0), 4, 0.05)
+	for frame in 5:
+		blocked_navigation.move(walker, Vector3(12, 0, 0), 4, 0.05)
+	check(blocked_navigation.route_attempts == 1, "Failed path is cached while target remains stationary")
+	for frame in 7:
+		blocked_navigation.move(walker, Vector3(12, 0, 0), 4, 0.05)
+	check(blocked_navigation.route_attempts == 2, "Failed path retries after bounded half-second delay")
+	blocked_navigation.move(walker, Vector3(14, 0, 0), 4, 0.05)
+	check(blocked_navigation.route_attempts == 3, "Moving carrier invalidates failed-path backoff immediately")
 	var traveled := 0.0
 	for index in 180:
 		var previous: Vector3 = walker.position

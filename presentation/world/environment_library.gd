@@ -4,11 +4,7 @@ const SCENE := preload("res://assets/environment/military_environment.glb")
 const PALETTE := preload("res://assets/environment/military_environment_palette.png")
 const TREE_SCENE := preload("res://assets/environment/textured_trees.glb")
 const TREE_ATLAS := preload("res://assets/environment/tree_atlas.png")
-const TREE_TRIANGLE_BUDGET := 4000
-const TREE_DISTANT_TRIANGLE_BUDGET := 2000
-const AUTHORED_LOD_SUFFIX := "Distant"
-# Use the authored crown at normal world zoom; close gallery views retain detail.
-const TREE_LOD_EDGE_LENGTH := 0.08
+const TREE_TRIANGLE_BUDGET := 600
 const INDEX_16_VERTEX_LIMIT := 65536
 const INDEX_16_BYTES := 2
 const INDEX_32_BYTES := 4
@@ -62,9 +58,6 @@ static func mesh_for(pool: String) -> Mesh:
 		mesh.clear_surfaces()
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays, [], _imported_lods(imported))
 		mesh.shadow_mesh = imported.shadow_mesh
-	var distant := scene.find_child(pool + AUTHORED_LOD_SUFFIX, true, false) as MeshInstance3D
-	if is_tree and distant != null:
-		mesh = _with_authored_lod(mesh, distant.mesh)
 	mesh.surface_set_material(0, _textured_tree_material() if is_tree else _palette_material())
 	_meshes[pool] = mesh
 	scene.free()
@@ -82,25 +75,3 @@ static func _imported_lods(mesh: ArrayMesh) -> Dictionary:
 			indices[index] = data.decode_u16(index * stride) if stride == INDEX_16_BYTES else data.decode_u32(index * stride)
 		result[float(lod.edge_length)] = indices
 	return result
-
-static func _with_authored_lod(primary: ArrayMesh, distant: ArrayMesh) -> ArrayMesh:
-	# Automatic simplification erases disconnected spruce sprays. A small authored
-	# crown supplies the distant indices while sharing one runtime surface/draw call.
-	var arrays := primary.surface_get_arrays(0)
-	var far_arrays := distant.surface_get_arrays(0)
-	var vertex_offset: int = arrays[Mesh.ARRAY_VERTEX].size()
-	for slot in Mesh.ARRAY_MAX:
-		if slot == Mesh.ARRAY_INDEX or arrays[slot] == null:
-			continue
-		if slot == Mesh.ARRAY_COLOR and (far_arrays[slot] == null or far_arrays[slot].is_empty()):
-			var colors := PackedColorArray()
-			colors.resize(distant.surface_get_array_len(0))
-			colors.fill(Color.WHITE)
-			far_arrays[slot] = colors
-		arrays[slot].append_array(far_arrays[slot])
-	var indices: PackedInt32Array = far_arrays[Mesh.ARRAY_INDEX].duplicate()
-	for index in indices.size():
-		indices[index] += vertex_offset
-	var mesh := ArrayMesh.new()
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays, [], {TREE_LOD_EDGE_LENGTH: indices})
-	return mesh

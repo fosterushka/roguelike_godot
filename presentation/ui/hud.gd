@@ -2,6 +2,7 @@ extends CanvasLayer
 
 const Icons = preload("res://presentation/ui/ui_icons.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
+const Fuel = preload("res://modules/caravan/vehicle_fuel.gd")
 
 signal ability_selected(slot: int)
 signal ability_requested
@@ -69,6 +70,7 @@ var _status_label: Label
 var fury_meter: Control
 var jammer_overlay: Control
 var jammer_vhs: ColorRect
+var boundary_desaturation: CanvasLayer
 
 
 func _ready() -> void:
@@ -78,6 +80,8 @@ func _ready() -> void:
 	screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	screen.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(screen)
+	boundary_desaturation = preload("res://presentation/ui/screen_desaturation.gd").new()
+	add_child(boundary_desaturation)
 	Locale.initialize()
 	_gameplay = Control.new()
 	_gameplay.name = "Gameplay"
@@ -119,7 +123,7 @@ func _ready() -> void:
 
 func update_telemetry(data: Dictionary) -> void:
 	_last_telemetry = data
-	_speed_label.text = Locale.text("СКОРОСТЬ") + "  " + Locale.text("%03d км/ч") % roundi(absf(float(data.get("speed", 0.0))) * 3.6)
+	_speed_label.text = Locale.text("СКОРОСТЬ") + "  " + Locale.text("%03d км/ч") % roundi(absf(float(data.get("speed", 0.0))) * Fuel.KPH_PER_MPS)
 	_update_meter(_health_label, _health_bar, Locale.text("КОРПУС"), float(data.get("health", 0.0)), float(data.get("max_health", 100.0)))
 	_update_meter(_fuel_label, _fuel_bar, Locale.text("ТОПЛИВО"), float(data.get("fuel", 0.0)), float(data.get("max_fuel", 100.0)))
 
@@ -137,6 +141,7 @@ func set_paused(value: bool) -> void:
 func set_loading(value: bool) -> void:
 	if value:
 		jammer_vhs.reset_weather()
+		boundary_desaturation.reset()
 		loading_progress = 0.0
 		reward_notice.clear()
 		_banner_remaining = 0.0
@@ -459,6 +464,7 @@ func hide_menus() -> void:
 	set_paused(false)
 
 func update_world(data: Dictionary) -> void:
+	boundary_desaturation.update_world(data)
 	jammer_vhs.update_weather(data)
 	markers.update_world(data)
 	radar.update_world(data)
@@ -551,6 +557,7 @@ func _sync_gameplay_visibility() -> void:
 	if not is_instance_valid(_gameplay) or not is_instance_valid(_loading_overlay):
 		return
 	_gameplay.visible = _gameplay_active and not _pause_overlay.visible and not armory.visible and not run_menu.visible and not _loading_overlay.visible
+	boundary_desaturation.set_gameplay_active(_gameplay.visible)
 
 func set_language(value: String) -> void:
 	Locale.set_language(value)

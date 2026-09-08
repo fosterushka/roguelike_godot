@@ -1,14 +1,12 @@
 {
   "spruceTrees": {
-    "triangles": 3724,
-    "surfaces": 1
+    "triangles": 116,
+    "surfaces": 1,
+    "crown_parts": 4
   },
   "birchTrees": {
-    "triangles": 3724,
-    "surfaces": 1
-  },
-  "spruceTreesDistant": {
-    "triangles": 1444,
-    "surfaces": 1
+    "triangles": 388,
+    "surfaces": 1,
+    "crown_parts": 3
   }
 }

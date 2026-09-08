@@ -56,17 +56,23 @@ func _run() -> void:
 	raid.caravan.wagons[1].position = Vector3(42, 0, 0)
 	fight.model.player.position = Vector3(0, 20, 0)
 	fight.model.player.speed = 6.0
-	var mechanic := Factory.create_neutral("mechanic", "test-mechanic", Vector3(37, 0, 8))
+	var mechanic := Factory.create_neutral("mechanic", "test-mechanic", Vector3(37, 0, 4))
 	runtime.recruits.append(mechanic)
 	var requests: Array = []
 	runtime.encounter_requested.connect(func(person: Dictionary): requests.append(person.id))
 	runtime.step(0.01)
-	check(runtime.pending == mechanic and requests.size() == 1, "Approaching a survivor automatically requests one dialogue")
+	check(runtime.pending.is_empty() and requests.is_empty() and raid.caravan.crew.is_empty(), "Approaching never opens dialogue or recruits without explicit input")
+	mechanic.position = Vector3(35, 0, 5.01)
+	check(not runtime.interact() and not runtime.interact_person(mechanic.id), "Both keyboard and clicked prompt reject beyond five metres")
+	mechanic.position = Vector3(35, 0, 5)
+	check(runtime.interact_person(mechanic.id) and requests.size() == 1, "Clicking the survivor prompt opens dialogue exactly at five metres")
 	runtime.step(0.01)
 	check(requests.size() == 1, "Pending dialogue is not repeatedly emitted")
 	runtime.cancel_encounter()
 	runtime.step(0.01)
-	check(runtime.pending.is_empty(), "Talk later suppresses immediate automatic reopening")
+	check(runtime.pending.is_empty(), "Talk later never reopens without another explicit input")
+	runtime.view.views[0].speech.prompt.pressed.emit()
+	check(runtime.pending == mechanic, "Click on rendered prompt reaches runtime encounter signal")
 	check(runtime.interact() and runtime.pending == mechanic and raid.caravan.crew.is_empty(), "Talk once beside tail wagon despite height and rolling speed, without automatic hire")
 	var field_position: Vector3 = mechanic.position
 	check(runtime.accept_encounter() and not runtime.accept_encounter(), "Hire is accepted once")
@@ -81,6 +87,35 @@ func _run() -> void:
 		saw_climb = saw_climb or mechanic.state == "boarding"
 	check(saw_climb and mechanic.boarded and not mechanic.recruit_boarding, "Recruit walks to carrier and completes timed climb")
 	check(raid.caravan.wagons[0].hp > hp - 30, "Specialist starts work after boarding")
+	var Boarding = preload("res://modules/crew/crew_boarding.gd")
+	var teased := Factory.create("shooter", "teased-recruit", Vector3(0, 0, 15))
+	teased.boarded = false
+	teased.recruit_boarding = true
+	teased.seat = 0
+	var moving_pickup := {"position": Vector3.ZERO, "heading": 0.0}
+	for frame in 60:
+		moving_pickup.position.x += 2
+		Boarding.step(teased, raid.caravan, moving_pickup, runtime.navigation, 0.1)
+		if teased.state == "offended":
+			break
+	var refusal_time := float(teased.get("boarding_refusal", 0))
+	check(teased.state == "offended" and not teased.boarded and refusal_time >= 5 and refusal_time <= 10, "Driving away during approach triggers five to ten seconds of refusal")
+	check(teased.reaction_text in Encounter.OFFENDED_LINES and teased.reaction_text.size() == 2, "Offended reply comes from reusable English and Russian variants")
+	moving_pickup.position = teased.position + Vector3(3, 0, 1.25)
+	var waiting_position: Vector3 = teased.position
+	for frame in int(refusal_time / 0.1):
+		Boarding.step(teased, raid.caravan, moving_pickup, runtime.navigation, 0.1)
+	check(not teased.boarded and teased.position == waiting_position, "Returning pickup cannot bypass refusal or move the offended recruit")
+	for frame in 20:
+		Boarding.step(teased, raid.caravan, moving_pickup, runtime.navigation, 0.1)
+	check(teased.boarded, "Recruit resumes and boards after refusal expires")
+	teased.boarded = false
+	teased.recruit_boarding = true
+	teased.state = "boarding"
+	teased.boarding_progress = 0.9
+	moving_pickup.position += Vector3(30, 0, 0)
+	Boarding.step(teased, raid.caravan, moving_pickup, runtime.navigation, 0.1)
+	check(not teased.boarded and teased.state == "approaching", "Driving away mid-climb cancels climb instead of teleporting recruit aboard")
 	var civilian := Factory.create_neutral("civilian", "test-civilian", Vector3(44, 0, 2))
 	var identity: int = civilian.identity
 	runtime.recruits.append(civilian)
@@ -143,6 +178,13 @@ func _run() -> void:
 	for frame in 3:
 		await process_frame
 	check(bubble.size.y < 140 and bubble.get_global_rect().encloses(bubble.label.get_global_rect()), "First speech bubble wraps all text inside its background without excessive height")
+	bubble.show_interaction(true, false)
+	check(bubble.prompt.visible and bubble.prompt.disabled, "Distant NPC has a visible dimmed E prompt")
+	bubble.show_interaction(true, true)
+	check(not bubble.prompt.disabled and (bubble.prompt.get_theme_stylebox("normal") as StyleBoxFlat).border_width_left == 2, "Nearby NPC has a clickable outlined E prompt")
+	bubble.show_interaction(false, false)
+	bubble.show_message(Encounter.OFFENDED_LINES[0][1], false, true)
+	check(bubble.negative and not bubble.positive and bubble.label.visible, "Offended speech presents sad face with visible reply")
 	bubble.show_message("", true)
 	await process_frame
 	check(bubble.positive and bubble.size == Vector2(48, 48) and not bubble.label.visible, "Accepted survivor uses a compact smile instead of floating text")

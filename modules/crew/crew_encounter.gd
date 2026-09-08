@@ -1,6 +1,11 @@
 extends RefCounted
 
-const RANGE := 12.0
+const RANGE := 5.0
+const SPEECH_RANGE := 40.0
+const SPAWN_PLAYER_CLEARANCE := 180.0
+const SPAWN_SEPARATION := 120.0
+const SPAWN_EDGE_MARGIN := 40.0
+const SPAWN_ATTEMPTS := 128
 const PREFERRED := {"mechanic": "repair", "shooter": "weapon", "loader": "weapon", "looter": "cargo", "fuel": "fuel", "anti_tank": "anti_tank", "anti_air": "anti_air", "civilian": "cargo"}
 const NAMES := [["Мира", "Mira"], ["Роман", "Roman"], ["Ника", "Nika"], ["Лев", "Lev"], ["Ася", "Asya"], ["Борис", "Boris"], ["Тая", "Taya"], ["Марк", "Mark"]]
 const STORIES := [
@@ -14,6 +19,14 @@ const CALLS := [
 	["Эй, странник! Подъедь сюда!", "Hey, traveller! Come over here!"],
 	["Помогите! Не оставляйте меня!", "Please help! Don't leave me!"],
 	["В караване найдётся место?", "Got room in your convoy?"]
+]
+
+const OFFENDED_LINES := [
+	["Да пошёл ты! Хватит издеваться.", "Screw you! Stop messing with me."],
+	["Я тебе не игрушка. Подожди теперь.", "I'm not your toy. Now you can wait."],
+	["Очень смешно. Сам за машиной побегай!", "Very funny. Chase your own damn truck!"],
+	["Хватит кататься кругами. Я обиделся.", "Quit driving in circles. I'm pissed off."],
+	["Ну и придурок. Дай мне минуту.", "What an asshole. Give me a minute."]
 ]
 
 static func identity(id: String) -> int:

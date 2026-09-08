@@ -141,8 +141,7 @@ func refresh() -> void:
 		"settings": _settings()
 
 func item_name(id: String) -> String:
-	var names := {"scrap": ["Лом", "Scrap"], "circuit": ["Электроника", "Electronics"], "relic": ["Артефакт", "Relic"], "repair_kit": ["Ремкомплект", "Repair kit"], "fuel_cell": ["Топливная ячейка", "Fuel cell"], "weapon_parts": ["Оружейный комплект", "Weapon kit"]}
-	return words(names[id][0], names[id][1]) if names.has(id) else id
+	return preload("res://modules/meta/expedition_catalog.gd").item_name(id, Locale.language)
 
 func _row(title: String, detail: String, actions: Array, icon_key: String = "stash", model_kind := "", model_id := "") -> void:
 	var panel := PanelContainer.new()

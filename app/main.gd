@@ -882,7 +882,7 @@ func _on_world_state(data: Dictionary) -> void:
 	var points: Array = []
 	if is_instance_valid(raid_loot):
 		for crate: Dictionary in raid_loot.crates:
-			points.append({"position": crate.position})
+			points.append({"position": crate.position, "item": crate.item, "count": crate.count})
 	data["raid_loot"] = points
 	hud.update_world(data)
 

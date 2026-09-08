@@ -1,5 +1,6 @@
 extends Node3D
 const Terrain = preload("res://modules/caravan/terrain_surface.gd")
+const PickupMotion = preload("res://presentation/world/pickup_motion.gd")
 signal screen_impact(power: float)
 
 const SourceModel = preload("res://presentation/combat/source_model.gd")
@@ -195,7 +196,4 @@ func on_world_event(event: Dictionary) -> void:
 		_effects.on_world_event(event)
 
 static func pickup_transform(pickup: Dictionary, elapsed: float) -> Transform3D:
-	var phase := elapsed * 3.4 + float(pickup.get("phase", 0.0))
-	var point: Vector3 = pickup.position
-	point.y = Terrain.height_at(point.x, point.z) + 0.72 + sin(phase) * 0.2
-	return Transform3D(Basis(Vector3.UP, elapsed * 4.4) * Basis(Vector3.BACK, sin(phase * 0.7) * 0.15), point)
+	return PickupMotion.pose(pickup.position, elapsed, float(pickup.get("phase", 0.0)))

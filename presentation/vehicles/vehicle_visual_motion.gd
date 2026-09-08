@@ -1,5 +1,6 @@
 extends RefCounted
 const Dimensions = preload("res://modules/caravan/player_dimensions.gd")
+const Fuel = preload("res://modules/caravan/vehicle_fuel.gd")
 
 static func target_scale(level: int) -> float:
 	return Dimensions.target_scale(level)
@@ -43,8 +44,7 @@ static func aim_angles(origin: Vector3, target: Vector3) -> Vector2:
 
 static func body(state: Dictionary, player: Dictionary, delta: float) -> void:
 	var speed: float = player.get("speed", 0.0)
-	var max_speed := maxf(4.2, (9.2 + player.get("level", 1) * 0.18) * player.get("speed_mult", 1.0) * player.get("motor_speed_mult", 1.0) - player.get("weight", 12.0) * 0.105)
-	max_speed *= (1.0 + player.get("momentum", 0.0) * 0.08) * (1.0 if player.get("fuel", 100.0) > 0.0 else 0.35)
+	var max_speed := Fuel.maximum_speed(float(player.get("fuel", Fuel.CAPACITY)), player)
 	var amount := clampf(absf(speed) / maxf(max_speed, 1.0), 0.0, 1.7)
 	var acceleration: float = (speed - state.last_speed) / maxf(delta, 0.001)
 	state.last_speed = speed

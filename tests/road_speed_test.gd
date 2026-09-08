@@ -30,6 +30,10 @@ func _run() -> void:
 	root.add_child(car)
 	car.set_physics_process(false)
 	Input.action_press("drive_forward")
+	check(is_equal_approx(terminal_speed(car, 30.0, {}, 100.0, 1.0) * 3.6, 50.0), "Starter reaches 50 km/h off-road")
+	check(is_equal_approx(terminal_speed(car, 0.0, {}, 100.0, 1.0) * 3.6, 75.0), "Starter reaches 75 km/h on road")
+	check(Fuel.maximum_speed(100, {"motor_speed_mult": 1.08}) > Fuel.maximum_speed(100), "Motor upgrade still improves top speed")
+	check(Fuel.maximum_speed(100, {"weight": 20.0}) < Fuel.maximum_speed(100), "Extra cargo weight still reduces top speed")
 	for stats: Dictionary in [{}, {"speed_mult": 1.2, "motor_speed_mult": 1.3, "weight": 20.0, "momentum": 2.0}]:
 		for fuel in [100.0, 0.0]:
 			for movement in [1.0, 0.6]:

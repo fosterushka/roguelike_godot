@@ -7,6 +7,7 @@ const Navigation = preload("res://modules/crew/crew_navigation.gd")
 const View = preload("res://presentation/crew/crew_view.gd")
 const Air = preload("res://modules/world/airborne_motion.gd")
 const Policy = preload("res://modules/world/destruction_policy.gd")
+const Bounds = preload("res://modules/world/world_bounds.gd")
 const Ground = preload("res://modules/caravan/terrain_surface.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 signal encounter_requested(person: Dictionary)
@@ -14,7 +15,6 @@ const Encounter = preload("res://modules/crew/crew_encounter.gd")
 const Boarding = preload("res://modules/crew/crew_boarding.gd")
 var reactions: Array[Dictionary] = []
 var pending: Dictionary = {}
-var encounter_clock := 0.0
 var expedition: RefCounted
 var combat: Node
 var world: Node
@@ -37,6 +37,7 @@ func setup(expedition_value: RefCounted, combat_value: Node, world_value: Node, 
 	add_child(view)
 	view.set_vehicle(vehicle)
 	view.prepare()
+	view.interaction_requested.connect(interact_person)
 
 func reset(seed_value: int) -> void:
 	_seed = seed_value
@@ -45,33 +46,38 @@ func reset(seed_value: int) -> void:
 	if is_instance_valid(view):
 		view.update_reactions(reactions)
 	pending = {}
-	encounter_clock = 0.0
 	service.reset()
 	navigation.paths.clear()
 	combat.model.player.crew_collect = false
-	var villages: Array = world.arena.world_layout.get("villages", [])
 	var roles: Array = Catalog.ROLES.keys()
 	for index in roles.size():
-		var center := Vector3.ZERO
-		if index > 0 and not villages.is_empty():
-			var village: Dictionary = villages[(index - 1) % villages.size()]
-			center = Vector3(float(village.x), 0, float(village.z))
-		else:
-			center = combat.model.player.position + Vector3.RIGHT.rotated(Vector3.UP, index * TAU / 7) * (18.0 if index == 0 else 60.0 + index * 15)
-		var point := _safe_spawn(center, index)
+		var point := _safe_spawn(index)
 		var person := Factory.create_neutral(str(roles[index]), "stranded-%d-%d" % [seed_value, index], point)
 		recruits.append(person)
-	view.update_people(_all_people(), 0)
+	_update_view(0)
 
-func _safe_spawn(center: Vector3, index: int) -> Vector3:
-	center.y = 0
-	for attempt in 96:
-		var angle := Policy.roll("%d:crew:%d:%d" % [_seed, index, attempt]) * TAU
-		var radius := 0.0 if attempt == 0 else 3.0 + attempt * 0.6
-		var point := center + Vector3(cos(angle), 0, sin(angle)) * radius
-		if absf(point.x) < Ground.HALF_SIZE - 20 and absf(point.z) < Ground.HALF_SIZE - 20 and world.props.is_clear(point, 1.2):
+func _safe_spawn(index: int) -> Vector3:
+	var limit := Bounds.PLAYABLE_RADIUS - Encounter.SPAWN_EDGE_MARGIN
+	for attempt in Encounter.SPAWN_ATTEMPTS:
+		var key := "%d:crew:%d:%d" % [_seed, index, attempt]
+		var angle := Policy.roll(key + ":angle") * TAU
+		var radius := sqrt(Policy.roll(key + ":radius")) * limit
+		var point := Vector3(cos(angle), 0, sin(angle)) * radius
+		if Encounter.flat_distance(point, combat.model.player.position) < Encounter.SPAWN_PLAYER_CLEARANCE:
+			continue
+		if recruits.any(func(person): return Encounter.flat_distance(point, person.position) < Encounter.SPAWN_SEPARATION):
+			continue
+		if world.props.is_clear(point, 1.2):
 			return point
-	return world.props.resolve_motion(center, center, 1.2)
+	# Keep the fallback outside the arrival area even in unusually dense layouts.
+	var fallback_angle := atan2(-combat.model.player.position.z, -combat.model.player.position.x) + float(index) / Catalog.ROLES.size()
+	var fallback := Vector3(cos(fallback_angle), 0, sin(fallback_angle)) * limit
+	return world.props.resolve_motion(fallback, fallback, 1.2)
+
+func _update_view(delta: float) -> void:
+	for person: Dictionary in recruits:
+		person.interaction_available = _enabled() and _can_interact(person)
+	view.update_people(_all_people(), delta)
 
 func _enabled() -> bool:
 	return expedition != null and expedition.active and not expedition.caravan.locked and combat.model.running and world.running and float(combat.model.player.get("hp", 0)) > 0
@@ -79,7 +85,6 @@ func _enabled() -> bool:
 func step(delta: float) -> void:
 	if not _enabled() or not is_finite(delta) or delta <= 0:
 		return
-	encounter_clock += delta
 	var reactions_changed := false
 	for reaction: Dictionary in reactions.duplicate():
 		reaction.time -= delta
@@ -90,9 +95,6 @@ func step(delta: float) -> void:
 		view.update_reactions(reactions)
 	for person: Dictionary in _all_people():
 		person.reaction_time = maxf(0, float(person.get("reaction_time", 0)) - delta)
-	for recruit: Dictionary in recruits:
-		if Encounter.distance(recruit, combat.model.player, expedition.caravan.wagons) > Encounter.RANGE + 4:
-			recruit.auto_talk_blocked = false
 	for person: Dictionary in _all_people():
 		_step_airborne(person, delta)
 	for person: Dictionary in expedition.caravan.crew:
@@ -109,10 +111,7 @@ func step(delta: float) -> void:
 		Boarding.step(person, expedition.caravan, combat.model.player, navigation, delta)
 	_step_refusals(delta)
 	service.step(delta, combat.model.player, expedition.caravan.wagons, expedition.caravan.crew, combat.model.enemies, _pickups(), {"move": navigation.move, "collect": _collect, "deliver": _deliver, "fire": _fire})
-	view.update_people(_all_people(), delta)
-	var candidate := _nearest_recruit()
-	if not candidate.is_empty() and pending.is_empty() and not candidate.get("auto_talk_blocked", false) and encounter_clock >= float(candidate.get("talk_after", 0)):
-		interact()
+	_update_view(delta)
 
 func _all_people() -> Array:
 	var people: Array = recruits.duplicate()
@@ -156,7 +155,7 @@ func rescue_nearest() -> bool:
 		return false
 	if expedition.caravan.rescue(person):
 		recruits.erase(person)
-		view.update_people(_all_people(), 0)
+		_update_view(0)
 		return true
 	return false
 
@@ -172,21 +171,28 @@ func interact() -> bool:
 	encounter_requested.emit(person)
 	return true
 
+func interact_person(id: String) -> bool:
+	if not _enabled() or not pending.is_empty():
+		return false
+	for person: Dictionary in recruits:
+		if str(person.id) == id and _can_interact(person):
+			pending = person
+			encounter_requested.emit(person)
+			return true
+	return false
+
 func accept_encounter() -> bool:
-	if pending.is_empty() or not recruits.has(pending):
+	if pending.is_empty() or not recruits.has(pending) or not _can_interact(pending):
 		return false
 	if not expedition.caravan.rescue(pending):
 		return false
 	pending.reaction_time = 5.0
 	recruits.erase(pending)
 	pending = {}
-	view.update_people(_all_people(), 0)
+	_update_view(0)
 	return true
 
 func cancel_encounter() -> void:
-	if not pending.is_empty():
-		pending.talk_after = encounter_clock + 10.0
-		pending.auto_talk_blocked = true
 	pending = {}
 
 func decline_encounter() -> String:
@@ -253,11 +259,14 @@ func _turn_hostile(person: Dictionary) -> void:
 		view.update_reactions(reactions)
 	recruits.erase(person)
 
+func _can_interact(person: Dictionary) -> bool:
+	return not person.get("dead", false) and person.get("state", "") == "stranded" and not person.get("airborne", false) and float(person.get("tornado_recovery", 0)) <= 0 and Encounter.distance(person, combat.model.player, expedition.caravan.wagons) <= Encounter.RANGE
+
 func _nearest_recruit() -> Dictionary:
 	var found := {}
 	var distance := Encounter.RANGE
 	for person: Dictionary in recruits:
-		if person.get("dead", false) or person.get("state", "") != "stranded" or person.get("airborne", false) or float(person.get("tornado_recovery", 0)) > 0:
+		if not _can_interact(person):
 			continue
 		var separation := Encounter.distance(person, combat.model.player, expedition.caravan.wagons)
 		if separation <= distance:

@@ -6,6 +6,7 @@ const Appearance = preload("res://presentation/crew/crew_appearance.gd")
 const Ground = preload("res://modules/caravan/terrain_surface.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 const Speech = preload("res://presentation/crew/crew_speech.gd")
+signal interaction_requested(id: String)
 var speech_layer: CanvasLayer
 var reaction_views: Array[Dictionary] = []
 var views: Array[Dictionary] = []
@@ -82,6 +83,7 @@ func prepare() -> void:
 		label.modulate = Color("d1efb4")
 		root.add_child(label)
 		var speech := Speech.new()
+		speech.interaction_requested.connect(func(): interaction_requested.emit(str(views[index].id)))
 		speech_layer.add_child(speech)
 		root.visible = false
 		add_child(root)
@@ -133,17 +135,19 @@ func update_people(people: Array, delta: float) -> void:
 				view.seated.set_meta("appearance", appearance)
 		var calling: bool = person.get("faction", "") == "neutral" and person.get("state", "") == "stranded" and not person.get("dead", false) and not person.get("airborne", false)
 		var phase := clock + float(person.get("identity", index)) * 0.63
-		var nearby := _vehicle == null or Encounter.flat_distance(person.position, _vehicle.global_position) < 40
-		var happy: bool = float(person.get("reaction_time", 0)) > 0 and person.get("faction", "") == "ally" and not person.get("dead", false)
+		var nearby := _vehicle == null or Encounter.flat_distance(person.position, _vehicle.global_position) < Encounter.SPEECH_RANGE
+		var sad: bool = person.get("state", "") == "offended" and not person.get("dead", false)
+		var happy: bool = float(person.get("reaction_time", 0)) > 0 and person.get("faction", "") == "ally" and not person.get("dead", false) and not sad and not person.has("reaction_text")
 		var reply: bool = float(person.get("reaction_time", 0)) > 0 and person.has("reaction_text") and not person.get("dead", false)
 		view.show_speech = happy or reply or (calling and nearby)
 		var words: String = Encounter.CALLS[posmod(int(phase / 6) + int(person.get("identity", 0)), Encounter.CALLS.size())][0 if Locale.language == "ru" else 1]
 		if reply:
 			words = person.reaction_text[0 if Locale.language == "ru" else 1]
 		elif calling:
-			words += "\nE · " + str(person.get("name" if Locale.language == "ru" else "name_en", person.role))
-		if view.speech.label.text != words or view.speech.positive != happy:
-			view.speech.show_message(words, happy)
+			words += "\n" + str(person.get("name" if Locale.language == "ru" else "name_en", person.role))
+		view.speech.show_interaction(calling, bool(person.get("interaction_available", false)))
+		if view.speech.message != words or view.speech.positive != happy or view.speech.negative != sad:
+			view.speech.show_message(words, happy, sad)
 		view.label.visible = false
 
 		if calling:

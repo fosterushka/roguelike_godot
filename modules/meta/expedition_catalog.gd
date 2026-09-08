@@ -18,6 +18,27 @@ const UPGRADES := {
 	"engine": {"name": "Настройка двигателя", "description": "+3% скорости в каждом рейде за уровень.", "base_cost": 220, "max_level": 3},
 }
 
+const LOOT_SOURCE_ITEMS := {
+	"convoy": "weapon_parts", "raiderSupplyConvoy": "weapon_parts", "scavengerRoute": "weapon_parts",
+	"fort": "relic", "foundry": "relic", "garrison": "relic", "stronghold": "relic", "boss": "relic",
+	"settlement": "repair_kit", "settlementDistress": "repair_kit",
+}
+const ELECTRONICS_INTERVAL := 5
+const ENGLISH_ITEM_NAMES := {
+	"scrap": "Scrap", "circuit": "Electronics", "relic": "Relic",
+	"repair_kit": "Repair kit", "fuel_cell": "Fuel cell", "weapon_parts": "Weapon kit",
+}
+
+static func loot_item(source: String, index: int = 0) -> String:
+	if ITEMS.has(source):
+		return source
+	return str(LOOT_SOURCE_ITEMS.get(source, "circuit" if index % ELECTRONICS_INTERVAL == ELECTRONICS_INTERVAL - 1 else "scrap"))
+
+static func item_name(id: String, language: String = "en") -> String:
+	if not ITEMS.has(id):
+		return id
+	return str(ITEMS[id].name) if language == "ru" else str(ENGLISH_ITEM_NAMES.get(id, id))
+
 static func quests() -> Dictionary:
 	return Missions.all()
 

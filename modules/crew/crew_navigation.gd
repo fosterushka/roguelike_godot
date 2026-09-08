@@ -1,5 +1,7 @@
 extends RefCounted
 # Small local visibility graph. Every edge and movement step uses the same solid-prop query.
+const FAILED_ROUTE_RETRY := 0.5
+const TARGET_CHANGE_DISTANCE := 1.5
 var props: RefCounted
 var paths: Dictionary = {}
 
@@ -15,12 +17,21 @@ func move(person: Dictionary, destination: Vector3, speed: float, delta: float) 
 	var id := str(person.id)
 	if props == null:
 		return start
+	var cached: Dictionary = paths.get(id, {})
+	var same_target := not cached.is_empty() and Vector3(cached.target).distance_to(destination) <= TARGET_CHANGE_DISTANCE
+	if same_target and cached.points.is_empty() and float(cached.get("retry_after", 0)) > 0:
+		cached.retry_after = maxf(0, float(cached.retry_after) - delta)
+		person.state = "blocked"
+		return start
+	if not props.is_clear(destination, radius):
+		paths[id] = {"target": destination, "points": [], "retry_after": FAILED_ROUTE_RETRY}
+		person.state = "blocked"
+		return start
 	if props.first_segment(start, destination, radius, true).is_empty():
 		paths.erase(id)
 		return props.resolve_motion(start, start.move_toward(destination, speed * delta), radius)
-	var cached: Dictionary = paths.get(id, {})
-	if cached.is_empty() or Vector3(cached.target).distance_to(destination) > 1.5 or cached.points.is_empty() or not props.first_segment(start, cached.points[0], radius, true).is_empty():
-		cached = {"target": destination, "points": _route(start, destination, radius)}
+	if cached.is_empty() or not same_target or cached.points.is_empty() or not props.first_segment(start, cached.points[0], radius, true).is_empty():
+		cached = {"target": destination, "points": _route(start, destination, radius), "retry_after": FAILED_ROUTE_RETRY}
 		paths[id] = cached
 	if cached.points.is_empty():
 		person.state = "blocked"

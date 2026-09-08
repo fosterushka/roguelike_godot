@@ -10,6 +10,9 @@ import tempfile
 import time
 
 TESTS = [
+    'boundary_screen_test.gd',
+    'raid_loot_test.gd',
+    'fuel_station_test.gd',
 	'model_dedup_test.gd', 'model_gallery_test.gd', 'environment_lod_test.gd', 'world_quality_test.gd',
     'base_collision_test.gd', 'handling_wildlife_test.gd', 'world_landscape_test.gd', 'combat_upgrade_test.gd',
     'ui_icons_test.gd',
@@ -42,7 +45,9 @@ def has_success(output):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--godot', default=os.environ.get('GODOT_BIN', '/Users/fosterushka/Downloads/Godot.app/Contents/MacOS/Godot'))
+    installed = Path('/Applications/Godot.app/Contents/MacOS/Godot')
+    downloaded = Path.home() / 'Downloads/Godot.app/Contents/MacOS/Godot'
+    parser.add_argument('--godot', default=os.environ.get('GODOT_BIN', str(installed if installed.exists() else downloaded)))
     parser.add_argument('--only', nargs='+', choices=TESTS)
     parser.add_argument('--timeout', type=float, default=180)
     parser.add_argument('--output', type=Path)

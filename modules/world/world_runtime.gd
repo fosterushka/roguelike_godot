@@ -4,6 +4,7 @@ signal state_changed(data: Dictionary)
 signal world_event(event: Dictionary)
 
 const Props = preload("res://modules/world/prop_system.gd")
+const Stations = preload("res://modules/world/fuel_station_rules.gd")
 const Weather = preload("res://modules/world/weather_state.gd")
 const Rules = preload("res://modules/world/weather_rules.gd")
 const Damage = preload("res://modules/world/damage_context.gd")
@@ -16,10 +17,9 @@ const Activities = preload("res://modules/world/activities/activity_system.gd")
 const Support = preload("res://modules/world/activities/support_system.gd")
 const Foundries = preload("res://modules/world/activities/foundry_system.gd")
 const ActivityView = preload("res://presentation/world/activity_view.gd")
-const PLAYABLE_RADIUS := 1248.0
+const PLAYABLE_RADIUS := preload("res://modules/world/world_bounds.gd").PLAYABLE_RADIUS
 const BOUNDARY_GRACE := 15.0
-const STATION_RADIUS := 11.0
-const STATION_REFILL := 24.0
+const PROP_PICKUP_SPACING := 2.4
 
 var wind := preload("res://modules/world/wind_state.gd").new()
 var ambient := preload("res://modules/world/ambient_system.gd").new()
@@ -239,11 +239,20 @@ func _flush_prop_events() -> void:
 			arena.set_prop_destroyed(str(event.id), true)
 		elif kind == "prop_landed":
 			arena.set_prop_position(str(event.id), event.position)
-		if kind == "prop_destroyed" and int(event.get("salvage", 0)) > 0:
-			combat.model.spawn_pickup(event.position, int(event.salvage))
+		if kind == "prop_destroyed":
+			_spawn_prop_drops(event)
 		world_event.emit(event)
 	if rebuild_navigation:
 		_refresh_rock_navigation()
+
+func _spawn_prop_drops(event: Dictionary) -> void:
+	var drops: Dictionary = event.get("drops", {}).duplicate()
+	if int(event.get("salvage", 0)) > 0:
+		drops["salvage"] = int(drops.get("salvage", 0)) + int(event.salvage)
+	var kinds: Array = drops.keys().filter(func(kind): return int(drops[kind]) > 0)
+	for index in kinds.size():
+		var offset := Vector3.RIGHT * (index - (kinds.size() - 1) * 0.5) * PROP_PICKUP_SPACING
+		combat.model.spawn_pickup(event.position + offset, int(drops[kinds[index]]), str(kinds[index]))
 
 func _refresh_rock_navigation() -> void:
 	rock_steering.setup(arena.world_layout.rockObstacles.filter(func(rock: Dictionary) -> bool: return not props.records.get(str(rock.id), {}).get("destroyed", false)))
@@ -259,15 +268,15 @@ func _on_combat_event(event: Dictionary) -> void:
 func _refill_station(delta: float) -> void:
 	station = {}
 	for landmark: Dictionary in arena.world_layout.landmarks:
-		if str(landmark.type) not in ["pumpjack", "refinery"]:
+		if not Stations.is_station(str(landmark.type)):
 			continue
 		var prop: Dictionary = props.records.get("prop:" + str(landmark.id), {})
 		if not prop.is_empty() and prop.destroyed:
 			continue
 		var point := Vector3(landmark.x, 0, landmark.z)
-		if Grid.distance_xz(vehicle.global_position, point) > STATION_RADIUS:
+		if Grid.distance_xz(vehicle.global_position, point) > Stations.REFILL_RADIUS:
 			continue
-		var amount := minf(vehicle.max_fuel - vehicle.fuel, STATION_REFILL * delta)
+		var amount := minf(vehicle.max_fuel - vehicle.fuel, Stations.REFILL_PER_SECOND * delta)
 		vehicle.fuel += maxf(0.0, amount)
 		combat.model.player.fuel = vehicle.fuel
 		station = {"id": landmark.id, "position": point, "amount": maxf(0.0, amount)}

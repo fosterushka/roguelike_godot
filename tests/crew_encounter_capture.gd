@@ -11,6 +11,7 @@ const Model = preload("res://modules/combat/combat_model.gd")
 func _init() -> void:
 	_run.call_deferred()
 func _run() -> void:
+	Locale.settings_path = "/private/tmp/crew-capture-language-%d.cfg" % Time.get_ticks_usec()
 	Locale.initialize()
 	root.size = Vector2i(1280, 800)
 	var stage := Node3D.new()
@@ -42,12 +43,23 @@ func _run() -> void:
 	npc.identity = 0
 	Locale.language = "ru"
 	view.update_people([npc], 0.4)
-	await capture("calling")
+	await capture("calling-distant")
+	npc.interaction_available = true
+	view.update_people([npc], 0)
+	await capture("calling-nearby")
 	npc.faction = "ally"
 	npc.state = "approaching"
 	npc.reaction_time = 5.0
 	view.update_people([npc], 0.1)
 	await capture("accepted")
+	npc.state = "offended"
+	npc.reaction_text = preload("res://modules/crew/crew_encounter.gd").OFFENDED_LINES[0]
+	view.update_people([npc], 0)
+	await capture("offended-ru")
+	Locale.language = "en"
+	view.update_people([npc], 0)
+	await capture("offended-en")
+	Locale.language = "ru"
 	npc.faction = "neutral"
 	npc.state = "fleeing"
 	npc.reaction_text = ["Тогда поищу других попутчиков.", "Then I'll find another crew."]

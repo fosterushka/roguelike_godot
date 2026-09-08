@@ -2,6 +2,7 @@ extends RefCounted
 
 const Damage = preload("res://modules/world/damage_context.gd")
 const Policy = preload("res://modules/world/destruction_policy.gd")
+const Stations = preload("res://modules/world/fuel_station_rules.gd")
 const HEIGHTS := {"building": 3.2, "monument": 12.0, "well": 2.5, "stall": 2.5, "streetlight": 3.8, "signal": 3.6, "windmill": 7.3, "ruin": 3.0, "wreck": 2.2, "tree": 7.0, "deadTree": 6.0, "boulder": 3.0}
 const Grid = preload("res://modules/world/spatial_grid.gd")
 var grid := Grid.new()
@@ -24,8 +25,11 @@ func setup(layout: Dictionary) -> void:
 	_original_positions.clear()
 	_seen_impacts.clear()
 	ram_cooldown = 0.0
+	var station_metadata := Stations.prop_metadata(layout)
 	for source: Dictionary in layout.props:
 		var record := source.duplicate()
+		if station_metadata.has(str(source.id)):
+			record.merge(station_metadata[str(source.id)], true)
 		record.position = Vector3(source.position.x, 0, source.position.z)
 		record.max_hp = float(source.hp)
 		record.destroyed = false
@@ -78,6 +82,7 @@ func destroy(prop: Dictionary, force: float = 1.0, context: Dictionary = {}) -> 
 	destroyed_ids.append(str(prop.id))
 	var event := {"kind": "prop_destroyed", "id": prop.id, "prop_kind": prop.kind, "position": prop.position, "salvage": prop.salvage if context.rewarded else 0, "force": force, "large": prop.get("large", prop.kind in ["building", "monument"]), "debris_kind": prop.get("debrisKind", "mixed" if prop.kind in ["monument", "streetlight"] else "wood"), "tree_fall": Policy.falls(prop, context)}
 	event.merge(context, true)
+	event.drops = prop.get("drops", {}).duplicate(true) if context.rewarded else {}
 	events.append(event)
 	if event.tree_fall and Policy.leaves_stump(prop):
 		_create_stump(prop)

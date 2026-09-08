@@ -105,7 +105,8 @@ func edge_candidates() -> Array[Dictionary]:
 	for crate: Dictionary in world_state.get("raid_loot", []):
 		if not _offscreen(crate.position):
 			continue
-		var candidate := _candidate("raid_loot", crate.position, "ДОБЫЧА" if Locale.language == "ru" else "LOOT", Color("e8be65"), 3)
+		var label := preload("res://modules/meta/expedition_catalog.gd").item_name(str(crate.get("item", "scrap")), Locale.language)
+		var candidate := _candidate("raid_loot", crate.position, label, Color("e8be65"), 3)
 		if nearest_loot.is_empty() or candidate.distance < nearest_loot.distance:
 			nearest_loot = candidate
 	if not nearest_loot.is_empty():

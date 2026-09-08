@@ -27,6 +27,9 @@ func _run_tests() -> void:
 			var controls: Dictionary = {"throttle": segment.get("throttle", 0.0), "steer": segment.get("steer", 0.0), "handbrake": segment.get("handbrake", false)}
 			for _step: int in range(int(segment["steps"])):
 				var tuning: Dictionary = Fuel.drive_tuning(fuel, scenario.get("stats", {"weight": 10.0}))
+				# These immutable TypeScript fixtures test the motion integrator at the
+				# original speed. Current 50 km/h balance is tested by road_speed_test.
+				tuning.maximum_speed = _legacy_fixture_speed(fuel, scenario.get("stats", {"weight": 10.0}))
 				tuning["nitro"] = segment.get("nitro", false)
 				tuning["ram"] = segment.get("ram", false)
 				tuning["traction"] = scenario["traction"]
@@ -49,6 +52,9 @@ func _run_tests() -> void:
 	print("Vehicle TypeScript parity: %d scenarios, %d checks, %d failures" % [fixture["scenarios"].size(), checks, failures])
 	failures += await _test_controller()
 	quit(1 if failures > 0 else 0)
+
+func _legacy_fixture_speed(fuel: float, stats: Dictionary) -> float:
+	return maxf(4.2, (9.2 + float(stats.get("level", 1)) * 0.18) * float(stats.get("speed_mult", 1.0)) * float(stats.get("motor_speed_mult", 1.0)) - float(stats.get("weight", 12)) * 0.105) * (1.0 + float(stats.get("momentum", 0.0)) * 0.08) * (1.0 if fuel > 0 else 0.35)
 
 func _test_controller() -> int:
 	for action: String in ["drive_forward", "drive_backward", "drive_left", "drive_right", "handbrake"]:

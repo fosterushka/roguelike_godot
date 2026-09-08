@@ -99,13 +99,7 @@ func begin_run(player: Dictionary) -> bool:
 func collect_loot(source: String, count: int = 1) -> bool:
 	if not active or _pending_result != null or count <= 0:
 		return false
-	var id := source
-	if not Catalog.ITEMS.has(id):
-		match source:
-			"convoy", "raiderSupplyConvoy", "scavengerRoute": id = "weapon_parts"
-			"fort", "foundry", "garrison", "stronghold", "boss": id = "relic"
-			"settlement", "settlementDistress": id = "repair_kit"
-			_: id = "circuit" if _loot_index % 5 == 4 else "scrap"
+	var id := Catalog.loot_item(source, _loot_index)
 	var accepted := count
 	var item_size := int(Catalog.ITEMS[id].size)
 	var containers: Array = [{"cargo": backpack, "cargo_capacity": base_capacity()}]

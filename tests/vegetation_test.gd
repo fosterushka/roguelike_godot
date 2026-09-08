@@ -23,6 +23,12 @@ func check(value: bool, message: String) -> void:
 			push_error(message)
 
 func _run() -> void:
+	var palette := Image.load_from_file("res://assets/environment/tree_atlas.png")
+	var palette_colors := {}
+	for y in palette.get_height():
+		for x in palette.get_width():
+			palette_colors[palette.get_pixel(x, y).to_html()] = true
+	check(palette_colors.size() == 4, "Tree palette contains only four solid colors without leaf, bark or gradient detail")
 	var signatures := {}
 	for pool: String in Trees.POOLS.filter(func(pool: String) -> bool: return pool != Trees.DEAD_POOL):
 		var mesh := Trees.mesh_for(pool)
@@ -31,9 +37,9 @@ func _run() -> void:
 		check(mesh.get_aabb().size.y > 6.0 and mesh.get_aabb().size.x > 2.0, "Every species has a recognizable full-sized silhouette")
 		var arrays := mesh.surface_get_arrays(0)
 		var tree_material := mesh.surface_get_material(0) as StandardMaterial3D
-		check(tree_material.albedo_texture != null, "Trees retain their soft color ramp material")
+		check(tree_material.albedo_texture != null, "Trees retain their shared solid-color palette")
 		check(arrays[Mesh.ARRAY_VERTEX].size() == arrays[Mesh.ARRAY_COLOR].size(), "Trunk and foliage colors survive instancing")
-		check(arrays[Mesh.ARRAY_INDEX].size() <= Trees.Library.TREE_TRIANGLE_BUDGET * 3, "Detailed tree geometry stays inside the exported triangle budget")
+		check(arrays[Mesh.ARRAY_INDEX].size() <= Trees.Library.TREE_TRIANGLE_BUDGET * 3, "Simple tree geometry stays inside the exported triangle budget")
 		signatures[str(mesh.get_aabb())] = true
 	check(signatures.size() == 2, "Birch and spruce have distinct crown proportions")
 	_check_replacements()

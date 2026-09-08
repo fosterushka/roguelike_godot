@@ -17,13 +17,18 @@ func _start(game) -> void:
 	for index in 60:
 		game.session_flow.advance(0.05)
 	check(game.screen_state == "running" and game.expedition.active, "Main starts a real active raid")
-func _place(game, point: Vector3) -> void:
+func _place(game, point: Vector3, with_convoy: bool = false) -> void:
 	game.vehicle.global_position = Vector3(point.x, Ground.height_at(point.x, point.z) + 0.4, point.z)
 	game.vehicle.motion.x = point.x
 	game.vehicle.motion.z = point.z
 	game.vehicle.motion.speed = 0
 	game.vehicle.velocity = Vector3.ZERO
 	game.combat._sync_vehicle_to_model()
+	if with_convoy:
+		for wagon: Dictionary in game.expedition.caravan.wagons:
+			wagon.erase("pose")
+		game.caravan.formation.reset()
+		game.caravan._advance_formation(0.0)
 func _key(game, key: Key) -> void:
 	var event := InputEventKey.new()
 	event.physical_keycode = key
@@ -60,7 +65,11 @@ func _run() -> void:
 	check(Store.new(path).load_profile().expedition.caravan.wagons.is_empty(), "Deployed wagons removed from saved garage atomically")
 	check(game.crew_runtime.recruits.size() == 8, "Main creates specialists and an untrained recruit")
 	var mechanic: Dictionary = game.crew_runtime.recruits[0]
-	_place(game, mechanic.position)
+	# Park the assigned wagon entrance beside the survivor. The old fixture only
+	# teleported the pickup and left the reserved wagon at the arrival area.
+	var repair_offset: Vector3 = roster.wagons[1].position - game.combat.model.player.position
+	var door_offset := Vector3(-2.65, 0, -1.25).rotated(Vector3.UP, float(roster.wagons[1].heading))
+	_place(game, mechanic.position - door_offset - repair_offset, true)
 	_key(game, KEY_E)
 	await process_frame
 	check(game.screen_state == "encounter" and roster.crew.is_empty(), "One E opens dialogue without silently hiring")

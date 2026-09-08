@@ -1,7 +1,7 @@
-# Blender 5.2.1 LTS MTL File: 'textured_trees.blend'
+# Blender 5.2.1 LTS MTL File: 'None'
 # www.blender.org
 
-newmtl TexturedTrees.003
+newmtl TreeSolidPalette.001
 Ns 2.500001
 Ka 1.000000 1.000000 1.000000
 Ks 0.500000 0.500000 0.500000

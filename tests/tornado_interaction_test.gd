@@ -3,6 +3,8 @@ const Policy = preload("res://modules/world/destruction_policy.gd")
 const Damage = preload("res://modules/world/damage_context.gd")
 const Air = preload("res://modules/world/airborne_motion.gd")
 const Ground = preload("res://modules/caravan/terrain_surface.gd")
+const Fuel = preload("res://modules/caravan/vehicle_fuel.gd")
+const Roads = preload("res://modules/world/road_surface.gd")
 var checks := 0
 var failures := 0
 var world: Node3D
@@ -250,12 +252,13 @@ func _test_vehicle_effects() -> void:
 			check(vehicle.position.y > float(vehicle.suspension.height) + 0.3 and absf(pose.wind_roll) > 0.01, "Real player pose contains light lift and visible roll")
 			check(pose.suspension.contacts == 0 and absf(preload("res://modules/caravan/vehicle_pose.gd").transform(pose).basis.y.x) > 0.01, "Lift releases wheel contacts and rendered basis includes roll")
 		else:
-			vehicle.motion.speed = 6.0
+			vehicle.motion.speed = Fuel.maximum_speed(vehicle.fuel, vehicle.player_stats) * Roads.speed_multiplier_at(vehicle.position)
 			Input.action_press("drive_forward")
-			for frame in 120:
+			for frame in 600:
 				vehicle._physics_process(1.0 / 60.0)
 			Input.action_release("drive_forward")
-			check(vehicle.motion.speed < 4.5 and vehicle.tornado_effect.force == Vector3.ZERO and vehicle.tornado_effect.lift == 0.0, "Slow mode actually limits driving speed without lifting or shoving")
+			var normal_speed := Fuel.maximum_speed(vehicle.fuel, vehicle.player_stats) * Roads.speed_multiplier_at(vehicle.position)
+			check(vehicle.motion.speed < normal_speed * 0.6 and vehicle.tornado_effect.force == Vector3.ZERO and vehicle.tornado_effect.lift == 0.0, "Slow mode cuts normal driving speed by at least forty percent without lifting or shoving")
 
 func _test_natural_activities() -> void:
 	for participated: bool in [false, true]:

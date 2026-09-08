@@ -182,6 +182,7 @@ func _run() -> void:
 	game._on_world_state({})
 	var cargo_hints: Array = game.hud.markers.edge_candidates().filter(func(hint: Dictionary) -> bool: return hint.id == "raid_loot")
 	check(cargo_hints.size() == 1 and is_equal_approx(cargo_hints[0].position.x, 400.0), "Real distant cargo is injected into world HUD and gets an offscreen loot direction marker")
+	check(cargo_hints.size() == 1 and cargo_hints[0].label == preload("res://modules/meta/expedition_catalog.gd").item_name("weapon_parts", preload("res://presentation/ui/ui_locale.gd").language), "World HUD names the actual weapon kit before it is collected")
 	_pick_crates(game, Vector3(400, 0, 0))
 	check(game.raid_loot.crates.is_empty() and game.expedition.backpack.get("weapon_parts", 0) == 2, "Driving to convoy crate collects two weapon kits via main polling")
 	var fortress: Dictionary = game.world.foundries.foundries[0]

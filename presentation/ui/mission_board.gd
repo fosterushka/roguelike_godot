@@ -278,5 +278,4 @@ static func _number(value: float) -> String:
 	return str(roundi(value)) if is_equal_approx(value, roundf(value)) else "%.1f" % value
 
 func _item_name(id: String) -> String:
-	var names := {"scrap": ["Металлолом", "Scrap"], "circuit": ["Электроника", "Electronics"], "relic": ["Древний механизм", "Relic"], "repair_kit": ["Ремкомплект", "Repair kit"], "fuel_cell": ["Канистра", "Fuel cell"], "weapon_parts": ["Оружейный комплект", "Weapon kit"]}
-	return words(names[id][0], names[id][1]) if names.has(id) else Locale.text(id)
+	return preload("res://modules/meta/expedition_catalog.gd").item_name(id, Locale.language)
