@@ -46,6 +46,14 @@ func capacity() -> int:
 			total += int(wagon.cargo_capacity)
 	return total
 
+func cargo_used() -> int:
+	if not active:
+		return Catalog.used(_data().loadout)
+	var used := Catalog.used(backpack)
+	for wagon: Dictionary in caravan.cargo_containers():
+		used += Catalog.used(wagon.cargo)
+	return used
+
 func cargo_inventory() -> Dictionary:
 	var result := backpack.duplicate(true)
 	if active:
@@ -338,4 +346,4 @@ func snapshot() -> Dictionary:
 		row.cost_label = "%d кредитов · ур. аккаунта %d" % [row.cost, row.required_level]
 		row.enabled = not active and row.level < row.max_level and account.level >= row.required_level and _data().credits >= row.cost
 		upgrades.append(row)
-	return {"active": active, "pending_result": _pending_result != null, "credits": _data().credits, "xp": account.xp, "total_xp": _data().xp, "xp_next": account.xp_next, "level": account.level, "capacity": capacity(), "used": Catalog.used(cargo_inventory() if active else _data().loadout), "stash": _data().stash.duplicate(true), "loadout": _data().loadout.duplicate(true), "backpack": cargo_inventory(), "caravan": caravan.snapshot(), "items": Catalog.ITEMS.duplicate(true), "quests": quests, "active_quest_count": count, "quest_limit": MissionProgress.LIMIT, "upgrades": upgrades, "last_result": last_result.duplicate(true), "notice": notice, "storage_status": progression.store.status}
+	return {"active": active, "pending_result": _pending_result != null, "credits": _data().credits, "xp": account.xp, "total_xp": _data().xp, "xp_next": account.xp_next, "level": account.level, "capacity": capacity(), "used": cargo_used(), "stash": _data().stash.duplicate(true), "loadout": _data().loadout.duplicate(true), "backpack": cargo_inventory(), "caravan": caravan.snapshot(), "items": Catalog.ITEMS.duplicate(true), "quests": quests, "active_quest_count": count, "quest_limit": MissionProgress.LIMIT, "upgrades": upgrades, "last_result": last_result.duplicate(true), "notice": notice, "storage_status": progression.store.status}

@@ -1,4 +1,5 @@
 extends Node3D
+const Profiler = preload("res://infrastructure/diagnostics/runtime_profiler.gd")
 
 signal state_changed(data: Dictionary)
 signal combat_event(event: Dictionary)
@@ -58,7 +59,9 @@ func _physics_process(delta: float) -> void:
 	_sync_vehicle_to_model()
 	if support_step.is_valid():
 		support_step.call(delta)
+	var profile_started := Profiler.begin()
 	model.step(delta)
+	Profiler.finish(&"simulation", profile_started)
 	_sync_model_to_vehicle()
 	_publish()
 
@@ -143,6 +146,7 @@ func _sync_model_to_vehicle() -> void:
 	vehicle.set_driving_enabled(model.running)
 
 func _publish() -> void:
+	var profile_started := Profiler.begin()
 	model.refresh_build_protocols()
 	for event: Dictionary in model.drain_events():
 		if event.get("kind", "") == "result":
@@ -151,6 +155,7 @@ func _publish() -> void:
 			_delivered_result_generation = model.generation
 		combat_event.emit(event)
 	state_changed.emit(get_state())
+	Profiler.finish(&"publish", profile_started)
 
 func deliver_result(event: Dictionary) -> void:
 	if int(event.get("generation", -1)) != model.generation or _delivered_result_generation == model.generation:

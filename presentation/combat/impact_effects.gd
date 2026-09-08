@@ -1,6 +1,8 @@
 extends Node3D
+const Profiler = preload("res://infrastructure/diagnostics/runtime_profiler.gd")
 signal screen_impact(power: float)
 signal body_impact(pitch: float, roll: float)
+const ProjectileVisuals = preload("res://presentation/combat/projectile_visuals.gd")
 const BodySplash = preload("res://presentation/combat/fx/body_splash.gd")
 const SPARK_COUNT := 6
 const SPARK_LIFE := 0.22
@@ -284,7 +286,7 @@ func sync_state(state: Dictionary, delta: float) -> void:
 	rockets.sync_projectiles(shots, delta)
 	var alive := {}
 	for shot: Dictionary in shots:
-		if shot.kind == "rocket":
+		if shot.kind == "rocket" or ProjectileVisuals.tracer_only(shot):
 			continue
 		alive[shot.id] = true
 		var timer: float = _trail_timers.get(shot.id, 0.0) - delta
@@ -322,6 +324,7 @@ func _process(delta: float) -> void:
 func advance_cinematic(delta: float) -> void:
 	if _warmup or delta <= 0.0:
 		return
+	var profile_started := Profiler.begin()
 	for pool in [transient, fireballs, traces, smoke]:
 		pool.advance(delta)
 	for entry: Dictionary in fireballs.entries:
@@ -337,6 +340,7 @@ func advance_cinematic(delta: float) -> void:
 	hulls.advance(delta)
 	support_pickup.advance(delta)
 	jammer_field.advance(delta)
+	Profiler.finish(&"fx", profile_started)
 
 func _apply_fireball(entry: Dictionary) -> void:
 	var state := MathRules.fireball(entry.life)

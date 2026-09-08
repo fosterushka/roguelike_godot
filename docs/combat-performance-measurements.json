@@ -1,0 +1,591 @@
+{
+  "adapter": "Apple M4 Pro (Apple9)",
+  "conditions": "Godot 4.7.2 debug editor executable, Metal/Forward+, fixed seed, stationary player, invulnerable actors, world physics activities disabled, sound enabled, VSync unchanged. Requested window 1280x800; actual saved gameplay images 4112x2514. Pre-existing Godot editor and headless processes remained running. Observational desktop profiling, not isolated hardware or a release benchmark.",
+  "engine": "4.7.2-stable (official)",
+  "phases": [
+    {
+      "draw_calls": 588.0,
+      "frames": {
+        "average_fps": 68.9790751975388,
+        "average_ms": 14.49715,
+        "count": 240,
+        "current_ms": 16.848,
+        "low_01": -1.0,
+        "low_1": 52.5983589312013,
+        "max_fps": 100.180324584252,
+        "max_ms": 19.892,
+        "min_fps": 50.2714659159461,
+        "min_ms": 9.982,
+        "seconds": 3.479316
+      },
+      "memory_end": {
+        "nodes": 9333.0,
+        "objects": 21201.0,
+        "orphan": 0.0,
+        "os": {
+          "cpu_percent": 36.4,
+          "rss_mib": 2035.359375
+        },
+        "static_bytes": 341655649.0
+      },
+      "memory_start": {
+        "nodes": 9333.0,
+        "objects": 21201.0,
+        "orphan": 0.0,
+        "os": {},
+        "static_bytes": 341523441.0
+      },
+      "name": "empty",
+      "npc_end": 0,
+      "peak_shots": 0,
+      "player_shots": 0,
+      "primitives": 285763.0,
+      "sections": {
+        "ai": {
+          "calls": 208,
+          "max_call_ms": 0.002,
+          "ms_per_frame": 0.0007875
+        },
+        "cargo": {
+          "calls": 16,
+          "max_call_ms": 1.203,
+          "ms_per_frame": 0.0755208333333333
+        },
+        "combat_view": {
+          "calls": 208,
+          "max_call_ms": 0.27,
+          "ms_per_frame": 0.1446125
+        },
+        "fx": {
+          "calls": 240,
+          "max_call_ms": 0.236,
+          "ms_per_frame": 0.110375
+        },
+        "hud": {
+          "calls": 416,
+          "max_call_ms": 0.325,
+          "ms_per_frame": 0.412404166666667
+        },
+        "projectiles": {
+          "calls": 208,
+          "max_call_ms": 0.002,
+          "ms_per_frame": 0.000929166666666667
+        },
+        "publish": {
+          "calls": 208,
+          "max_call_ms": 0.56,
+          "ms_per_frame": 0.372004166666667
+        },
+        "simulation": {
+          "calls": 208,
+          "max_call_ms": 0.053,
+          "ms_per_frame": 0.026425
+        },
+        "snapshot": {
+          "calls": 416,
+          "max_call_ms": 0.029,
+          "ms_per_frame": 0.0210458333333333
+        },
+        "weapons": {
+          "calls": 208,
+          "max_call_ms": 0.008,
+          "ms_per_frame": 0.0043
+        }
+      },
+      "captured_image_size": [
+        4112,
+        2514
+      ]
+    },
+    {
+      "draw_calls": 790.0,
+      "frames": {
+        "average_fps": 6.64720641595011,
+        "average_ms": 150.4391375,
+        "count": 240,
+        "current_ms": 130.194,
+        "low_01": -1.0,
+        "low_1": 3.79827608909236,
+        "max_fps": 195.083886071011,
+        "max_ms": 275.311,
+        "min_fps": 3.6322558851626,
+        "min_ms": 5.126,
+        "seconds": 36.105393
+      },
+      "memory_end": {
+        "nodes": 9333.0,
+        "objects": 21204.0,
+        "orphan": 0.0,
+        "os": {
+          "cpu_percent": 103.6,
+          "rss_mib": 2100.21875
+        },
+        "static_bytes": 343180521.0
+      },
+      "memory_start": {
+        "nodes": 9333.0,
+        "objects": 21209.0,
+        "orphan": 0.0,
+        "os": {
+          "cpu_percent": 36.4,
+          "rss_mib": 2035.359375
+        },
+        "static_bytes": 343189297.0
+      },
+      "name": "80_npc_0_miniguns",
+      "npc_end": 80,
+      "peak_shots": 22,
+      "player_shots": 0,
+      "primitives": 309371.0,
+      "sections": {
+        "ai": {
+          "calls": 1651,
+          "max_call_ms": 2.335,
+          "ms_per_frame": 14.2665083333333
+        },
+        "cargo": {
+          "calls": 22982,
+          "max_call_ms": 1.463,
+          "ms_per_frame": 89.7481083333333
+        },
+        "combat_view": {
+          "calls": 1651,
+          "max_call_ms": 2.229,
+          "ms_per_frame": 12.23035
+        },
+        "fx": {
+          "calls": 240,
+          "max_call_ms": 0.954,
+          "ms_per_frame": 0.613954166666667
+        },
+        "hud": {
+          "calls": 3302,
+          "max_call_ms": 0.691,
+          "ms_per_frame": 4.58735
+        },
+        "projectiles": {
+          "calls": 1651,
+          "max_call_ms": 0.755,
+          "ms_per_frame": 2.45655416666667
+        },
+        "publish": {
+          "calls": 1651,
+          "max_call_ms": 36.304,
+          "ms_per_frame": 108.727404166667
+        },
+        "simulation": {
+          "calls": 1651,
+          "max_call_ms": 3.082,
+          "ms_per_frame": 17.2568083333333
+        },
+        "snapshot": {
+          "calls": 3302,
+          "max_call_ms": 0.412,
+          "ms_per_frame": 2.88188333333333
+        },
+        "weapons": {
+          "calls": 1651,
+          "max_call_ms": 0.036,
+          "ms_per_frame": 0.121916666666667
+        }
+      },
+      "captured_image_size": [
+        4112,
+        2514
+      ]
+    },
+    {
+      "draw_calls": 797.0,
+      "frames": {
+        "average_fps": 5.38781056350303,
+        "average_ms": 185.60415,
+        "count": 240,
+        "current_ms": 152.955,
+        "low_01": -1.0,
+        "low_1": 3.85482720737043,
+        "max_fps": 13.0526150914336,
+        "max_ms": 260.784,
+        "min_fps": 3.83459107920731,
+        "min_ms": 76.613,
+        "seconds": 44.544996
+      },
+      "memory_end": {
+        "nodes": 9337.0,
+        "objects": 21211.0,
+        "orphan": 0.0,
+        "os": {
+          "cpu_percent": 105.7,
+          "rss_mib": 2139.421875
+        },
+        "static_bytes": 343283569.0
+      },
+      "memory_start": {
+        "nodes": 9337.0,
+        "objects": 21214.0,
+        "orphan": 0.0,
+        "os": {
+          "cpu_percent": 103.6,
+          "rss_mib": 2100.21875
+        },
+        "static_bytes": 343199561.0
+      },
+      "name": "80_npc_1_minigun",
+      "npc_end": 80,
+      "peak_shots": 21,
+      "player_shots": 235,
+      "primitives": 323189.0,
+      "sections": {
+        "ai": {
+          "calls": 1884,
+          "max_call_ms": 2.5,
+          "ms_per_frame": 16.3581791666667
+        },
+        "cargo": {
+          "calls": 29305,
+          "max_call_ms": 1.679,
+          "ms_per_frame": 114.5273
+        },
+        "combat_view": {
+          "calls": 1884,
+          "max_call_ms": 2.154,
+          "ms_per_frame": 14.0768875
+        },
+        "fx": {
+          "calls": 240,
+          "max_call_ms": 0.908,
+          "ms_per_frame": 0.647170833333333
+        },
+        "hud": {
+          "calls": 3768,
+          "max_call_ms": 0.754,
+          "ms_per_frame": 5.35439583333333
+        },
+        "projectiles": {
+          "calls": 1884,
+          "max_call_ms": 0.863,
+          "ms_per_frame": 3.77403333333333
+        },
+        "publish": {
+          "calls": 1884,
+          "max_call_ms": 38.846,
+          "ms_per_frame": 136.849391666667
+        },
+        "simulation": {
+          "calls": 1884,
+          "max_call_ms": 3.394,
+          "ms_per_frame": 20.83375
+        },
+        "snapshot": {
+          "calls": 3768,
+          "max_call_ms": 0.467,
+          "ms_per_frame": 3.46875416666667
+        },
+        "weapons": {
+          "calls": 1884,
+          "max_call_ms": 0.182,
+          "ms_per_frame": 0.224870833333333
+        }
+      },
+      "captured_image_size": [
+        4112,
+        2514
+      ]
+    },
+    {
+      "draw_calls": 779.0,
+      "frames": {
+        "average_fps": 4.84273637365972,
+        "average_ms": 206.494825,
+        "count": 240,
+        "current_ms": 234.788,
+        "low_01": -1.0,
+        "low_1": 3.30164487947896,
+        "max_fps": 9.80459443295128,
+        "max_ms": 322.789,
+        "min_fps": 3.09799900244432,
+        "min_ms": 101.993,
+        "seconds": 49.558758
+      },
+      "memory_end": {
+        "nodes": 9341.0,
+        "objects": 21218.0,
+        "orphan": 0.0,
+        "os": {
+          "cpu_percent": 104.3,
+          "rss_mib": 2178.59375
+        },
+        "static_bytes": 343478701.0
+      },
+      "memory_start": {
+        "nodes": 9341.0,
+        "objects": 21216.0,
+        "orphan": 0.0,
+        "os": {
+          "cpu_percent": 105.7,
+          "rss_mib": 2139.421875
+        },
+        "static_bytes": 343266249.0
+      },
+      "name": "80_npc_2_miniguns",
+      "npc_end": 80,
+      "peak_shots": 28,
+      "player_shots": 480,
+      "primitives": 327809.0,
+      "sections": {
+        "ai": {
+          "calls": 1916,
+          "max_call_ms": 2.445,
+          "ms_per_frame": 16.7638791666667
+        },
+        "cargo": {
+          "calls": 33723,
+          "max_call_ms": 1.678,
+          "ms_per_frame": 131.729233333333
+        },
+        "combat_view": {
+          "calls": 1916,
+          "max_call_ms": 2.147,
+          "ms_per_frame": 14.4629625
+        },
+        "fx": {
+          "calls": 240,
+          "max_call_ms": 1.004,
+          "ms_per_frame": 0.643870833333333
+        },
+        "hud": {
+          "calls": 3832,
+          "max_call_ms": 0.721,
+          "ms_per_frame": 5.531275
+        },
+        "projectiles": {
+          "calls": 1916,
+          "max_call_ms": 1.172,
+          "ms_per_frame": 5.02497083333333
+        },
+        "publish": {
+          "calls": 1916,
+          "max_call_ms": 42.882,
+          "ms_per_frame": 155.150320833333
+        },
+        "simulation": {
+          "calls": 1916,
+          "max_call_ms": 3.496,
+          "ms_per_frame": 22.5772666666667
+        },
+        "snapshot": {
+          "calls": 3832,
+          "max_call_ms": 0.505,
+          "ms_per_frame": 3.70158333333333
+        },
+        "weapons": {
+          "calls": 1916,
+          "max_call_ms": 0.221,
+          "ms_per_frame": 0.296504166666667
+        }
+      },
+      "captured_image_size": [
+        4112,
+        2514
+      ]
+    },
+    {
+      "draw_calls": 190.0,
+      "frames": {
+        "average_fps": 5.75601959732806,
+        "average_ms": 173.731166666667,
+        "count": 240,
+        "current_ms": 180.129,
+        "low_01": -1.0,
+        "low_1": 3.46232414278625,
+        "max_fps": 73.7354372511429,
+        "max_ms": 299.795,
+        "min_fps": 3.33561266865692,
+        "min_ms": 13.562,
+        "seconds": 41.69548
+      },
+      "memory_end": {
+        "nodes": 9341.0,
+        "objects": 21216.0,
+        "orphan": 0.0,
+        "os": {
+          "cpu_percent": 102.9,
+          "rss_mib": 2218.140625
+        },
+        "static_bytes": 343414185.0
+      },
+      "memory_start": {
+        "nodes": 9341.0,
+        "objects": 21213.0,
+        "orphan": 0.0,
+        "os": {
+          "cpu_percent": 104.3,
+          "rss_mib": 2178.59375
+        },
+        "static_bytes": 343295649.0
+      },
+      "name": "80_npc_2_miniguns_no_combat_presentation",
+      "npc_end": 80,
+      "peak_shots": 26,
+      "player_shots": 448,
+      "primitives": 105079.0,
+      "sections": {
+        "ai": {
+          "calls": 1794,
+          "max_call_ms": 2.382,
+          "ms_per_frame": 15.6323666666667
+        },
+        "cargo": {
+          "calls": 31543,
+          "max_call_ms": 1.595,
+          "ms_per_frame": 122.665970833333
+        },
+        "hud": {
+          "calls": 3588,
+          "max_call_ms": 0.664,
+          "ms_per_frame": 5.32469583333333
+        },
+        "projectiles": {
+          "calls": 1794,
+          "max_call_ms": 1.175,
+          "ms_per_frame": 4.67427916666667
+        },
+        "publish": {
+          "calls": 1794,
+          "max_call_ms": 38.637,
+          "ms_per_frame": 128.3672
+        },
+        "simulation": {
+          "calls": 1794,
+          "max_call_ms": 3.506,
+          "ms_per_frame": 21.0362333333333
+        },
+        "snapshot": {
+          "calls": 3588,
+          "max_call_ms": 0.486,
+          "ms_per_frame": 3.4104375
+        },
+        "weapons": {
+          "calls": 1794,
+          "max_call_ms": 0.229,
+          "ms_per_frame": 0.275933333333333
+        }
+      },
+      "captured_image_size": [
+        4112,
+        2514
+      ]
+    },
+    {
+      "draw_calls": 157.0,
+      "frames": {
+        "average_fps": 120.059669655819,
+        "average_ms": 8.32919166666666,
+        "count": 240,
+        "current_ms": 11.267,
+        "low_01": -1.0,
+        "low_1": 74.3439149505613,
+        "max_fps": 304.136253041363,
+        "max_ms": 13.6,
+        "min_fps": 73.5294117647059,
+        "min_ms": 3.288,
+        "seconds": 1.999006
+      },
+      "memory_end": {
+        "nodes": 9333.0,
+        "objects": 21201.0,
+        "orphan": 0.0,
+        "os": {
+          "cpu_percent": 59.6,
+          "rss_mib": 2256.21875
+        },
+        "static_bytes": 342369397.0
+      },
+      "memory_start": {
+        "nodes": 9333.0,
+        "objects": 21201.0,
+        "orphan": 0.0,
+        "os": {
+          "cpu_percent": 102.9,
+          "rss_mib": 2218.140625
+        },
+        "static_bytes": 342465517.0
+      },
+      "name": "empty_after_combat",
+      "npc_end": 0,
+      "peak_shots": 0,
+      "player_shots": 0,
+      "primitives": 100055.0,
+      "sections": {
+        "ai": {
+          "calls": 120,
+          "max_call_ms": 0.003,
+          "ms_per_frame": 0.0005375
+        },
+        "cargo": {
+          "calls": 9,
+          "max_call_ms": 1.229,
+          "ms_per_frame": 0.0450583333333333
+        },
+        "combat_view": {
+          "calls": 120,
+          "max_call_ms": 0.262,
+          "ms_per_frame": 0.0988916666666667
+        },
+        "fx": {
+          "calls": 240,
+          "max_call_ms": 0.307,
+          "ms_per_frame": 0.157783333333333
+        },
+        "hud": {
+          "calls": 240,
+          "max_call_ms": 0.378,
+          "ms_per_frame": 0.266495833333333
+        },
+        "projectiles": {
+          "calls": 120,
+          "max_call_ms": 0.012,
+          "ms_per_frame": 0.000666666666666667
+        },
+        "publish": {
+          "calls": 120,
+          "max_call_ms": 0.653,
+          "ms_per_frame": 0.2508875
+        },
+        "simulation": {
+          "calls": 120,
+          "max_call_ms": 0.065,
+          "ms_per_frame": 0.0178041666666667
+        },
+        "snapshot": {
+          "calls": 240,
+          "max_call_ms": 0.104,
+          "ms_per_frame": 0.0139375
+        },
+        "weapons": {
+          "calls": 120,
+          "max_call_ms": 0.01,
+          "ms_per_frame": 0.00286666666666667
+        }
+      },
+      "captured_image_size": [
+        4112,
+        2514
+      ]
+    }
+  ],
+  "sample_frames": 240,
+  "seed": 72841,
+  "warmup_frames": 45,
+  "comparison_scope": "Load variants on unchanged gameplay logic; not a before/after optimization comparison. Final overlay wrapping/layout was validated separately after this measurement.",
+  "validation": {
+    "existing_focused_tests_clean": 9,
+    "new_metrics_test_clean_after_test_parse_fix": true,
+    "one_uninterrupted_10_test_pass": false,
+    "soak_simulated_seconds": 1800,
+    "soak_checks": 2872,
+    "soak_failures": 0,
+    "overlay_input_and_layout_capture_clean": true,
+    "full_suite_run": false,
+    "gpu_time_on_metal": "n/a: measurement returned zero"
+  }
+}

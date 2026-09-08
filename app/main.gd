@@ -1,4 +1,7 @@
 extends Node3D
+const CARGO_POLL_SECONDS := 0.2
+const MISSION_POLL_SECONDS := 0.5
+const Profiler = preload("res://infrastructure/diagnostics/runtime_profiler.gd")
 
 const Expedition = preload("res://modules/meta/expedition.gd")
 const ExpeditionPanel = preload("res://presentation/ui/expedition_panel.gd")
@@ -27,6 +30,7 @@ var session_flow := preload("res://modules/session/session_flow.gd").new()
 
 var vehicle: CharacterBody3D
 var camera: Camera3D
+var performance_bar: CanvasLayer
 var hud: CanvasLayer
 var arena: Node3D
 var combat: Node3D
@@ -74,6 +78,9 @@ func _ready() -> void:
 	process_physics_priority = 10
 	_seed_source.randomize()
 	Actions.register()
+	performance_bar = preload("res://presentation/debug/performance_bar.gd").new()
+	performance_bar.game = self
+	add_child(performance_bar)
 	get_tree().paused = true
 	hud = Assets.HUD.instantiate()
 	add_child(hud)
@@ -498,29 +505,31 @@ func _physics_process(delta: float) -> void:
 		return
 	expedition.sample_run(combat.model.player, session_flow.clock.simulation_delta, str(world.weather.phase.type))
 	_mission_poll += delta
-	if _mission_poll >= 0.5:
+	if _mission_poll >= MISSION_POLL_SECONDS:
 		_mission_poll = 0.0
 		_update_mission_hint()
 	_loot_poll += delta
-	if _loot_poll >= 0.2:
+	if _loot_poll >= CARGO_POLL_SECONDS:
 		_loot_poll = 0.0
 		_update_crew_hint()
 		if raid_loot.collect_near(vehicle.global_position, expedition):
 			hud.set_status(expedition.notice)
 		_update_cargo()
-	_sync_progression_stats()
+	_sync_progression_stats(false)
 	if int(combat.model.player.get("pending_upgrades", 0)) > 0:
+		_on_state(combat.get_state())
 		_set_screen("choice")
 		_show_choices()
 		sound.play_cue("level", true)
 
-func _sync_progression_stats() -> void:
+func _sync_progression_stats(refresh_hud: bool = true) -> void:
 	vehicle.player_stats = combat.model.player
 	vehicle.health = combat.model.player.hp
 	vehicle.max_health = combat.model.player.max_hp
 	vehicle.fuel = combat.model.player.fuel
 	vehicle.max_fuel = combat.model.player.max_fuel
-	_on_state(combat.get_state())
+	if refresh_hud:
+		_on_state(combat.get_state())
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT and screen_state == "running":
@@ -617,6 +626,7 @@ func _menu_action(action: String, id: String) -> void:
 					_set_screen("running")
 
 func _on_state(data: Dictionary) -> void:
+	var profile_started := Profiler.begin()
 	vehicle.player_stats = combat.model.player
 	if is_instance_valid(sound):
 		sound.engine(absf(vehicle.motion.speed) / maxf(1.0, VehicleController.Fuel.drive_tuning(vehicle.fuel, combat.model.player).maximum_speed), 1.0 if combat.model.player.nitro_timer > 0 else absf(vehicle.motion.throttle))
@@ -625,15 +635,20 @@ func _on_state(data: Dictionary) -> void:
 	vehicle.get_node("VehicleView").apply_player_state(combat.model.player, int(data.get("generation", 0)))
 	hud.update_run(data, camera, selected_ability)
 	hud.update_telemetry({"speed": vehicle.motion.speed, "health": vehicle.health, "max_health": vehicle.max_health, "fuel": vehicle.fuel, "max_fuel": vehicle.max_fuel})
+	Profiler.finish(&"hud", profile_started)
 
 func _on_combat_event(event: Dictionary) -> void:
+	# Tracer segments are presentation-only; no cargo or mission work per segment.
+	if event.get("kind", "") == "bullet_segment":
+		return
 	if expedition != null:
 		expedition.record_event(event)
 		raid_loot.on_event(event)
 		if event.get("kind", "") == "pickup" and event.get("pickup_kind", "") == "salvage" and not event.get("cargo_delivered", false):
 			expedition.collect_loot("salvage", 1)
 			hud.set_status(expedition.notice)
-		_update_cargo()
+		if event.get("kind", "") in ["pickup", "result"]:
+			_update_cargo()
 	if event.get("kind", "") == "overdrive_started":
 		hud.show_world_banner(ExpeditionPanel.words("ФОРСАЖ · 5 СЕКУНД", "OVERDRIVE · 5 SECONDS"), ExpeditionPanel.words("Бесплатное нитро, усиленный таран, стрельба +45%", "Free nitro, charged ram, fire rate +45%"))
 		camera.add_shake(0.35)
@@ -834,8 +849,10 @@ func _expedition_action(kind: String, id: String) -> void:
 func _update_cargo() -> void:
 	if not is_instance_valid(_cargo_label):
 		return
-	var used := int(expedition.snapshot().used)
+	var profile_started := Profiler.begin()
+	var used: int = expedition.cargo_used()
 	_cargo_label.text = ExpeditionPanel.words("ГРУЗ %d/%d [I]", "CARGO %d/%d [I]") % [used, expedition.capacity()]
+	Profiler.finish(&"cargo", profile_started)
 
 func _setup_caravan() -> void:
 	caravan_flow.setup(self)

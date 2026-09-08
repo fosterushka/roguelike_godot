@@ -1,4 +1,5 @@
 extends RefCounted
+const Profiler = preload("res://infrastructure/diagnostics/runtime_profiler.gd")
 const Terrain = preload("res://modules/caravan/terrain_surface.gd")
 
 const Dimensions = preload("res://modules/caravan/player_dimensions.gd")
@@ -139,11 +140,17 @@ func step(delta: float) -> void:
 				spawn_queue.pop_front()
 			_spawn_remaining = Waves.SPAWN_INTERVAL if not spawned.is_empty() else 0.25
 
+	var profile_started := Profiler.begin()
 	_update_enemies(delta)
+	Profiler.finish(&"ai", profile_started)
 	if status == "dead":
 		return
+	profile_started = Profiler.begin()
 	_update_weapons(delta)
+	Profiler.finish(&"weapons", profile_started)
+	profile_started = Profiler.begin()
 	_update_projectiles(delta)
+	Profiler.finish(&"projectiles", profile_started)
 	if status == "dead":
 		return
 	_update_pickups(delta)
@@ -302,6 +309,10 @@ func fire_projectile(kind: String, team: String, origin: Vector3, aim: Vector3, 
 	_emit("shot", {"id": shot.id, "position": origin, "target_position": aim, "projectile_kind": kind, "team": team, "module_type": options.get("module_type", ""), "weapon_mount": options.get("weapon_mount", {}), "velocity": shot.velocity})
 
 func _update_projectiles(delta: float) -> void:
+	# Reuse targets while shots only travel. A hit or new spawn may expose a boss phase.
+	var targets: Array[Dictionary] = []
+	var targets_valid := false
+	var target_enemy_count := enemies.size()
 	for shot: Dictionary in projectiles:
 		shot.previous = shot.position
 		var trace_start: Vector3 = shot.position
@@ -313,7 +324,11 @@ func _update_projectiles(delta: float) -> void:
 			shot.position += shot.velocity * delta
 		shot.x = shot.position.x
 		shot.z = shot.position.z
-		var hit := _resolve_projectile_segment(shot)
+		if shot.team == "player" and (not targets_valid or target_enemy_count != enemies.size()):
+			targets = _target_candidates()
+			targets_valid = true
+			target_enemy_count = enemies.size()
+		var hit := _resolve_projectile_segment(shot, targets)
 		if not hit and shot.position.y <= Terrain.height_at(shot.position.x, shot.position.z) + 0.04:
 			if Shots.blast_radius(shot.kind) > 0.0:
 				_explode(shot, -1, true)
@@ -322,6 +337,8 @@ func _update_projectiles(delta: float) -> void:
 			hit = true
 		shot.x = shot.position.x
 		shot.z = shot.position.z
+		if hit or not shot.get("hit_targets", []).is_empty():
+			targets_valid = false
 		shot.dead = hit or shot.life <= 0.0
 		if shot.kind == "bullet" and trace_start.distance_squared_to(shot.position) > 0.000001:
 			_emit("bullet_segment", {"id": shot.id, "from": trace_start, "to": shot.position, "team": shot.team})
@@ -329,12 +346,13 @@ func _update_projectiles(delta: float) -> void:
 			break
 	projectiles = projectiles.filter(func(shot: Dictionary) -> bool: return not shot.dead)
 
-func _resolve_projectile_segment(shot: Dictionary) -> bool:
+func _resolve_projectile_segment(shot: Dictionary, targets: Variant = null) -> bool:
 	var start: Vector3 = shot.previous
 	var end: Vector3 = shot.position
 	var hits: Array[Dictionary] = []
 	if shot.team == "player":
-		for enemy: Dictionary in _target_candidates():
+		var candidates: Array = _target_candidates() if targets == null else targets
+		for enemy: Dictionary in candidates:
 			if enemy.dead or enemy.id in shot.get("hit_targets", []) or (enemy.get("collidable", true) == false and not enemy.get("is_component", false)):
 				continue
 			var hit_radius: float = enemy.radius + shot.radius + (0.12 if enemy.type == "soldier" else 0.1)
@@ -599,7 +617,8 @@ func refresh_build_protocols() -> void:
 	protocols.sync(player, targets)
 
 func snapshot() -> Dictionary:
-	return {"generation": generation, "wave": wave, "final_wave": Waves.FINAL_WAVE,
+	var profile_started := Profiler.begin()
+	var result := {"generation": generation, "wave": wave, "final_wave": Waves.FINAL_WAVE,
 		"status": status, "phase": status, "weather_type": weather_type, "running": running, "elapsed": elapsed,
 		"threat": clampf((wave - 1) * 12.0 + minf(58.0, _wave_remaining() * 2.0), 0.0, 100.0),
 		"intermission": intermission, "remaining": spawn_queue.size() + _wave_remaining(),
@@ -609,6 +628,8 @@ func snapshot() -> Dictionary:
 		"mines": hazards.mines.duplicate(true), "hack_status": hazards.hack_status.duplicate(),
 		"salvage_charge": protocols.salvage_charge, "focus_id": focus_id, "player": player.duplicate(true), "weapons": weapons.duplicate(true),
 		"boss_components": _boss_components().duplicate(true), "enemies": enemies.duplicate(true), "projectiles": projectiles.duplicate(true), "pickups": pickups.duplicate(true)}
+	Profiler.finish(&"snapshot", profile_started)
+	return result
 
 func drain_events() -> Array[Dictionary]:
 	var result := events.duplicate()

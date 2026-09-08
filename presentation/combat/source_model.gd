@@ -189,6 +189,7 @@ static func create_pool(model_name: String, capacity: int) -> Dictionary:
 		multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		multimesh.mesh = part.mesh
 		multimesh.instance_count = capacity
+		multimesh.visible_instance_count = 0
 		for index in capacity:
 			multimesh.set_instance_transform(index, hidden)
 		var visual := MultiMeshInstance3D.new()
@@ -202,12 +203,21 @@ static func create_pool(model_name: String, capacity: int) -> Dictionary:
 static func set_pool_instance(pool: Dictionary, index: int, transform: Transform3D, pose: Dictionary = {}) -> void:
 	for batch in pool.batches:
 		batch.mesh.set_instance_transform(index, transform * SourceAnimation.transform_for(batch, pose))
+		if index >= batch.mesh.visible_instance_count:
+			batch.mesh.visible_instance_count = index + 1
+
+
+static func set_pool_visible_count(pool: Dictionary, count: int) -> void:
+	for batch in pool.batches:
+		batch.mesh.visible_instance_count = clampi(count, 0, int(pool.capacity))
 
 
 static func hide_pool_instance(pool: Dictionary, index: int) -> void:
 	var hidden := Transform3D(Basis.from_scale(Vector3.ZERO), Vector3.ZERO)
 	for batch in pool.batches:
 		batch.mesh.set_instance_transform(index, hidden)
+		if index == batch.mesh.visible_instance_count - 1:
+			batch.mesh.visible_instance_count = index
 
 static func animate_instance(root: Node3D, pose: Dictionary) -> void:
 	for child: Node in root.get_children():

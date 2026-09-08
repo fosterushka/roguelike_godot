@@ -1,4 +1,5 @@
 extends Node3D
+const Profiler = preload("res://infrastructure/diagnostics/runtime_profiler.gd")
 const Terrain = preload("res://modules/caravan/terrain_surface.gd")
 const PickupMotion = preload("res://presentation/world/pickup_motion.gd")
 signal screen_impact(power: float)
@@ -9,7 +10,8 @@ const MineViews = preload("res://presentation/combat/mine_views.gd")
 const Effects = preload("res://presentation/combat/impact_effects.gd")
 const EnemyCatalog = preload("res://modules/combat/enemy_catalog.gd")
 static var ENEMY_MODELS: Array[String] = EnemyCatalog.model_ids()
-const PROJECTILE_MODELS := ["projectile_bullet", "projectile_sabot", "projectile_rocket", "projectile_grenade", "projectile_enemy_bullet", "projectile_enemy_sabot", "projectile_enemy_rocket", "projectile_enemy_grenade"]
+const ProjectileVisuals = preload("res://presentation/combat/projectile_visuals.gd")
+const PROJECTILE_MODELS := ProjectileVisuals.MODEL_IDS
 var _pools: Dictionary = {}
 var _active_counts: Dictionary = {}
 var _vehicle: Node3D
@@ -80,6 +82,7 @@ func apply_state(data: Dictionary) -> void:
 		_last_elapsed = 0.0
 		if is_instance_valid(_effects):
 			_effects.reset_effects()
+	var profile_started := Profiler.begin()
 	var elapsed := float(data.get("elapsed", 0.0))
 	var delta := maxf(0.0, elapsed - _last_elapsed)
 	if is_instance_valid(tracers):
@@ -118,7 +121,9 @@ func apply_state(data: Dictionary) -> void:
 	var live_projectiles := {}
 	for projectile in _items(data.get("projectiles", [])):
 		var kind := str(projectile.get("kind", "bullet"))
-		var model_name := "projectile_" + ("enemy_" if projectile.get("team") == "enemy" else "") + (kind if kind in ["rocket", "grenade", "sabot"] else "bullet")
+		var model_name := ProjectileVisuals.model_id(projectile)
+		if model_name.is_empty():
+			continue
 		live_projectiles[projectile.id] = true
 		_projectile_age[projectile.id] = float(_projectile_age.get(projectile.id, 0.0)) + delta
 		var velocity: Vector3 = projectile.position - projectile.get("previous", projectile.position)
@@ -143,7 +148,9 @@ func apply_state(data: Dictionary) -> void:
 	for model_name in _pools:
 		for index in range(int(counts[model_name]), int(_active_counts[model_name])):
 			SourceModel.hide_pool_instance(_pools[model_name], index)
+		SourceModel.set_pool_visible_count(_pools[model_name], int(counts[model_name]))
 		_active_counts[model_name] = counts[model_name]
+	Profiler.finish(&"combat_view", profile_started)
 
 
 func on_event(event: Dictionary) -> void:
