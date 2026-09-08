@@ -1,7 +1,7 @@
 # Military equipment
 
-25 original low-poly models, with a shared packed palette. Each model uses one
-static mesh, plus one moving mesh for weapons. The runtime adapter gives guns
+The equipment library uses a shared packed palette. Exact model IDs and mesh
+counts are recorded in `stats.json`. Weapons have separate static and moving parts. The runtime adapter gives guns
 an elevation pivot and recoil while the mounting plate stays fixed.
 
 - `equipment.blend`: editable library, one named root per equipment type.
@@ -17,3 +17,5 @@ Rebuild from project root:
 
 Blender Z-up, forward -Y; Godot Y-up, forward +Z. Equipment mounting plane is
 Y=0 in Godot. Gameplay and Armory share the same equipment factory and slots.
+
+Current gameplay ownership and shared model rules: [project guide](../../../docs/PROJECT.md#модели-и-загрузка). `armor_panels` uses the canonical armor model; do not restore the removed duplicate from an older count.

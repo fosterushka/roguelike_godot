@@ -1,3 +1,5 @@
+> Исторический отчёт отдельного прохода. Не описывает текущий FPS или полный статус тестов. Актуальные правила: [PROJECT.md](PROJECT.md); статус артефактов: [ARTIFACTS.md](ARTIFACTS.md).
+
 # World rendering performance, 2026-09-08
 
 Implemented from `GODOT4_PERFORMANCE_CODEX.md`. This is a conservative rendering pass for the existing **3D** game. It reduces submitted world geometry; it does **not** establish a general gameplay FPS increase or complete streaming implementation.

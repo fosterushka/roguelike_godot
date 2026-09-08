@@ -1,47 +1,81 @@
 # Проверки и экспорт
 
-Сверено 2026-09-06. Этот документ заменяет старые отчёты установки из временных копий. Работа ведётся непосредственно в текущем проекте.
+Процедура сверена с [tests/run_all.py](../tests/run_all.py) и [export_presets.cfg](../export_presets.cfg) 2026-09-08. Само обновление документации не является новым прогоном игры. Описание систем: [PROJECT.md](PROJECT.md).
 
-## Запуск проверок
+## Логика и интеграция
+
+Из корня проекта, подставив путь к установленному Godot:
 
 ```sh
 python3 tests/run_all.py --godot /path/to/Godot
-python3 tests/run_all.py --godot /path/to/Godot --only ui_icons_test.gd hud_layout_test.gd
+python3 tests/run_all.py --godot /path/to/Godot --only offline_session_test.gd session_flow_test.gd
+python3 tests/run_all.py --godot /path/to/Godot --only vehicle_airborne_test.gd --output /tmp/iron-airborne-check
 ```
 
-[tests/run_all.py](../tests/run_all.py) содержит явный список проверок; в текущем `TESTS` зарегистрировано 87 скриптов. Это число тестов в коде, а не результат нового полного прогона. Можно использовать `GODOT_BIN` вместо `--godot`; `--output` задаёт папку JSON-отчёта и логов, `--timeout` ограничивает каждый тест.
+`GODOT_BIN` заменяет `--godot`. Без обоих runner ищет приложение в /Applications, затем ~/Downloads. `--timeout` ограничивает каждый сценарий, `--output` задаёт каталог отчёта и логов; без него создаётся уникальная временная папка.
 
-Успех требует кода выхода 0, итоговой строки теста и отсутствия ошибок движка, скриптов, утверждений и утечек в stdout и engine log. Отдельный `godot --headless --script` полезен для диагностики, но не заменяет этот контроль логов. Импорт новых ресурсов выполняется до проверки через редактор или `godot --headless --path . --editor --import --quit`.
+Runner содержит явный TESTS, а не автоматический поиск всех .gd. Добавляя обязательный тест, зарегистрируйте его там. Узнать текущий список и допустимые параметры можно через `python3 tests/run_all.py --help`; число зарегистрированных файлов не является числом успешных проверок. Capture-сцены и часть диагностических скриптов намеренно не входят в TESTS.
 
-## Сохранённые результаты
+Успех требует одновременно кода выхода 0, распознанной итоговой строки и отсутствия ошибок движка, скриптов, assert и сообщений об утечках в stdout и engine log. Не ослабляйте фильтр ради зелёного отчёта. После импорта/замены ассетов сначала выполните:
 
-| Артефакт | Что подтверждает |
+```sh
+godot --headless --path . --editor --import --quit
+```
+
+## Какие сценарии выбирать
+
+Имена ниже относятся к папке [tests](../tests), передаются в `--only`. Это карта существующих сценариев, не заявление об их текущем прохождении.
+
+| Изменение | Профильные сценарии |
 | --- | --- |
-| [compact-ui/full-suite.json](validation/compact-ui/full-suite.json) | Исторический полный прогон 78/78 для UI-прохода; не все 80 текущих проверок |
-| [compact-ui/final-check.json](validation/compact-ui/final-check.json) | 8/8 профильных проверок после интеграции UI |
-| [compact-ui/last-sizing.json](validation/compact-ui/last-sizing.json) | 3/3 после последних изменений размеров и языка |
-| [compact-ui/README.md](validation/compact-ui/README.md) | Реальные EN/RU-кадры 960×600 и 1280×800, точные границы проверки |
-| [vault-menu-previews/README.md](validation/vault-menu-previews/README.md) | Текущий графический прогон меню, Vault, торговцев и hover-preview: 62 PNG со статусом 0; в папке сохранена выборка из 10 кадров |
-| [trailer-ui/README.md](validation/trailer-ui/README.md) | Снимки и исторические проверки гаража и прицепов |
-| [case-opening/report.json](validation/case-opening/report.json) | Сохранённый прогон 78/78 для кейсов; соседний `full-run.json` содержит более ранний результат 76/78 |
+| Ввод, пауза, результат | offline_session_test.gd, session_flow_test.gd, run_clock_test.gd, world_result_test.gd |
+| Машина, подвеска, прыжки | vehicle_motion_test.gd, vehicle_response_test.gd, wheel_vehicle_test.gd, vehicle_airborne_test.gd, vehicle_render_runtime_test.gd |
+| Дорога, следы, топливо | road_speed_test.gd, tire_trails_test.gd, fuel_station_test.gd, handling_wildlife_test.gd |
+| Бой, враги, волны | combat_test.gd, advanced_combat_test.gd, enemy_ai_test.gd, enemy_factory_test.gd, support_wave_test.gd |
+| Помехи, мины | jammer_gameplay_test.gd, jammer_feedback_test.gd, mine_hacking_module_test.gd |
+| Модули, уровни, радар, комбо | progression_test.gd, combat_upgrade_test.gd, radar_progression_test.gd, radar_armory_test.gd, combo_rewards_test.gd |
+| Состав и оборудование | caravan_loadout_test.gd, caravan_combat_test.gd, caravan_formation_test.gd, caravan_integration_test.gd, armory_unit_test.gd |
+| Экипаж, встречи, посадка | crew_runtime_test.gd, crew_encounter_test.gd, crew_seating_test.gd, caravan_crew_test.gd |
+| Груз, экономика, кейсы | raid_loot_test.gd, meta_economy_test.gd, expedition_flow_test.gd, case_rewards_test.gd, case_opening_test.gd |
+| Миссии | mission_catalog_test.gd, mission_tracker_test.gd, mission_flow_test.gd, mission_board_test.gd, crew_missions_test.gd |
+| Эвакуация | extraction_defense_test.gd, extraction_zone_flow_test.gd, world_activities_test.gd |
+| Мир, seed, коллизии | world_generation_test.gd, world_builder_test.gd, composed_world_seed_test.gd, world_rebuild_test.gd, base_collision_test.gd |
+| Разрушение, погода, торнадо | world_gameplay_test.gd, village_destruction_test.gd, tornado_interaction_test.gd, weather_transition_test.gd |
+| Пулы, terrain, загрузка | spatial_batches_test.gd, terrain_chunks_test.gd, model_dedup_test.gd, environment_lod_test.gd, loading_test.gd |
+| UI, язык, превью | hud_layout_test.gd, ui_menu_regression_test.gd, ui_language_flow_test.gd, item_preview_test.gd, trailer_ui_test.gd |
+| Сборка всего рейда | integration_test.gd, full_run_test.gd, combat_soak_test.gd |
 
-Обновление документации не запускало игру или полный набор тестов заново. Старые JSON, логи и скриншоты сохранены как доказательства конкретных проходов. Они не подтверждают автоматически новые модели, последующие изменения или текущую рабочую копию целиком.
+Профильные тесты запускайте после локального изменения; полный manifest нужен при изменении общих контрактов и широкой интеграции. Тесты сохранения должны использовать уникальный временный профиль. Не подставляйте реальный пользовательский профиль в capture или тест.
 
-## Изображение, производительность и звук
+## Настоящий рендер
 
-Сцены захвата находятся в [tests](../tests): `compact_ui_capture.tscn`, `trailer_ui_capture.tscn`, `case_opening_capture.tscn`, `military_pickup_capture.tscn`. Их запускают графическим Godot; пути результатов задаются в соответствующих скриптах.
+Headless не подтверждает внешний вид, GPU-прогрев, отсутствие первого зависания, звук или удобство управления. Название `visual_smoke` тоже не превращает headless в графический запуск.
 
-[render-benchmark.json](validation/render-benchmark.json) является старым измерением на Apple M4 Pro с импортированным кешем. В нём максимальный кадр первых выстрелов 139.839 мс, первого показа поселения 826.380 мс. Эти числа не являются текущим FPS и не доказывают, что последующие изменения устранили задержки. Нужен новый холодный графический прогон. Измеренные интервалы кадров включали CPU/GPU-синхронизацию и не были отдельными GPU timestamps.
+Примеры запуска с графическим Godot:
 
-Автоматический сценарий шести волн и симуляционный soak не заменяют полный рейд человеком, прослушивание звука или проверку долгой графической сессии.
+```sh
+godot --path . res://tests/compact_ui_capture.tscn
+godot --path . --script res://tests/vehicle_terrain_capture.gd
+godot --path . --script res://tests/fuel_station_capture.gd
+```
 
-## Экспорт
+Перед запуском прочитайте выбранный capture-скрипт: он задаёт подготовленный seed, сцену, временный профиль и output-путь. Для предметов, дождя и встречи с NPC есть `raid_loot_capture.gd`, `rain_coverage_capture.gd`, `crew_encounter_capture.gd`. Для ручной диагностики доступны `presentation/debug/model_gallery.tscn` и `presentation/debug/vehicle_playground.tscn`.
 
-[export_presets.cfg](../export_presets.cfg) содержит `macOS Offline`: universal, JSON включены, `tests`, `docs`, `build` и `override.cfg` исключены. Подпись и нотариализация выключены. Наличие и соответствие export templates установленному движку необходимо проверить перед экспортом; старое сообщение «templates отсутствуют» не описывает гарантированно текущее окружение.
+Просмотрите полученные кадры, проверьте engine log и подпишите точный сценарий. Для UI нужны EN/RU и узкое окно; для автомобиля движение, остановка, склон, прыжок и восстановление после приземления. Подготовленная сцена не заменяет ручной рейд.
+
+## Производительность и артефакты
+
+[ARTIFACTS.md](ARTIFACTS.md) отделяет прошлые результаты от текущей реализации. [PERFORMANCE_REPORT.md](PERFORMANCE_REPORT.md) и [performance-measurements.json](performance-measurements.json) описывают исторический статический маршрут; не используйте их числа как текущий FPS.
+
+Новые измерения фиксируют commit и локальные изменения, движок, renderer, устройство, разрешение, seed, маршрут, VSync/лимит FPS, холодный/прогретый кеш и длительность. Графические замеры запускаются последовательно без конкурирующих Godot-процессов. Отдельно учитываются первая загрузка, первый вид/выстрел, устойчивые кадры и память. Headless soak, статическая камера и полный игровой рейд являются разными проверками.
+
+## macOS export
+
+Preset `macOS Offline` собирает universal-пакет; подпись и notarization отключены, JSON включены, tests/docs/build/override.cfg исключены. Сначала проверьте соответствующие установленному движку export templates. Их прежнее отсутствие или наличие не описывает другое окружение.
 
 ```sh
 mkdir -p build
 godot --headless --path . --export-release "macOS Offline" build/iron-caravan-macos.zip
 ```
 
-Эта команда приведена как процедура, а не как выполненный экспорт. Самостоятельный пакет нужно отдельно запустить и проверить без сети. PCK, запускаемый установленным Godot, и запуск проекта в редакторе не равны проверенной самостоятельной сборке.
+Проверьте содержимое архива, затем самостоятельно запустите приложение из распакованного пакета без сети: меню, рейд, ассеты, звук, сохранение и повторное открытие. `tests/verify_pack.gd` предназначен для дополнительной проверки pack; запуск PCK установленным Godot не равен запуску самостоятельного приложения. Команды выше являются процедурой, а не утверждением, что артефакт уже собран.

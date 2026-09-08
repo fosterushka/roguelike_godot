@@ -2,7 +2,7 @@
 
 Сверено 2026-09-06. [industrial-icons.png](industrial-icons.png) создан встроенным GPT Image 6 сентября 2026 года. Прозрачность сохранена. [ui_icons.gd](../../presentation/ui/ui_icons.gd) предоставляет 16 регионов атласа через `texture()`, `apply()` и `view()`; отдельные PNG для каждой иконки не нужны.
 
-Атлас зарегистрирован в [asset_manifest.json](../../data/asset_manifest.json), индексы строк проверяются [ui_icons_test.gd](../../tests/ui_icons_test.gd). Применение в игре: [UI](../../docs/ui.md).
+Атлас зарегистрирован в [asset_manifest.json](../../data/asset_manifest.json), индексы строк проверяются [ui_icons_test.gd](../../tests/ui_icons_test.gd). Применение в игре: [UI](../../docs/PROJECT.md#интерфейс-и-радар).
 
 Исходный запрос генерации (сохранён без изменений):
 
