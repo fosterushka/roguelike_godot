@@ -5,7 +5,9 @@ static var _materials: Dictionary = {}
 static var _meshes: Dictionary = {}
 
 static func build_player() -> Node3D:
-	return preload("res://presentation/vehicles/military_pickup.gd").build()
+	var rig: Node3D = preload("res://presentation/vehicles/military_pickup.gd").build()
+	_build_struts(rig.get_meta("springs"))
+	return rig
 
 static func build_trailer(type: String = "cargo") -> Node3D:
 	var adapter := preload("res://presentation/vehicles/military_wagon.gd")
@@ -14,6 +16,7 @@ static func build_trailer(type: String = "cargo") -> Node3D:
 	var springs: Array[Node3D] = adapter.spring_nodes(rig)
 	rig.set_meta("wheels", wheels)
 	rig.set_meta("springs", springs)
+	_build_struts(springs)
 	var drawbar_candidates := rig.find_children("SteeringDrawbar*", "Node3D", true, false)
 	var drawbar := drawbar_candidates[0] as Node3D if not drawbar_candidates.is_empty() else null
 	if drawbar == null:
@@ -24,20 +27,31 @@ static func build_trailer(type: String = "cargo") -> Node3D:
 	rig.set_meta("drawbar", drawbar)
 	return rig
 
+static func _build_struts(springs: Array) -> void:
+	for spring: Node3D in springs:
+		_cylinder(spring, "SuspensionDamper", 0.075, Suspension.STRUT_LENGTH, Vector3.ZERO, "555d61")
+
 static func animate(rig: Node3D, suspension: Dictionary, steer: float, speed: float, wheel_angle: float, trailer: bool = false) -> void:
-	# Counter-rotate wheel hubs so load transfer tilts the chassis, not tire contacts.
-	var wheel_basis := Basis(Vector3.RIGHT, -float(suspension.get("pitch", 0.0)))
+	# Keep tire axes upright; travel is relative to each tilted body mount.
+	var tilt := Suspension.body_basis(suspension)
+	var wheel_basis := tilt.inverse()
 	var angles := Suspension.steering_angles(steer, speed, trailer)
 	var wheels: Array = rig.get_meta("wheels", [])
 	var springs: Array = rig.get_meta("springs", [])
 	for index in wheels.size():
 		var pivot: Node3D = wheels[index]
-		pivot.position = wheel_basis * (Vector3(pivot.get_meta("anchor")) + Vector3.UP * float(suspension.wheel_offsets[index]))
+		var anchor: Vector3 = pivot.get_meta("anchor")
+		var hub := Vector3(anchor.x, (tilt * anchor).y + float(suspension.wheel_offsets[index]), anchor.z)
+		pivot.position = wheel_basis * hub
 		pivot.basis = wheel_basis * Basis(Vector3.UP, angles[index] if index < 2 else 0.0)
 		pivot.get_child(0).rotation.x = wheel_angle
 		var spring: Node3D = springs[index]
-		spring.position = spring.get_meta("anchor") + Vector3.UP * float(suspension.wheel_offsets[index]) * 0.5
-		spring.scale.y = maxf(0.25, 1.0 - float(suspension.wheel_offsets[index]) / 0.66)
+		var center: Vector3 = spring.get_meta("anchor")
+		var upper := center + Vector3.UP * Suspension.STRUT_LENGTH * 0.5
+		var lower := center - Vector3.UP * Suspension.STRUT_LENGTH * 0.5 + pivot.position - anchor
+		var axis := upper - lower
+		spring.position = (upper + lower) * 0.5
+		spring.basis = Basis(Quaternion(Vector3.UP, axis.normalized())).scaled_local(Vector3(1, axis.length() / Suspension.STRUT_LENGTH, 1))
 	if trailer:
 		rig.get_meta("drawbar").rotation.y = clampf(steer * 0.55, -0.75, 0.75)
 

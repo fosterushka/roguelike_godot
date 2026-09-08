@@ -235,5 +235,45 @@ func _run() -> void:
 	# Pressure guard correctly prevents allocating an over-budget convoy before partial commit.
 	activities._update(overflow, 0.0)
 	check(overflow.state == "announced" and overflow.participant_ids.is_empty() and combat.model.enemies.size() == pressure_count, "pressurecaprejectsconvoywithoutpartialspawn")
+	_check_reachable_routes(world, vehicle, combat)
 	print("WORLD_ACTIVITIES: %d checks, %d failures" % [checks, failures])
 	quit(0 if failures == 0 else 1)
+
+func _check_reachable_routes(world: Node3D, vehicle: Node3D, combat: Node) -> void:
+	var activities: RefCounted = world.activities
+	var bend := Vector3(55, 0, 0)
+	check(Rules.sampled_route([Vector3.ZERO, bend, Vector3(55, 0, 80)]).has(bend), "Road resampling preserves original corners instead of cutting across obstacles")
+	var full_radius := Rules.reachable_radius(vehicle.max_fuel, vehicle.player_stats)
+	var low_radius := Rules.reachable_radius(40.0, vehicle.player_stats)
+	check(full_radius <= Rules.MAX_SPAWN_DISTANCE and low_radius < full_radius, "Activity radius is capped at 700m and shrinks with remaining fuel")
+	check(Rules.reachable_radius(0.0, vehicle.player_stats) == 0.0, "An empty tank does not offer unreachable timed travel")
+	var heavy_stats := {"weight": 45.0, "fuel_burn_mult": 1.5}
+	check(Rules.reachable_radius(40.0, heavy_stats) < Rules.reachable_radius(40.0, {}), "Heavy vehicles and increased burn reduce mission range")
+	check(Rules.reachable_radius(40.0, {"fuel_burn_mult": 4.0}) == 0.0, "High fuel burn is measured without clipping to one unit")
+	check(activities.register_dispatch("far", vehicle.global_position + Vector3(1000, 0, 0), []).is_empty(), "Foundry registration also rejects distant objectives")
+	var original_routes: Array = world.arena.world_layout.activityRoutes
+	var origin := Vector3(900, 0, 0)
+	combat.reset_run()
+	world.reset_run()
+	vehicle.global_position = origin
+	vehicle.fuel = vehicle.max_fuel
+	world.arena.world_layout.activityRoutes = [{"points": [origin + Vector3(100, 0, 0), origin + Vector3(350, 0, 0), origin + Vector3(650, 0, 0)]}]
+	var route: Dictionary = activities.request("scavengerRoute")
+	check(not route.is_empty(), "A mission can spawn near a player far from the map origin")
+	if not route.is_empty():
+		var local_route := true
+		for point in route.route:
+			local_route = local_route and Rules.point(point).distance_to(origin) <= Rules.MAX_SPAWN_DISTANCE
+		check(local_route, "The entire moving objective route stays within the player's spawn radius")
+		check(route.expires_at - activities.elapsed >= route.encounter_seconds, "Deadline includes driving, completion and arrival buffer")
+		check(Rules.route_length(route.route) / route.route_speed >= route.encounter_seconds - 0.01, "Traffic cannot escape before the budgeted arrival and completion window")
+		var travel := Rules.travel_seconds(route.position.distance_to(origin), vehicle.fuel, vehicle.player_stats)
+		var Fuel = preload("res://modules/caravan/vehicle_fuel.gd")
+		var remaining := Fuel.consume(vehicle.fuel, vehicle.max_fuel, Fuel.maximum_speed(vehicle.fuel, vehicle.player_stats), 1.0, travel + Rules.COMPLETION_SECONDS + Rules.ARRIVAL_BUFFER_SECONDS, float(vehicle.player_stats.get("fuel_burn_mult", 1.0)))
+		check(remaining >= vehicle.max_fuel * Rules.FUEL_RESERVE_RATIO - 0.01, "Conservative travel and encounter leave the promised fuel reserve")
+	combat.reset_run()
+	world.reset_run()
+	vehicle.global_position = origin
+	vehicle.fuel = 0.0
+	check(activities.request("scavengerRoute").is_empty(), "Zero-fuel requests skip distant road missions")
+	world.arena.world_layout.activityRoutes = original_routes

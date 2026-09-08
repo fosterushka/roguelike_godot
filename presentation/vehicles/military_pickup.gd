@@ -35,10 +35,9 @@ static func build() -> Node3D:
 		spin.add_child(tire)
 		source.free()
 		wheels.append(pivot)
-		# Preserve the suspension animation contract without extra rendered parts.
 		var spring := Node3D.new()
 		spring.name = "SuspensionAnchor" + str(index)
-		spring.position = pivot.position
+		spring.position = pivot.position + Vector3(-signf(pivot.position.x) * 0.24, Suspension.STRUT_LENGTH * 0.5, 0)
 		spring.set_meta("anchor", spring.position)
 		rig.add_child(spring)
 		springs.append(spring)

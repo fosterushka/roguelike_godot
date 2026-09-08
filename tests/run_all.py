@@ -10,6 +10,9 @@ import tempfile
 import time
 
 TESTS = [
+    'vehicle_playground_test.gd',
+    'vehicle_airborne_test.gd',
+    'spatial_batches_test.gd', 'terrain_chunks_test.gd',
     'boundary_screen_test.gd',
     'raid_loot_test.gd',
     'fuel_station_test.gd',

@@ -161,7 +161,7 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color("111713"))
 	draw_rect(Rect2(Vector2.ZERO, size), Color("786347"), false)
 	var font := ThemeDB.fallback_font
-	draw_string(font, Vector2(10, 18), Locale.text("ПОМЕХИ" if jammed else "РАДАР" if float(state.get("player", {}).get("radar_range", 0)) > 0 else "КАРТА") + (" %d/4" % int(state.get("player", {}).get("radar_level", 1)) if float(state.get("player", {}).get("radar_range", 0)) > 0 else ""), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("edc575"))
+	draw_string(font, Vector2(10, 18), Locale.text("ПОМЕХИ" if jammed else "РАДАР" if float(state.get("player", {}).get("radar_range", 0)) > 0 else "КАРТА") + (" %d/%d" % [int(state.get("player", {}).get("radar_level", 1)), RadarRules.MAX_LEVEL] if float(state.get("player", {}).get("radar_range", 0)) > 0 else ""), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("edc575"))
 	draw_rect(_map_rect, Color("080c09"))
 	var cell_width := WORLD_SIZE / GRID
 	var location: Vector3 = state.get("player", {}).get("position", Vector3.ZERO)
@@ -189,7 +189,7 @@ func _draw() -> void:
 			if explored(world) and _map_rect.grow(-4).has_point(point):
 				draw_rect(Rect2(point - Vector2(2, 2), Vector2(4, 4)), Color("e5d08a"))
 	for activity: Dictionary in world_state.get("activity", {}).get("records", []):
-		if activity.get("state", "") not in ["announced", "active"]:
+		if not RadarRules.identifies_missions(int(state.get("player", {}).get("radar_level", 0))) or activity.get("state", "") not in ["announced", "active"]:
 			continue
 		var world := _vector(activity.get("position", Vector3.ZERO))
 		var point := _point(world)
@@ -261,6 +261,8 @@ func _draw_boundary() -> void:
 			draw_line(clipped[0], clipped[1], Color("db9367"), 1.5)
 
 func extraction_sites() -> Array:
+	if not RadarRules.reveals_extraction(int(state.get("player", {}).get("radar_level", 0))):
+		return []
 	var extraction: Dictionary = world_state.get("extraction", {})
 	var sites: Array = extraction.get("sites", [])
 	if sites.is_empty() and extraction.get("visible", false):

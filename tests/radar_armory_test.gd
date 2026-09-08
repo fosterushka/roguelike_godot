@@ -42,7 +42,7 @@ func _run() -> void:
 	game._show_armory()
 	panel.filter.selected = 3
 	panel.rebuild_cards()
-	for expected in [{"level": 2, "range": 90.0, "cost": 45}, {"level": 3, "range": 160.0, "cost": 70}, {"level": 4, "range": 260.0, "cost": 100}]:
+	for expected in [{"level": 2, "range": 90.0, "cost": 45}, {"level": 3, "range": 160.0, "cost": 70}, {"level": 4, "range": 260.0, "cost": 100}, {"level": 5, "range": 360.0, "cost": 140}]:
 		var upgrade: Button = _action(panel, "radar:%d" % expected.level)
 		_check(upgrade != null and not upgrade.disabled, "Installed filter exposes radar upgrade to MK%d" % expected.level)
 		panel._catalog_scroll.ensure_control_visible(upgrade)
@@ -51,13 +51,13 @@ func _run() -> void:
 		_click(upgrade.get_global_rect().get_center())
 		_check(_radar(game).level == expected.level and _radar(game).def.range == expected.range and game.combat.model.player.radar_range == expected.range and game.combat.model.player.coins == coins - expected.cost, "Actual upgrade click changes module, player range and money for MK%d" % expected.level)
 		_check(panel.details.text.contains("MK level %d" % expected.level) and panel.details.text.contains("Range: %.2f" % expected.range), "Selected radar details refresh after upgrading to MK%d" % expected.level)
-	var capped: Button = _action(panel, "radar:4")
+	var capped: Button = _action(panel, "radar:5")
 	_check(capped != null and capped.disabled and capped.text == "MAX LEVEL", "Maximum radar level remains visible as a disabled capped control")
 	coins = game.combat.model.player.coins
 	panel._catalog_scroll.ensure_control_visible(capped)
 	await process_frame
 	_click(capped.get_global_rect().get_center())
-	_check(_radar(game).level == 4 and game.combat.model.player.coins == coins, "Capped control cannot charge scrap or exceed MK4")
+	_check(_radar(game).level == 5 and game.combat.model.player.coins == coins, "Capped control cannot charge scrap or exceed MK5")
 	game.queue_free()
 	await process_frame
 	paused = false

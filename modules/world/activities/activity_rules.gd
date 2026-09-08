@@ -1,4 +1,29 @@
 extends RefCounted
+const Fuel = preload("res://modules/caravan/vehicle_fuel.gd")
+const MAX_SPAWN_DISTANCE := 700.0
+const TRAVEL_SPEED_RATIO := 0.65
+const TRAVEL_DETOUR_RATIO := 1.25
+const FUEL_RESERVE_RATIO := 0.25
+const COMPLETION_SECONDS := 25.0
+const ARRIVAL_BUFFER_SECONDS := 10.0
+const ROUTE_SAMPLE_DISTANCE := 40.0
+const ROUTE_SPEEDS := {"raiderSupplyConvoy": 6.2, "scavengerRoute": 4.2}
+
+static func travel_speed(fuel: float, stats: Dictionary) -> float:
+	return Fuel.maximum_speed(fuel, stats) * TRAVEL_SPEED_RATIO
+
+static func travel_seconds(distance: float, fuel: float, stats: Dictionary) -> float:
+	return distance * TRAVEL_DETOUR_RATIO / maxf(travel_speed(fuel, stats), 0.1)
+
+static func reachable_radius(fuel: float, stats: Dictionary) -> float:
+	# Ask the fuel owner for full-speed, full-throttle consumption, including upgrades.
+	var burn := Fuel.CAPACITY - Fuel.consume(Fuel.CAPACITY, Fuel.CAPACITY, Fuel.maximum_speed(fuel, stats), 1.0, 1.0, float(stats.get("fuel_burn_mult", 1.0)))
+	var seconds := fuel * (1.0 - FUEL_RESERVE_RATIO) / maxf(burn, 0.001)
+	return clampf((seconds - COMPLETION_SECONDS - ARRIVAL_BUFFER_SECONDS) * travel_speed(fuel, stats) / TRAVEL_DETOUR_RATIO, 0.0, MAX_SPAWN_DISTANCE)
+
+static func encounter_seconds(distance: float, fuel: float, stats: Dictionary) -> float:
+	return travel_seconds(distance, fuel, stats) + COMPLETION_SECONDS + ARRIVAL_BUFFER_SECONDS
+
 const LIVE := ["announced", "active"]
 const MAJOR := ["raiderSupplyConvoy", "settlementDistress", "foundryDispatch"]
 const LIMIT_MAJOR := 1
@@ -18,6 +43,19 @@ static func live_count(records: Array, major: bool) -> int:
 		if record.state in LIVE and (record.type in MAJOR) == major:
 			count += 1
 	return count
+
+static func sampled_route(points: Array) -> Array:
+	var samples: Array = []
+	if points.is_empty():
+		return samples
+	samples.append(point(points[0]))
+	for index in range(1, points.size()):
+		var start := point(points[index - 1])
+		var end := point(points[index])
+		var subdivisions := maxi(1, ceili(start.distance_to(end) / ROUTE_SAMPLE_DISTANCE))
+		for step in range(1, subdivisions + 1):
+			samples.append(start.lerp(end, float(step) / subdivisions))
+	return samples
 
 static func route_length(points: Array) -> float:
 	var length := 0.0

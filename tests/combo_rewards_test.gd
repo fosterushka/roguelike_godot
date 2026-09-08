@@ -56,7 +56,7 @@ func _initialize() -> void:
 	check(model.road_fury.overdrive_remaining == 0.0 and model.road_fury.overdrive_cooldown == 0.0, "New run clears temporary driving rewards")
 	var world := FakeWorld.new()
 	world.combat = {"model": model}
-	world.vehicle = {"health": 30.0, "max_health": 100.0, "fuel": 10.0, "max_fuel": 100.0}
+	world.vehicle = {"global_position": Vector3.ZERO, "player_stats": {}, "health": 30.0, "max_health": 100.0, "fuel": 10.0, "max_fuel": 100.0}
 	var activities = Activities.new()
 	activities.world = world
 	var settlement: Dictionary = activities.announce("settlementDistress", {"position": Vector3(20, 0, 0)})

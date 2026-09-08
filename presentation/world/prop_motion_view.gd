@@ -152,7 +152,9 @@ func set_warmup_visible(enabled: bool, point: Vector3) -> void:
 		if not Policy.can_throw(prop):
 			continue
 		for part: Dictionary in prop.get("parts", []):
-			var key := str(part.mesh)
+			var batch: MultiMeshInstance3D = arena.source_world.get_child(int(part.mesh))
+			var material_id := batch.material_override.get_rid() if batch.material_override != null else RID()
+			var key := "%s:%s" % [batch.multimesh.mesh.get_rid(), material_id]
 			if prepared.has(key):
 				continue
 			prepared[key] = true

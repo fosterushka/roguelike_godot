@@ -27,7 +27,7 @@ func _run() -> void:
 	check(rig.name == "ArmoredWheelVehicle", "Player factory keeps the vehicle root contract")
 	check(str(rig.get_meta("model_path", "")) == PICKUP_PATH and rig.get_meta("model", null) != null, "Player factory records the authored pickup model")
 	check(not rig.has_node("Cabin") and not rig.has_node("RearEquipmentDeck"), "Player factory no longer builds placeholder cabin and cargo boxes")
-	check(_mesh_nodes(rig).size() == 5 and _one_material(_mesh_nodes(rig)), "Runtime pickup has only five authored meshes with a shared material")
+	check(_mesh_nodes(rig).size() == 9, "Runtime pickup keeps five authored meshes and four articulated dampers")
 	var wheels: Array = rig.get_meta("wheels", [])
 	check(wheels.size() == 4, "Authored pickup keeps four wheel pivots for vehicle animation")
 	var wheel_meshes: Array = []

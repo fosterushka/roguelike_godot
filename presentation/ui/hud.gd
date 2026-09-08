@@ -3,6 +3,7 @@ extends CanvasLayer
 const Icons = preload("res://presentation/ui/ui_icons.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 const Fuel = preload("res://modules/caravan/vehicle_fuel.gd")
+const RadarRules = preload("res://modules/progression/radar_rules.gd")
 
 signal ability_selected(slot: int)
 signal ability_requested
@@ -248,7 +249,7 @@ func _build_pause(screen: Control) -> void:
 	menu_button.pressed.connect(func() -> void: menu_action_requested.emit("menu", ""))
 	column.add_child(menu_button)
 	column.add_child(_label(Locale.text("УПРАВЛЕНИЕ"), 12, AMBER))
-	var hints := _label(Locale.text("WASD · Движение     Shift · Дрифт\nF / ЛКМ · Цель     E · Взаимодействие\n1–3 · Выбор навыка     Space · Применить\nB · Арсенал     M · Масштаб карты\nP / Esc · Пауза"), 12, MUTED)
+	var hints := _label(Locale.text("WASD · Движение     Space · Ручник\nQ / ЛКМ · Цель     E · Взаимодействие\n1–3 · Выбор навыка     F · Применить\nB · Арсенал     M · Масштаб карты\nP / Esc · Пауза"), 12, MUTED)
 	hints.name = "ControlTips"
 	column.add_child(hints)
 
@@ -485,7 +486,7 @@ func update_world(data: Dictionary) -> void:
 				lines.append(("АТАКУЮЩИЕ: %d" if ru else "ATTACKERS: %d") % extraction.get("hostile_count", 0))
 		elif extraction.get("can_request", false):
 			lines.append("[E] ЭВАКУАЦИЯ · ЗАЩИТА 20 с" if ru else "[E] EXTRACT · DEFEND 20s")
-		else:
+		elif RadarRules.reveals_extraction(int(radar.state.get("player", {}).get("radar_level", 0))):
 			lines.append(("ЗОНА ЭВАКУАЦИИ · %d м" if ru else "EXTRACTION ZONE · %dm") % extraction.get("distance", 0))
 	_objective_label.text = "\n".join(lines)
 	_objective_label.visible = not lines.is_empty()

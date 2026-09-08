@@ -3,19 +3,26 @@ extends Control
 const Geometry = preload("res://presentation/ui/map_geometry.gd")
 const Terrain = preload("res://modules/caravan/terrain_surface.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
+const RadarRules = preload("res://modules/progression/radar_rules.gd")
 const MAX_EDGE_HINTS := 6
+const SIGNAL_FOOTPRINT := Vector2(120, 50)
 const PRIORITY_KINDS := ["jammerTruck", "repairCrawler", "minelayer"]
 
 var state: Dictionary = {}
 var world_state: Dictionary = {}
 var camera: Camera3D
 var occluders: Array[Control] = []
+var signal_timers: Dictionary = {}
+var _generation := -1
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func update_state(data: Dictionary, view_camera: Camera3D) -> void:
+	if int(data.get("generation", 0)) != _generation:
+		_generation = int(data.get("generation", 0))
+		signal_timers.clear()
 	state = data
 	camera = view_camera
 	queue_redraw()
@@ -23,6 +30,38 @@ func update_state(data: Dictionary, view_camera: Camera3D) -> void:
 func update_world(data: Dictionary) -> void:
 	world_state = data
 	queue_redraw()
+
+func _process(delta: float) -> void:
+	if is_visible_in_tree() and state.get("running", false) and state.get("status", "") not in ["dead", "complete", "extracted"]:
+		advance_signals(delta)
+		queue_redraw()
+
+func advance_signals(delta: float) -> void:
+	var live: Dictionary = {}
+	for candidate: Dictionary in edge_candidates():
+		if not candidate.get("signal", false):
+			continue
+		var id: String = candidate.id
+		live[id] = true
+		var timer: Dictionary = signal_timers.get(id, {"age": 0.0, "progress": 0.0})
+		timer.age += delta
+		timer.progress += delta / RadarRules.signal_interval(candidate.distance, float(absi(id.hash()) % 101) / 100.0)
+		if timer.progress >= 1.0:
+			timer.progress = fposmod(timer.progress, 1.0)
+			timer.age = 0.0
+		signal_timers[id] = timer
+	for id in signal_timers.keys():
+		if not live.has(id):
+			signal_timers.erase(id)
+
+func _signal_candidate(id: String, position: Vector3, label: String, extraction: bool) -> Dictionary:
+	var level := int(state.get("player", {}).get("radar_level", 0))
+	var identified := RadarRules.reveals_extraction(level) if extraction else RadarRules.identifies_missions(level)
+	var candidate := _candidate(id, position, label if identified else "", Color("8ee3ad") if extraction else Color("69e0b2"), 1 if extraction else 4)
+	candidate.signal = true
+	candidate.identified = identified
+	candidate.icon = "E" if extraction and identified else "!" if identified else "?"
+	return candidate
 
 func _draw() -> void:
 	if not is_instance_valid(camera):
@@ -95,12 +134,16 @@ func edge_candidates() -> Array[Dictionary]:
 		if not nearest.is_empty():
 			candidates.append(nearest)
 	var extraction: Dictionary = world_state.get("extraction", {})
-	if extraction.get("visible", false) and _offscreen(extraction.get("position", Vector3.ZERO)):
-		candidates.append(_candidate("extraction", extraction.get("position", Vector3.ZERO), "ЭВАКУАЦИЯ", Color("8ee3ad"), 1))
+	var sites: Array = extraction.get("sites", [])
+	if sites.is_empty() and extraction.get("visible", false):
+		sites = [{"id": "active", "position": extraction.get("position", Vector3.ZERO)}]
+	for site: Dictionary in sites:
+		if _offscreen(site.get("position", Vector3.ZERO)):
+			candidates.append(_signal_candidate("extraction:" + str(site.get("id", "")), site.get("position", Vector3.ZERO), "ЭВАКУАЦИЯ", true))
 	for activity: Dictionary in world_state.get("activity", {}).get("records", []):
 		if activity.get("state", "") not in ["announced", "active"] or not activity.has("position") or not _offscreen(activity.position):
 			continue
-		candidates.append(_candidate("activity:" + str(activity.get("id", "")), activity.position, str(activity.get("type", "ЦЕЛЬ")), Color("69e0b2"), 4))
+		candidates.append(_signal_candidate("activity:" + str(activity.get("id", "")), activity.position, str(activity.get("type", "ЦЕЛЬ")), false))
 	var nearest_loot: Dictionary = {}
 	for crate: Dictionary in world_state.get("raid_loot", []):
 		if not _offscreen(crate.position):
@@ -138,9 +181,15 @@ func edge_hints() -> Array[Dictionary]:
 	for candidate in edge_candidates():
 		if hints.size() >= MAX_EDGE_HINTS:
 			break
+		if candidate.get("signal", false):
+			var age := float(signal_timers.get(candidate.id, {}).get("age", 0.0))
+			candidate.alpha = RadarRules.signal_alpha(age)
+			candidate.phase = clampf(age / RadarRules.SIGNAL_DURATION, 0.0, 1.0)
+			if candidate.alpha <= 0.01:
+				continue
 		var label: String = candidate.label
 		var width := clampf(ThemeDB.fallback_font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x + 34, 98, 190)
-		var footprint := Vector2(width, 36)
+		var footprint := Vector2(maxf(width, SIGNAL_FOOTPRINT.x), SIGNAL_FOOTPRINT.y) if candidate.get("signal", false) else Vector2(width, 36)
 		var bounds := Rect2(Vector2(8, 62) + footprint * 0.5, Vector2(maxf(1, size.x - 16 - footprint.x), maxf(1, size.y - 70 - footprint.y)))
 		var target := projected_position(candidate.position)
 		var direction := (target - size * 0.5).normalized()
@@ -188,6 +237,9 @@ func _perimeter_point(offset: float, bounds: Rect2) -> Vector2:
 	return Vector2(bounds.position.x, bounds.end.y - remaining + bounds.size.x)
 
 func _draw_hint(hint: Dictionary) -> void:
+	if hint.get("signal", false):
+		_draw_signal(hint)
+		return
 	var rectangle: Rect2 = hint.rect
 	var color: Color = hint.color
 	var direction: Vector2 = hint.direction
@@ -202,6 +254,24 @@ func _draw_hint(hint: Dictionary) -> void:
 		label = label.left(label.length() - 2) + "…"
 	draw_string(font, rectangle.position + Vector2(28, 14), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, color)
 	draw_string(font, rectangle.position + Vector2(28, 28), "%d%s" % [roundi(hint.distance), Locale.text("м")], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("e3e5d9"))
+
+func _draw_signal(hint: Dictionary) -> void:
+	var center: Vector2 = hint.rect.get_center()
+	var color := Color(hint.color, hint.alpha)
+	var outline := Color(0.04, 0.08, 0.06, hint.alpha)
+	var direction: Vector2 = hint.direction
+	var angle := direction.angle()
+	for index in 3:
+		var radius := 9.0 + fposmod(float(hint.phase) + index / 3.0, 1.0) * 16.0
+		draw_arc(center, radius, angle - PI * 0.6, angle + PI * 0.6, 24, Color(outline, outline.a * (1.0 - (radius - 9.0) / 22.0)), 3.5, true)
+		draw_arc(center, radius, angle - PI * 0.6, angle + PI * 0.6, 24, Color(color, color.a * (1.0 - (radius - 9.0) / 22.0)), 1.5, true)
+	draw_string_outline(ThemeDB.fallback_font, center + Vector2(-4, 5), hint.icon, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, 3, outline)
+	draw_string(ThemeDB.fallback_font, center + Vector2(-4, 5), hint.icon, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, color)
+	if hint.identified:
+		var label: String = hint.label
+		var width := ThemeDB.fallback_font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x
+		draw_string_outline(ThemeDB.fallback_font, center + Vector2(-width * 0.5, 23), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, 3, outline)
+		draw_string(ThemeDB.fallback_font, center + Vector2(-width * 0.5, 23), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, color)
 
 func projected_position(world_point: Vector3) -> Vector2:
 	var point := camera.unproject_position(world_point)

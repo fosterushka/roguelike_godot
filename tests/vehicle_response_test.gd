@@ -43,10 +43,13 @@ func _test_controls() -> void:
 	var handbrake := State.new()
 	normal.speed = 6.0
 	handbrake.speed = 6.0
-	for tick in 30:
+	for tick in 12:
 		Motion.step(normal, {"throttle": 1.0, "steer": 1.0, "handbrake": false}, tuning, 1.0 / 60)
 		Motion.step(handbrake, {"throttle": 1.0, "steer": 1.0, "handbrake": true}, tuning, 1.0 / 60)
 	check(absf(handbrake.slip_angle) > absf(normal.slip_angle) * 2 and handbrake.speed < normal.speed, "Handbrake preserves controlled drift and speed loss")
+	for tick in 120:
+		Motion.step(handbrake, {"throttle": 1.0, "steer": 0.0, "handbrake": true}, tuning, 1.0 / 60)
+	check(is_zero_approx(handbrake.speed), "Held handbrake stops and holds vehicle even with throttle pressed")
 	for tick in 150:
 		Motion.step(state, {"throttle": -1.0, "steer": 1.0, "handbrake": false}, tuning, 1.0 / 60)
 	check(state.speed < 0 and state.yaw_velocity < 0, "Reverse remains limited and turns in the correct direction")
@@ -55,11 +58,13 @@ func _test_rigid_suspension() -> void:
 	var state := Suspension.create()
 	for tick in 120:
 		Suspension.step(state, Vector3.ZERO, 0, 6, 1.2, 1.0 / 60, 1.0, false, func(x: float, z: float) -> float: return x * 0.06 + z * 0.04)
-	check(state.pitch == 0 and state.roll == 0 and state.pitch_velocity == 0 and state.roll_velocity == 0, "Terrain and steering never rotate the rigid body")
-	check(absf(state.wheel_offsets[0] - state.wheel_offsets[1]) > 0.1, "Independent wheel travel still responds to terrain under level chassis")
+	check(state.pitch < -0.03 and state.roll > 0.05 and absf(state.pitch_velocity) < 0.001 and absf(state.roll_velocity) < 0.001, "Body settles into the terrain slope")
+	check(absf(state.wheel_offsets[0] - state.wheel_offsets[1]) < 0.01, "Body alignment keeps suspension centered on a uniform slope")
 	var first := Pose.capture(Vector3.ZERO, PI - 0.1, 0.88, 0, 0, 0, state)
 	var last := Pose.capture(Vector3.ONE, -PI + 0.1, 1.42, 1, 1, 1, state)
+	first.suspension.roll = 0.0
 	var midpoint := Pose.interpolate(first, last, 0.5)
+	check(is_equal_approx(midpoint.suspension.roll, last.suspension.roll * 0.5), "Terrain roll interpolates between physics ticks")
 	var transform := Pose.transform(midpoint)
 	check(absf(absf(midpoint.heading) - PI) < 0.00001, "Yaw interpolation crosses angle wrap without a full revolution")
 	check(_rigid(transform.basis), "Interpolating vehicle growth preserves uniform scale with no shear")
@@ -83,7 +88,7 @@ func _test_load_transfer() -> void:
 	var grounded := true
 	for index in wheels.size():
 		var expected: Vector3 = wheels[index].get_meta("anchor")
-		expected.y += float(state.height) + float(state.wheel_offsets[index])
+		expected.y = (Suspension.body_basis(state) * expected).y + float(state.height) + float(state.wheel_offsets[index])
 		grounded = grounded and wheels[index].global_position.distance_to(expected) < 0.00001
 		grounded = grounded and wheels[index].global_basis.y.distance_to(Vector3.UP) < 0.00001
 	check(grounded and _rigid(rig.basis), "Pitch preserves all tire contact positions and rigid chassis without shear")

@@ -246,7 +246,7 @@ func rebuild_cards() -> void:
 		if type == "radar" and installed and not _shop.get("radar_upgrade", {}).is_empty():
 			var radar_module := _installed_module("radar")
 			card.add_child(Styles.label(Locale.text("MK %d · ДАЛЬНОСТЬ %d м") % [radar_module.get("level", 1), radar_module.get("def", {}).get("range", 0)], 11))
-			_action(card, _shop.radar_upgrade, Locale.text("МАКС. УРОВЕНЬ") if int(radar_module.get("level", 1)) >= 4 else Locale.text("УЛУЧШИТЬ"))
+			_action(card, _shop.radar_upgrade, Locale.text("МАКС. УРОВЕНЬ") if int(radar_module.get("level", 1)) >= preload("res://modules/progression/radar_rules.gd").MAX_LEVEL else Locale.text("УЛУЧШИТЬ"))
 			matched_upgrade = true
 		for row: Dictionary in _shop.weapons:
 			var index := int(str(row.id).get_slice(":", 1))

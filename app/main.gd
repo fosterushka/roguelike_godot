@@ -240,6 +240,9 @@ func _input(event: InputEvent) -> void:
 		else:
 			_open_caravan()
 	elif screen_state == "running":
+		if event.is_action("handbrake"):
+			get_viewport().set_input_as_handled()
+			return
 		if event.is_action_pressed("interact"):
 			if crew_runtime.interact() or _recouple_nearest():
 				combat.model.player.interaction_claimed = true
@@ -264,7 +267,7 @@ func _input(event: InputEvent) -> void:
 		else:
 			return
 	else:
-		if event.is_action_pressed("activate_ability"):
+		if event.is_action_pressed("activate_ability") or event.is_action_pressed("handbrake"):
 			get_viewport().set_input_as_handled()
 		return
 	get_viewport().set_input_as_handled()

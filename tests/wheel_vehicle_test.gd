@@ -20,14 +20,16 @@ func _run() -> void:
 	check(absf(state.height) < 0.001 and absf(state.velocity) < 0.001 and state.contacts == 4, "Four springs support stationary chassis without artificial bob")
 	for frame in 360:
 		Suspension.step(state, Vector3.ZERO, 0, 0, 0, 1.0 / 60, 1.0, false, func(x: float, z: float) -> float: return x * 0.08 + z * 0.12)
-	check(state.pitch == 0 and state.roll == 0 and absf(state.wheel_offsets[1] - state.wheel_offsets[2]) > 0.4, "Rigid chassis stays level while wheels follow sampled support plane")
-	check(state.contacts >= 2 and absf(state.height) < Suspension.TRAVEL, "Level chassis remains supported within suspension travel on a two-axis slope")
+	check(state.pitch < -0.1 and state.roll > 0.07 and absf(state.wheel_offsets[1] - state.wheel_offsets[2]) < 0.03, "Chassis follows both axes of the support plane")
+	check(state.contacts >= 2 and absf(state.height) < Suspension.TRAVEL, "Tilted chassis remains supported within suspension travel on a two-axis slope")
 	state = Suspension.create()
 	Suspension.step(state, Vector3.ZERO, 0, 0, 0, 1.0 / 60, 1.0, false, func(_x: float, _z: float) -> float: return 0.0)
+	var peak_vertical_speed := 0.0
 	for frame in 30:
 		Suspension.step(state, Vector3.ZERO, 0, 0, 0, 1.0 / 60, 1.0, false, func(x: float, z: float) -> float: return 0.35 if x > 0 and z > 0 else 0.0)
-	check(state.wheel_offsets[1] > state.wheel_offsets[0] + 0.05 and state.pitch == 0 and state.roll == 0, "Single-wheel obstacle compresses suspension without tilting rigid chassis")
-	check(absf(state.velocity) > 0.001, "Ground step excites damped vertical chassis motion")
+		peak_vertical_speed = maxf(peak_vertical_speed, absf(state.velocity))
+	check(state.wheel_offsets[1] > state.wheel_offsets[0] + 0.05 and state.pitch < -0.01 and state.roll > 0.01, "Single-wheel obstacle compresses suspension and tilts the chassis")
+	check(peak_vertical_speed > 0.01, "Ground step excites damped vertical chassis motion during the response")
 	for frame in 600:
 		Suspension.step(state, Vector3.ZERO, 0, 0, 0, 1.0 / 60, 1.0, false, func(_x: float, _z: float) -> float: return 0.0)
 	check(absf(state.height) < 0.001 and absf(state.pitch) < 0.001 and absf(state.roll) < 0.001, "Springs settle after leaving obstacle")
@@ -53,12 +55,73 @@ func _run() -> void:
 	for frame in 240:
 		Motion.step(motion, {"throttle": -1.0, "steer": 1.0, "handbrake": false}, tuning, 1.0 / 60)
 	check(motion.speed < 0 and motion.yaw_velocity < 0, "Reverse steering follows wheel vehicle kinematics")
+	_test_moving_bump()
+	_test_support_geometry()
 	_test_trailer()
 	await _test_rig()
 	await _test_terrain()
 	await _test_dynamic_grounding()
 	print("Wheel vehicle: %d checks, %d failures" % [checks, failures])
 	quit(0 if failures == 0 else 1)
+
+func _test_support_geometry() -> void:
+	var pose_api = preload("res://modules/caravan/vehicle_pose.gd")
+	for trailer in [false, true]:
+		var rig := Rig.build_trailer() if trailer else Rig.build_player()
+		root.add_child(rig)
+		for scale_value in [0.88, 1.42]:
+			for heading in [0.0, PI * 0.5, -2.3]:
+				for gradient in [Vector2(0, 0.2), Vector2(-0.18, 0), Vector2(0.14, -0.16)]:
+					var state := Suspension.create()
+					var origin := Vector3(7, 0, -3)
+					var sampler := func(x: float, z: float) -> float: return x * gradient.x + z * gradient.y
+					for tick in 240:
+						Suspension.step(state, origin, heading, 0, 0, 1.0 / 60, scale_value, trailer, sampler)
+					origin.y = state.height
+					rig.transform = pose_api.transform(pose_api.capture(origin, heading, scale_value, 0, 0, 0, state))
+					Rig.animate(rig, state, 0.4, 4, 1.2, trailer)
+					var valid: bool = state.contacts == 4
+					var wheels: Array = rig.get_meta("wheels")
+					var springs: Array = rig.get_meta("springs")
+					for index in 4:
+						var wheel: Node3D = wheels[index]
+						var point := wheel.global_position
+						valid = valid and absf(point.y - Suspension.RADIUS * scale_value - sampler.call(point.x, point.z)) < 0.0001
+						valid = valid and absf(state.wheel_offsets[index]) <= Suspension.TRAVEL
+						var spring: Node3D = springs[index]
+						var center: Vector3 = spring.get_meta("anchor")
+						var upper := center + Vector3.UP * Suspension.STRUT_LENGTH * 0.5
+						var lower := center - Vector3.UP * Suspension.STRUT_LENGTH * 0.5 + wheel.position - Vector3(wheel.get_meta("anchor"))
+						valid = valid and (spring.transform * (Vector3.UP * Suspension.STRUT_LENGTH * 0.5)).distance_to(upper) < 0.0001
+						valid = valid and (spring.transform * (Vector3.DOWN * Suspension.STRUT_LENGTH * 0.5)).distance_to(lower) < 0.0001
+					check(valid, "Slope tire contact and both damper endpoints: trailer=%s scale=%s yaw=%s gradient=%s" % [trailer, scale_value, heading, gradient])
+		rig.free()
+
+func _test_moving_bump() -> void:
+	var sampler := func(x: float, z: float) -> float:
+		return 0.4 * exp(-pow((z - 3.0) / 0.8, 2)) if x > 0 else 0.0
+	var finals: Array[Dictionary] = []
+	for rate in [30, 60, 120]:
+		var state := Suspension.create()
+		var max_pitch := 0.0
+		var max_roll := 0.0
+		var valid := true
+		for tick in rate * 5:
+			var point := Vector3(0, 0, float(tick) / rate * 2.0)
+			Suspension.step(state, point, 0, 2, 0, 1.0 / rate, 1, false, sampler)
+			max_pitch = maxf(max_pitch, absf(state.pitch))
+			max_roll = maxf(max_roll, absf(state.roll))
+			for index in 4:
+				var anchor: Vector3 = Suspension.ANCHORS[index]
+				var ground: float = sampler.call(point.x + anchor.x, point.z + anchor.z)
+				var tire_bottom: float = state.height + Suspension.mount_offset(Suspension.body_basis(state), anchor) + state.wheel_offsets[index]
+				valid = valid and tire_bottom >= ground - 0.0001 and absf(state.wheel_offsets[index]) <= Suspension.TRAVEL
+				if state.wheel_contacts[index]:
+					valid = valid and absf(tire_bottom - ground) < 0.0001
+		check(valid and max_pitch > 0.01 and max_roll > 0.02, "Moving over a one-sided bump tilts body without tire penetration at %dHz" % rate)
+		finals.append(state)
+	for state: Dictionary in finals:
+		check(absf(state.pitch) < 0.001 and absf(state.roll) < 0.001 and absf(state.height) < 0.01, "Body settles after driving off the bump")
 
 func _test_trailer() -> void:
 	var pose := {"x": 0.0, "z": -7.03, "heading": 0.0}
@@ -78,7 +141,7 @@ func _test_trailer() -> void:
 	var suspension := Suspension.create()
 	for frame in 240:
 		Suspension.step(suspension, Vector3(pose.x, 0, pose.z), pose.heading, pose.speed, pose.yaw_rate, 1.0 / 60, 1.0, true, func(x: float, z: float) -> float: return x * 0.05 + z * 0.08)
-	check(absf(suspension.wheel_offsets[0] - suspension.wheel_offsets[3]) > 0.05 and suspension.pitch == 0 and suspension.roll == 0 and suspension.contacts >= 2, "Trailer wheel travel follows its own terrain while platform stays level")
+	check(absf(suspension.pitch) + absf(suspension.roll) > 0.05 and suspension.contacts == 4, "Trailer platform follows its own terrain with all wheels supported")
 
 func _test_rig() -> void:
 	var player := Rig.build_player()

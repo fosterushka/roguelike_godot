@@ -20,6 +20,7 @@ func check(value: bool, message: String) -> void:
 		failures += 1
 		printerr("FAIL: ", message)
 func _run() -> void:
+	_check_generated_layouts()
 	preload("res://app/input_actions.gd").register()
 	var arena := preload("res://presentation/world/arena.tscn").instantiate()
 	root.add_child(arena)
@@ -33,7 +34,7 @@ func _run() -> void:
 	root.add_child(world)
 	world.setup(arena, combat, vehicle)
 	_check_station(world, combat, vehicle, "cached")
-	var context := pump_context()
+	var context := preload("res://modules/world/generation/world_generator.gd").generate(72841, Authored.new())
 	paused = true
 	check(arena.rebuild_from_context(context), "Generated oil field replaces frozen world")
 	world.rebind_world(int(context.layout.seed))
@@ -101,3 +102,18 @@ func _check_station(world: Node3D, combat: Node3D, vehicle: CharacterBody3D, lab
 	world.reset_run()
 	world.damage_props(point, 0.01, 9999, Damage.create("explosion"))
 	check(combat.model.pickups.filter(func(pickup): return pickup.kind == "fuel").size() == 1, label + " reset permits one new rewarded drop")
+
+func _check_generated_layouts() -> void:
+	for seed_value in [0, 1, 42, 72841, 991827, 4294967295]:
+		var context := Context.new()
+		context.setup(seed_value)
+		var stops: Array = context.layout.monuments.filter(func(site): return str(site.id).begins_with("fuel-stop-"))
+		check(stops.size() == Rules.GUARANTEED_PUMPS, "Every seed guarantees six roadside oil pumps")
+		var nearest := INF
+		for site: Dictionary in stops:
+			nearest = minf(nearest, Vector2(site.x, site.z).length())
+			check(context.Layout.distance_to_road(site, context.layout.roads) <= Rules.ROADSIDE_OFFSET + 0.01, "Fuel stop is reachable from a clear road")
+			check(not context.open_dressing_point(site.x, site.z), "Fuel stop apron is protected from trees and rocks")
+			for village: Dictionary in context.layout.villages:
+				check(context.Layout.distance(site, village) >= 82, "Village buildings cannot overlap reserved fuel stop")
+		check(nearest <= Rules.START_FUEL_MAX_DISTANCE, "First pump is within 350 m of spawn")

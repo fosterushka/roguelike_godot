@@ -16,7 +16,7 @@ func _ready() -> void:
 	movement.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	movement.position = Vector2(20, -280)
 	add_child(movement)
-	for item in [{"label": "", "action": ""}, {"label": "W", "action": "drive_forward"}, {"label": "SHIFT", "action": "handbrake"}, {"label": "A", "action": "drive_left"}, {"label": "S", "action": "drive_backward"}, {"label": "D", "action": "drive_right"}]:
+	for item in [{"label": "", "action": ""}, {"label": "W", "action": "drive_forward"}, {"label": "SPACE", "action": "handbrake"}, {"label": "A", "action": "drive_left"}, {"label": "S", "action": "drive_backward"}, {"label": "D", "action": "drive_right"}]:
 		movement.add_child(_button(item.label, item.action))
 	var combat := GridContainer.new()
 	combat.columns = 2

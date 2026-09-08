@@ -5,13 +5,13 @@ const KEYS := {
 	"drive_backward": [KEY_S],
 	"drive_left": [KEY_A],
 	"drive_right": [KEY_D],
-	"handbrake": [KEY_SHIFT],
-	"focus_target": [KEY_F],
+	"handbrake": [KEY_SPACE, KEY_SHIFT],
+	"focus_target": [KEY_Q],
 	"interact": [KEY_E],
 	"ability_one": [KEY_1],
 	"ability_two": [KEY_2],
 	"ability_three": [KEY_3],
-	"activate_ability": [KEY_SPACE],
+	"activate_ability": [KEY_F],
 	"armory": [KEY_B],
 	"inventory": [KEY_I, KEY_TAB],
 	"crew_menu": [KEY_J],
@@ -27,6 +27,7 @@ static func register() -> void:
 	for action: String in KEYS:
 		if not InputMap.has_action(action):
 			InputMap.add_action(action)
+		InputMap.action_erase_events(action)
 		for key: int in KEYS[action]:
 			var event := InputEventKey.new()
 			event.physical_keycode = key as Key

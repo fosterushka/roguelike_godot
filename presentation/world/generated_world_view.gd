@@ -1,4 +1,5 @@
 extends Node3D
+const SpatialBatches = preload("res://presentation/world/spatial_batches.gd")
 const Biomes = preload("res://modules/world/biome_rules.gd")
 const TreeReplacements = preload("res://presentation/world/tree_replacements.gd")
 const SourceModel = preload("res://presentation/combat/source_model.gd")
@@ -12,7 +13,6 @@ func build(generated: RefCounted) -> Dictionary:
 	var trees := TreeReplacements.prepare(context)
 	for pool: String in context.POOLS:
 		var template: Dictionary = SourceModel._templates.world_72841[context.POOLS[pool][0]]
-		var values: Array = trees.instances[pool]
 		var batch := MultiMeshInstance3D.new()
 		batch.name = pool
 		batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -25,14 +25,18 @@ func build(generated: RefCounted) -> Dictionary:
 			batch.material_override = preload("res://presentation/world/military_environment_palette.gd").material_for(_palette_role(pool))
 		if pool.begins_with("rockMass"):
 			batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-		instances.instance_count = values.size()
-		for index in values.size():
-			instances.set_instance_transform(index, values[index])
-			if instances.use_colors:
-				instances.set_instance_color(index, Biomes.tint_at(values[index].origin))
 		batch.multimesh = instances
 		pool_indices[pool] = get_child_count()
 		add_child(batch)
+	var mapping := {}
+	for pool: String in context.POOLS:
+		var index: int = pool_indices[pool]
+		var values: Array = trees.instances[pool]
+		var colors: Array = []
+		if Biomes.VEGETATION_POOLS.has(pool):
+			for pose: Transform3D in values:
+				colors.append(Biomes.tint_at(pose.origin))
+		mapping[index] = SpatialBatches.split(self, get_child(index), values, colors)
 	for group: Node3D in context.groups:
 		add_child(group)
 	var props: Array = []
@@ -46,6 +50,7 @@ func build(generated: RefCounted) -> Dictionary:
 				continue
 			prop.parts.append({"mesh": pool_indices[part.pool], "instance": part.instance, "matrix": matrix(part.transform)})
 		props.append(prop)
+	SpatialBatches.remap_props(props, mapping)
 	var roads: Array = []
 	var routes: Array = []
 	var anchors: Array = []

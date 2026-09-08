@@ -26,6 +26,7 @@ func _ready() -> void:
 	preload("res://presentation/world/world_decor_filter.gd").hide_reference_figures(source_world)
 	world_layout = JSON.parse_string(FileAccess.get_file_as_string("res://data/visual_models/world_layout.json"))
 	preload("res://presentation/world/tree_replacements.gd").replace_reference(source_world, world_layout)
+	_split_reference_batches()
 	_roads = RoadView.new()
 	_roads.name = "OriginalSoftEdgeRoads"
 	add_child(_roads)
@@ -36,6 +37,35 @@ func _ready() -> void:
 	for index in world_layout.roads.size() + 1:
 		source_world.get_child(index).visible = false
 	_bind_layout_collisions()
+
+func _split_reference_batches() -> void:
+	var spatial = preload("res://presentation/world/spatial_batches.gd")
+	var mapping := {}
+	var pools: Dictionary = preload("res://modules/world/generation/generation_context.gd").POOLS
+	var replaced_components := [pools.treeTrunks[0], pools.treeCrowns[0], pools.treeCrownsAlt[0], pools.treeBranches[0]]
+	var tree_poses := {}
+	for prop: Dictionary in world_layout.props:
+		if prop.kind in ["tree", "deadTree"]:
+			for part: Dictionary in prop.parts:
+				if not tree_poses.has(int(part.mesh)):
+					tree_poses[int(part.mesh)] = []
+				var poses: Array = tree_poses[int(part.mesh)]
+				poses.resize(maxi(poses.size(), int(part.instance) + 1))
+				poses[int(part.instance)] = SourceModel._transform(part.matrix)
+	var original_count := source_world.get_child_count()
+	for index in original_count:
+		var batch := source_world.get_child(index) as MultiMeshInstance3D
+		# The replaced legacy tree components are already hidden.
+		if batch == null or index <= world_layout.roads.size() or index in replaced_components:
+			continue
+		var poses: Array = tree_poses.get(index, [])
+		if not tree_poses.has(index):
+			for matrix: Array in batch.get_meta("source_part", {}).get("instances", []):
+				poses.append(SourceModel._transform(matrix))
+		if not poses.is_empty():
+			mapping[index] = spatial.split(source_world, batch, poses)
+	spatial.remap_props(world_layout.props, mapping)
+
 
 func _replace_reference_meshes() -> void:
 	# Keep indices/transforms: destruction records refer to these source batches.
@@ -80,7 +110,19 @@ func _create_ground() -> void:
 		material.set_shader_parameter("biome_frequency", Biomes.BORDER_FREQUENCY)
 		ground.material_override = material
 		add_child(ground)
-	ground.mesh = TerrainSurface.create_mesh()
+	var chunk_index := 0
+	for row in range(0, TerrainSurface.CELLS, TerrainSurface.RENDER_CHUNK_CELLS):
+		for column in range(0, TerrainSurface.CELLS, TerrainSurface.RENDER_CHUNK_CELLS):
+			var chunk: MeshInstance3D
+			if chunk_index < ground.get_child_count():
+				chunk = ground.get_child(chunk_index)
+			else:
+				chunk = MeshInstance3D.new()
+				chunk.name = "Terrain_%d_%d" % [column, row]
+				chunk.material_override = ground.material_override
+				ground.add_child(chunk)
+			chunk.mesh = TerrainSurface.create_mesh(Rect2i(column, row, TerrainSurface.RENDER_CHUNK_CELLS, TerrainSurface.RENDER_CHUNK_CELLS))
+			chunk_index += 1
 	var body := get_node_or_null("TerrainCollision") as StaticBody3D
 	if body == null:
 		body = StaticBody3D.new()
@@ -158,7 +200,10 @@ func set_prop_destroyed(id: String, destroyed: bool) -> bool:
 		var visual := source_world.get_child(int(part.mesh)) as MultiMeshInstance3D
 		if visual == null:
 			continue
-		var transform := Transform3D(Basis.from_scale(Vector3.ZERO), Vector3.ZERO) if destroyed else SourceModel._transform(part.matrix)
+		var transform := SourceModel._transform(part.matrix)
+		if destroyed:
+			# Keep hidden instances inside their spatial batch instead of expanding to world zero.
+			transform.basis = Basis.from_scale(Vector3.ZERO)
 		if not destroyed:
 			transform.origin += Vector3(_prop_offsets.get(id, Vector3.ZERO))
 		visual.multimesh.set_instance_transform(int(part.instance), transform)

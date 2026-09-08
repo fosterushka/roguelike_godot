@@ -1,4 +1,5 @@
 extends RefCounted
+const Stations = preload("res://modules/world/fuel_station_rules.gd")
 const Random = preload("res://modules/world/activities/source_random.gd")
 const Layout = preload("res://modules/world/generation/layout_generator.gd")
 const DURABILITY := {"tree": [0.9, 28, "wood"], "deadTree": [0.78, 20, "wood"], "boulder": [0.82, 58, "stone"], "scrub": [0.48, 7, "wood"], "fence": [1.05, 14, "wood"], "barrel": [0.52, 12, "metal"], "crate": [0.52, 10, "wood"], "scrap": [0.78, 18, "metal"], "wreck": [1.65, 46, "metal"], "well": [1.45, 72, "mixed"], "stall": [1.75, 34, "mixed"], "windmill": [2.4, 115, "mixed"], "signal": [0.65, 24, "metal"], "ruin": [2.35, 62, "stone"], "streetlight": [0.8, 34, "mixed"], "building": [2.25, 58, "mixed"], "monument": [7, 150, "mixed"]}
@@ -67,6 +68,9 @@ func open_dressing_point(x: float, z: float, road_clearance: float = 8, start_cl
 		return false
 	if Layout.distance_to_road({"x": x, "z": z}, layout.roads) <= road_clearance:
 		return false
+	for site: Dictionary in layout.monuments:
+		if Stations.is_station(str(site.type)) and Layout.distance({"x": x, "z": z}, site) < Stations.SITE_CLEARANCE:
+			return false
 	for obstacle: Dictionary in rock_obstacles:
 		if Layout.distance({"x": x, "z": z}, obstacle) <= obstacle.radius + 2:
 			return false

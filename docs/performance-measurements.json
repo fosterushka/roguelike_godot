@@ -1,0 +1,402 @@
+{
+  "baseline_commit": "26d1d15564f67c580bfd7a809446b2464e098967",
+  "conditions": "Godot editor executable, static seed 72841 route, manual RenderingServer.force_draw, no active actors. Frame intervals are desktop measurements, not isolated GPU timings. No release-build claim.",
+  "before": {
+    "adapter": "Apple M4 Pro (Apple9)",
+    "application_ms": 395.636,
+    "engine": "4.7.2-stable (official)",
+    "generation_ms": 2775.42,
+    "phases": [
+      {
+        "draw_calls": 75.0,
+        "first_visit_max": 34.384,
+        "max": 11.167,
+        "name": "start",
+        "objects": 80.0,
+        "over_budget": 0,
+        "p50": 8.318,
+        "p95": 8.876,
+        "p99": 9.208,
+        "primitives": 3168930.0,
+        "static_bytes": 230302041.0,
+        "video_bytes": 187809792.0
+      },
+      {
+        "draw_calls": 68.0,
+        "first_visit_max": 8.974,
+        "max": 17.442,
+        "name": "negative_boundary",
+        "objects": 68.0,
+        "over_budget": 1,
+        "p50": 8.293,
+        "p95": 10.853,
+        "p99": 15.196,
+        "primitives": 2643698.0,
+        "static_bytes": 230303273.0,
+        "video_bytes": 187809792.0
+      },
+      {
+        "draw_calls": 87.0,
+        "first_visit_max": 11.464,
+        "max": 15.238,
+        "name": "village",
+        "objects": 102.0,
+        "over_budget": 0,
+        "p50": 8.317,
+        "p95": 11.279,
+        "p99": 14.826,
+        "primitives": 3191314.0,
+        "static_bytes": 230328669.0,
+        "video_bytes": 187809792.0
+      },
+      {
+        "draw_calls": 84.0,
+        "first_visit_max": 8.833,
+        "max": 14.801,
+        "name": "zoom_out",
+        "objects": 96.0,
+        "over_budget": 0,
+        "p50": 8.359,
+        "p95": 11.085,
+        "p99": 13.395,
+        "primitives": 3169038.0,
+        "static_bytes": 230329737.0,
+        "video_bytes": 187809792.0
+      },
+      {
+        "draw_calls": 75.0,
+        "first_visit_max": 15.335,
+        "max": 10.204,
+        "name": "return",
+        "objects": 80.0,
+        "over_budget": 0,
+        "p50": 8.333,
+        "p95": 8.926,
+        "p99": 10.196,
+        "primitives": 3168930.0,
+        "static_bytes": 230330957.0,
+        "video_bytes": 187809792.0
+      }
+    ],
+    "renderer": "forward_plus",
+    "resident_world_children": 653,
+    "resolution": [
+      1280,
+      800
+    ],
+    "seed": 72841,
+    "vsync": "disabled"
+  },
+  "after": {
+    "adapter": "Apple M4 Pro (Apple9)",
+    "application_ms": 251.564,
+    "engine": "4.7.2-stable (official)",
+    "generation_ms": 2865.759,
+    "phases": [
+      {
+        "draw_calls": 117.0,
+        "first_visit_max": 42.608,
+        "max": 14.152,
+        "name": "start",
+        "objects": 122.0,
+        "over_budget": 0,
+        "p50": 8.52,
+        "p95": 8.699,
+        "p99": 10.522,
+        "primitives": 435848.0,
+        "static_bytes": 242332138.0,
+        "video_bytes": 188678144.0
+      },
+      {
+        "draw_calls": 96.0,
+        "first_visit_max": 8.822,
+        "max": 9.006,
+        "name": "negative_boundary",
+        "objects": 96.0,
+        "over_budget": 0,
+        "p50": 8.447,
+        "p95": 8.621,
+        "p99": 8.697,
+        "primitives": 100076.0,
+        "static_bytes": 242350642.0,
+        "video_bytes": 188678144.0
+      },
+      {
+        "draw_calls": 159.0,
+        "first_visit_max": 8.744,
+        "max": 9.47,
+        "name": "village",
+        "objects": 174.0,
+        "over_budget": 0,
+        "p50": 8.302,
+        "p95": 9.255,
+        "p99": 9.448,
+        "primitives": 167886.0,
+        "static_bytes": 242632630.0,
+        "video_bytes": 188678144.0
+      },
+      {
+        "draw_calls": 165.0,
+        "first_visit_max": 9.386,
+        "max": 9.44,
+        "name": "zoom_out",
+        "objects": 177.0,
+        "over_budget": 0,
+        "p50": 8.266,
+        "p95": 9.329,
+        "p99": 9.385,
+        "primitives": 473116.0,
+        "static_bytes": 242656924.0,
+        "video_bytes": 188678144.0
+      },
+      {
+        "draw_calls": 117.0,
+        "first_visit_max": 9.569,
+        "max": 9.558,
+        "name": "return",
+        "objects": 122.0,
+        "over_budget": 0,
+        "p50": 8.22,
+        "p95": 9.304,
+        "p99": 9.384,
+        "primitives": 435848.0,
+        "static_bytes": 242656416.0,
+        "video_bytes": 188678144.0
+      }
+    ],
+    "renderer": "forward_plus",
+    "resident_world_children": 2290,
+    "resolution": [
+      1280,
+      800
+    ],
+    "seed": 72841,
+    "vsync": "disabled"
+  },
+  "pixel_comparison": [
+    {
+      "phase": "start",
+      "maximum_channel_difference": 1,
+      "mean_channel_difference": [
+        2.24609375e-05,
+        3.3203125e-05,
+        8.7890625e-06
+      ]
+    },
+    {
+      "phase": "negative_boundary",
+      "maximum_channel_difference": 1,
+      "mean_channel_difference": [
+        8.7890625e-06,
+        9.765625e-06,
+        1.953125e-06
+      ]
+    },
+    {
+      "phase": "village",
+      "maximum_channel_difference": 0,
+      "mean_channel_difference": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "phase": "zoom_out",
+      "maximum_channel_difference": 1,
+      "mean_channel_difference": [
+        2.24609375e-05,
+        3.3203125e-05,
+        1.171875e-05
+      ]
+    },
+    {
+      "phase": "return",
+      "maximum_channel_difference": 1,
+      "mean_channel_difference": [
+        2.24609375e-05,
+        3.3203125e-05,
+        8.7890625e-06
+      ]
+    }
+  ],
+  "intermediate_128": {
+    "adapter": "Apple M4 Pro (Apple9)",
+    "application_ms": 487.73,
+    "engine": "4.7.2-stable (official)",
+    "generation_ms": 2811.254,
+    "phases": [
+      {
+        "draw_calls": 111.0,
+        "first_visit_max": 52.371,
+        "max": 16.671,
+        "name": "start",
+        "objects": 116.0,
+        "over_budget": 1,
+        "p50": 8.624,
+        "p95": 11.245,
+        "p99": 15.337,
+        "primitives": 430440.0,
+        "static_bytes": 259511110.0,
+        "video_bytes": 185139200.0
+      },
+      {
+        "draw_calls": 93.0,
+        "first_visit_max": 11.733,
+        "max": 14.622,
+        "name": "negative_boundary",
+        "objects": 93.0,
+        "over_budget": 0,
+        "p50": 8.363,
+        "p95": 11.007,
+        "p99": 13.845,
+        "primitives": 100240.0,
+        "static_bytes": 259530914.0,
+        "video_bytes": 185139200.0
+      },
+      {
+        "draw_calls": 152.0,
+        "first_visit_max": 13.331,
+        "max": 15.521,
+        "name": "village",
+        "objects": 167.0,
+        "over_budget": 0,
+        "p50": 8.337,
+        "p95": 11.146,
+        "p99": 11.791,
+        "primitives": 160308.0,
+        "static_bytes": 259845110.0,
+        "video_bytes": 185139200.0
+      },
+      {
+        "draw_calls": 178.0,
+        "first_visit_max": 14.035,
+        "max": 17.023,
+        "name": "zoom_out",
+        "objects": 190.0,
+        "over_budget": 1,
+        "p50": 8.432,
+        "p95": 12.176,
+        "p99": 15.856,
+        "primitives": 470608.0,
+        "static_bytes": 259868268.0,
+        "video_bytes": 185139200.0
+      },
+      {
+        "draw_calls": 111.0,
+        "first_visit_max": 11.834,
+        "max": 11.938,
+        "name": "return",
+        "objects": 116.0,
+        "over_budget": 0,
+        "p50": 8.997,
+        "p95": 11.141,
+        "p99": 11.716,
+        "primitives": 430440.0,
+        "static_bytes": 259867008.0,
+        "video_bytes": 185139200.0
+      }
+    ],
+    "renderer": "forward_plus",
+    "resident_world_children": 4000,
+    "resolution": [
+      1280,
+      800
+    ],
+    "seed": 72841,
+    "vsync": "disabled"
+  },
+  "capped": {
+    "adapter": "Apple M4 Pro (Apple9)",
+    "application_ms": 238.301,
+    "engine": "4.7.2-stable (official)",
+    "generation_ms": 2737.533,
+    "phases": [
+      {
+        "draw_calls": 117.0,
+        "first_visit_max": 36.949,
+        "max": 18.563,
+        "name": "start",
+        "objects": 122.0,
+        "over_budget": 80,
+        "p50": 16.636,
+        "p95": 17.051,
+        "p99": 18.467,
+        "primitives": 435848.0,
+        "static_bytes": 242331298.0,
+        "video_bytes": 184778752.0
+      },
+      {
+        "draw_calls": 96.0,
+        "first_visit_max": 17.401,
+        "max": 17.669,
+        "name": "negative_boundary",
+        "objects": 96.0,
+        "over_budget": 78,
+        "p50": 16.656,
+        "p95": 17.249,
+        "p99": 17.575,
+        "primitives": 100076.0,
+        "static_bytes": 242349822.0,
+        "video_bytes": 184778752.0
+      },
+      {
+        "draw_calls": 159.0,
+        "first_visit_max": 17.734,
+        "max": 17.777,
+        "name": "village",
+        "objects": 174.0,
+        "over_budget": 80,
+        "p50": 16.655,
+        "p95": 17.221,
+        "p99": 17.677,
+        "primitives": 167886.0,
+        "static_bytes": 242631726.0,
+        "video_bytes": 184778752.0
+      },
+      {
+        "draw_calls": 165.0,
+        "first_visit_max": 17.738,
+        "max": 18.041,
+        "name": "zoom_out",
+        "objects": 177.0,
+        "over_budget": 87,
+        "p50": 16.664,
+        "p95": 17.194,
+        "p99": 17.61,
+        "primitives": 473116.0,
+        "static_bytes": 242656020.0,
+        "video_bytes": 184778752.0
+      },
+      {
+        "draw_calls": 117.0,
+        "first_visit_max": 17.467,
+        "max": 17.713,
+        "name": "return",
+        "objects": 122.0,
+        "over_budget": 82,
+        "p50": 16.658,
+        "p95": 17.192,
+        "p99": 17.686,
+        "primitives": 435848.0,
+        "static_bytes": 242655576.0,
+        "video_bytes": 184778752.0
+      }
+    ],
+    "renderer": "forward_plus",
+    "resident_world_children": 2290,
+    "resolution": [
+      1280,
+      800
+    ],
+    "seed": 72841,
+    "vsync": "enabled, 60 FPS cap"
+  },
+  "validation": {
+    "headless_tests_passed": 101,
+    "headless_tests_total": 101,
+    "graphical_spatial_checks": 47,
+    "graphical_rebuild_checks": 33,
+    "headless_report": "validation/performance/full-suite/report.json"
+  }
+}

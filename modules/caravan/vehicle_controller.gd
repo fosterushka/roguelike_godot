@@ -14,6 +14,7 @@ const Fuel = preload("res://modules/caravan/vehicle_fuel.gd")
 
 var wheel_angle := 0.0
 var suspension := Suspension.create()
+var terrain_sampler: Callable = Suspension.Terrain.height_at
 var obstacle_impact_query: Callable
 var clock_delta: Callable
 var player_stats: Dictionary = {}
@@ -85,7 +86,7 @@ func _physics_process(delta: float) -> void:
 	motion.x = position.x
 	motion.z = position.z
 	rotation.y = motion.heading
-	Suspension.step(suspension, global_position, motion.heading, motion.speed, motion.yaw_velocity, delta, float(player_stats.get("visual_scale", Dimensions.BASE_SCALE)))
+	Suspension.step(suspension, global_position, motion.heading, motion.speed, motion.yaw_velocity, delta, float(player_stats.get("visual_scale", Dimensions.BASE_SCALE)), false, terrain_sampler)
 	position.y = float(suspension.height) + float(tornado_effect.get("lift", 0.0))
 	velocity = (position - previous_position) / maxf(delta, 0.000001)
 	fuel = Fuel.consume(fuel, max_fuel, motion.speed, controls["throttle"], delta, float(player_stats.get("fuel_burn_mult", 1.0)))

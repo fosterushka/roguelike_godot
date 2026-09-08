@@ -165,7 +165,7 @@ func _test_edge_hints(markers: Control, camera: Camera3D, data: Dictionary) -> v
 	})
 	candidates = markers.edge_candidates()
 	ids = candidates.map(func(candidate: Dictionary) -> String: return candidate.id)
-	_check(ids.has("extraction") and ids.has("activity:live") and not ids.has("activity:done"), "Active objectives and extraction appear; finished activity disappears")
+	_check(ids.has("extraction:active") and ids.has("activity:live") and not ids.has("activity:done"), "Active objectives and extraction appear; finished activity disappears")
 	_check(ids.has("heal_carts:cart") and ids.has("airdrops:drop"), "Rescue and supply sources provide offscreen guidance")
 	var radar_blocker := Control.new()
 	radar_blocker.position = markers.size - Vector2(200, 220)
@@ -175,6 +175,7 @@ func _test_edge_hints(markers: Control, camera: Camera3D, data: Dictionary) -> v
 	top_blocker.size = Vector2(markers.size.x, 60)
 	root.add_child(top_blocker)
 	markers.occluders.assign([radar_blocker, top_blocker])
+	markers.advance_signals(0.6)
 	var hints: Array = markers.edge_hints()
 	_check(hints.size() == markers.MAX_EDGE_HINTS, "Crowded world is bounded to six readable edge hints")
 	var separated := true
@@ -192,6 +193,23 @@ func _test_edge_hints(markers: Control, camera: Camera3D, data: Dictionary) -> v
 		if hint.id == "enemy:2":
 			right_hint = hint
 	_check(not right_hint.is_empty() and right_hint.direction.x > 0, "Offscreen right target keeps arrow pointing right after safe-zone placement")
+	data.player.radar_level = 0
+	markers.update_state(data, camera)
+	for candidate: Dictionary in markers.edge_candidates():
+		if candidate.get("signal", false):
+			_check(candidate.label.is_empty() and candidate.icon == "?", "Low radar signals hide target identity")
+	markers.advance_signals(3.0)
+	_check(markers.edge_hints().all(func(hint: Dictionary) -> bool: return not hint.get("signal", false)), "Objective ripples disappear between transmissions")
+	data.player.radar_level = 3
+	markers.update_state(data, camera)
+	for candidate: Dictionary in markers.edge_candidates():
+		if candidate.id == "activity:live":
+			_check(candidate.identified and not candidate.label.is_empty(), "Radar three identifies mission transmissions")
+		if candidate.id == "extraction:active":
+			_check(not candidate.identified, "Radar three keeps extraction signals anonymous")
+	markers.advance_signals(20.0)
+	markers.advance_signals(0.6)
+	_check(markers.edge_hints().any(func(hint: Dictionary) -> bool: return hint.get("signal", false)), "Signals repeat after their distance based interval")
 	markers.hide()
 	_check(markers.edge_hints().is_empty(), "Hidden gameplay UI suppresses edge hints in menus")
 	markers.show()

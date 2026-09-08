@@ -94,7 +94,7 @@ func request(type: String) -> Dictionary:
 		var first := random.integer(0, villages.size() - 1)
 		for offset in villages.size():
 			var village: Dictionary = villages[(first + offset) % villages.size()]
-			if village_eligible(str(village.id)) and placement_safe(Rules.point(village), 76.0):
+			if reachable(Rules.point(village)) and village_eligible(str(village.id)) and placement_safe(Rules.point(village), 76.0):
 				return announce(type, {"position": Rules.point(village), "source_id": village.id})
 		return {}
 	var route := _select_route()
@@ -104,9 +104,12 @@ func announce(type: String, options: Dictionary) -> Dictionary:
 	var major := type in Rules.MAJOR
 	if not Rules.REWARDS.has(type) or Rules.live_count(records, major) >= (Rules.LIMIT_MAJOR if major else Rules.LIMIT_MINOR):
 		return {}
-	var record := {"id": "activity-%04d" % next_sequence, "type": type, "state": "announced", "objective": Rules.OBJECTIVES[type],
+	var encounter_time := Rules.encounter_seconds(options.position.distance_to(world.vehicle.global_position), world.vehicle.fuel, world.vehicle.player_stats)
+	var route: Array = options.get("route", [])
+	var route_speed := minf(float(Rules.ROUTE_SPEEDS.get(type, 0.0)), Rules.route_length(route) / maxf(encounter_time, 1.0))
+	var record := {"route_speed": route_speed, "encounter_seconds": encounter_time, "id": "activity-%04d" % next_sequence, "type": type, "state": "announced", "objective": Rules.OBJECTIVES[type],
 		"position": options.position, "marker_position": options.position, "route": options.get("route", []), "source_id": options.get("source_id", ""),
-		"announced_at": elapsed, "starts_at": elapsed + (1.5 if type == "scavengerRoute" else Rules.ANNOUNCE), "expires_at": elapsed + Rules.DURATIONS[type],
+		"announced_at": elapsed, "starts_at": elapsed + (1.5 if type == "scavengerRoute" else Rules.ANNOUNCE), "expires_at": elapsed + maxf(float(Rules.DURATIONS[type]), encounter_time),
 		"completed_at": -1.0, "route_progress": 0.0, "route_ratio": 0.0, "participant_ids": [], "deployment_anchors": [],
 		"reward_claimed": false, "reward": Rules.REWARDS[type], "reward_label": Rules.REWARD_LABELS[type], "telegraph_until": -1.0, "intrusion_until": -1.0, "yaw": 0.0}
 	next_sequence += 1
@@ -114,22 +117,31 @@ func announce(type: String, options: Dictionary) -> Dictionary:
 	events.append({"kind": "activity_announced", "id": record.id, "activity_type": type, "position": record.position, "objective": record.objective})
 	return record
 
+func reachable(point: Vector3) -> bool:
+	return point.distance_to(world.vehicle.global_position) <= Rules.reachable_radius(world.vehicle.fuel, world.vehicle.player_stats)
+
 func _select_route() -> Dictionary:
 	var routes: Array = world.arena.world_layout.get("activityRoutes", [])
-	for attempt in routes.size() * 6:
-		var route: Dictionary = routes[random.integer(0, routes.size() - 1)]
-		if route.points.size() < 3:
+	if routes.is_empty():
+		return {}
+	var first := random.integer(0, routes.size() - 1)
+	for offset in routes.size():
+		var source: Array = routes[(first + offset) % routes.size()].points
+		var points: Array = []
+		# Sample existing roads so sparse distant vertices cannot hide a nearby road.
+		for point: Vector3 in Rules.sampled_route(source):
+			if reachable(point) and point.length() < world.PLAYABLE_RADIUS - 40.0:
+				points.append(point)
+			elif points.size() >= 3:
+				break
+			else:
+				points.clear()
+		if points.size() < 3:
 			continue
-		var first := random.integer(0, route.points.size() - 3)
-		var points: Array = route.points.slice(first, first + 3)
-		if random.next() < 0.5:
+		# Traffic approaches the player instead of starting nearby and fleeing outward.
+		if Rules.point(points[0]).distance_to(world.vehicle.global_position) < Rules.point(points[-1]).distance_to(world.vehicle.global_position):
 			points.reverse()
-		if not placement_safe(Rules.point(points[0]), 92.0):
-			continue
-		var valid := true
-		for point in points:
-			valid = valid and Rules.point(point).length() < world.PLAYABLE_RADIUS - 40.0
-		if valid:
+		if placement_safe(Rules.point(points[0]), 92.0) and position_clear(Rules.point(points[0])) and position_clear(Rules.sample_route(points, 5.0).position):
 			return {"position": Rules.point(points[0]), "route": points}
 	return {}
 
@@ -192,7 +204,7 @@ func _update(record: Dictionary, delta: float) -> void:
 		for enemy in living:
 			if float(enemy.get("stagger_remaining", 0.0)) > 0.0 or enemy.get("airborne", false) or float(enemy.get("tornado_recovery", 0.0)) > 0.0:
 				return
-		record.route_progress = minf(total, record.route_progress + 6.2 * delta)
+		record.route_progress = minf(total, record.route_progress + float(record.route_speed) * delta)
 		for index in record.participant_ids.size():
 			var enemy: Dictionary = participants.get(record.participant_ids[index], {})
 			if enemy.is_empty() or enemy.dead:
@@ -205,7 +217,7 @@ func _update(record: Dictionary, delta: float) -> void:
 			enemy.x = enemy.position.x
 			enemy.z = enemy.position.z
 	else:
-		record.route_progress = minf(total, record.route_progress + 4.2 * delta)
+		record.route_progress = minf(total, record.route_progress + float(record.route_speed) * delta)
 	var sample := Rules.sample_route(points, record.route_progress)
 	record.position = sample.position
 	record.yaw = sample.yaw
@@ -273,10 +285,10 @@ func _activate(record: Dictionary) -> void:
 		participants[enemy.id] = enemy
 	record.state = "active"
 	if record.type == "settlementDistress":
-		record.expires_at = elapsed + Rules.DURATIONS.settlementDistress
+		record.expires_at = maxf(record.expires_at, elapsed + Rules.DURATIONS.settlementDistress)
 
 func register_dispatch(source_id: String, point: Vector3, spawned: Array, existing: Dictionary = {}) -> Dictionary:
-	if elapsed < recovery_until and existing.is_empty():
+	if existing.is_empty() and (elapsed < recovery_until or not reachable(point)):
 		return {}
 	var record := existing if not existing.is_empty() else announce("foundryDispatch", {"position": point, "source_id": source_id})
 	if record.is_empty():

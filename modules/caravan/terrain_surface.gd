@@ -2,6 +2,7 @@ extends RefCounted
 
 const HALF_SIZE := 1730.4
 const CELLS := 512
+const RENDER_CHUNK_CELLS := 32
 const STEP := HALF_SIZE * 2.0 / CELLS
 const HUMMOCK_HEIGHT := 1.15
 const SWELL_HEIGHT := 1.8
@@ -65,26 +66,33 @@ static func height_at(x: float, z: float) -> float:
 static func normal_at(x: float, z: float) -> Vector3:
 	return Vector3(height_at(x - 0.2, z) - height_at(x + 0.2, z), 0.4, height_at(x, z - 0.2) - height_at(x, z + 0.2)).normalized()
 
-static func create_mesh() -> ArrayMesh:
+static func create_mesh(region: Rect2i = Rect2i(0, 0, CELLS, CELLS)) -> ArrayMesh:
+	region = region.intersection(Rect2i(0, 0, CELLS, CELLS))
+	if not region.has_area():
+		return ArrayMesh.new()
+	var width := region.size.x
+	var depth := region.size.y
 	var vertices := PackedVector3Array()
 	var normals := PackedVector3Array()
 	var uvs := PackedVector2Array()
 	var indices := PackedInt32Array()
-	vertices.resize((CELLS + 1) * (CELLS + 1))
+	vertices.resize((width + 1) * (depth + 1))
 	normals.resize(vertices.size())
 	uvs.resize(vertices.size())
-	indices.resize(CELLS * CELLS * 6)
-	for row in CELLS + 1:
-		for column in CELLS + 1:
-			var index := row * (CELLS + 1) + column
+	indices.resize(width * depth * 6)
+	for local_row in depth + 1:
+		var row := region.position.y + local_row
+		for local_column in width + 1:
+			var column := region.position.x + local_column
+			var index := local_row * (width + 1) + local_column
 			var x := column * STEP - HALF_SIZE
 			var z := row * STEP - HALF_SIZE
-			vertices[index] = Vector3(x, heights[index], z)
+			vertices[index] = Vector3(x, heights[row * (CELLS + 1) + column], z)
 			normals[index] = normal_at(x, z)
 			uvs[index] = Vector2(column, row) / CELLS
-			if row < CELLS and column < CELLS:
-				var offset := (row * CELLS + column) * 6
-				var triangle := [index, index + 1, index + CELLS + 1, index + 1, index + CELLS + 2, index + CELLS + 1]
+			if local_row < depth and local_column < width:
+				var offset := (local_row * width + local_column) * 6
+				var triangle := [index, index + 1, index + width + 1, index + 1, index + width + 2, index + width + 1]
 				for vertex in 6:
 					indices[offset + vertex] = triangle[vertex]
 	var arrays := []

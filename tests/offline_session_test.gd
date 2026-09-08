@@ -41,6 +41,8 @@ func _run() -> void:
 	_key(KEY_ESCAPE)
 	_key(KEY_1)
 	_key(KEY_SPACE)
+	_check(game.combat.model.player.nitro_timer == 0.0, "Space handbrake does not activate the selected ability")
+	_key(KEY_F)
 	_check(game.combat.model.player.nitro_timer > 0.0, "Hotbar activates source nitro slot zero")
 	_check(game.vehicle.player_stats.nitro_timer > 0.0, "Nitro stat reaches vehicle movement tuning")
 	game.vehicle.health = 5.0

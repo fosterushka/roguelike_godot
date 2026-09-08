@@ -3,6 +3,7 @@ extends SceneTree
 const Main = preload("res://app/main.tscn")
 const Store = preload("res://infrastructure/persistence/profile_store.gd")
 const Terrain = preload("res://modules/caravan/terrain_surface.gd")
+const RadarRules = preload("res://modules/progression/radar_rules.gd")
 var checks := 0
 var failures := 0
 var results: Array[Dictionary] = []
@@ -101,7 +102,16 @@ func _run() -> void:
 		check(high - low <= 4.1, "Extraction site has gently varying driveable ground: " + str(site.id))
 	game.world._publish()
 	check(game.hud.radar.world_state.get("extraction", {}).get("sites", []).size() == 3, "Real world publication delivers all sites to radar before discovery")
-	check(game.hud.radar.extraction_sites().size() == 3, "Radar exposes every extraction site independently of exploration fog")
+	check(game.hud.radar.extraction_sites().is_empty(), "Unupgraded radar does not expose exact extraction sites")
+	check(not game.hud._objective_label.text.contains("EXTRACTION ZONE") and not game.hud._objective_label.text.contains("ЗОНА ЭВАКУАЦИИ"), "Unupgraded HUD does not leak extraction distance")
+	model.player.radar_level = RadarRules.EXTRACTION_ZONE_LEVEL
+	model.player.radar_range = RadarRules.range_at(RadarRules.EXTRACTION_ZONE_LEVEL)
+	game.combat._publish()
+	game.world._publish()
+	check(game.hud.radar.extraction_sites().size() == 3, "Radar tier five exposes all extraction sites independently of exploration fog")
+	model.player.radar_level = 0
+	model.player.radar_range = 0.0
+	game.combat._publish()
 	var zone_view = game.world._activity_view._extraction_zones
 	check(zone_view.sites.size() == 3, "World view creates persistent geometry for every site before requesting extraction")
 	var all_visible := true

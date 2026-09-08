@@ -1,5 +1,6 @@
 extends RefCounted
 
+const Stations = preload("res://modules/world/fuel_station_rules.gd")
 const Random = preload("res://modules/world/activities/source_random.gd")
 const ROAD_WIDTH_SCALE := 1.22
 const RADIUS := 1248.0
@@ -77,15 +78,15 @@ static func generate(seed_value: int) -> Dictionary:
 				z = z / from_center * road_limit
 			points.append({"x": x, "z": z})
 		roads.append({"id": "road-%02d" % road_index, "points": points, "width": random.between(7.2, 10.2) * ROAD_WIDTH_SCALE})
+	var monuments: Array = Stations.roadside_pumps(roads[0])
 	var villages: Array = []
 	var village_target := random.integer(28, 36)
 	for index in village_target:
-		var point := spaced_point(random, villages, 105, RADIUS - 125, 82)
+		var point := spaced_point(random, villages + monuments, 105, RADIUS - 125, 82)
 		if not point.is_empty():
 			point.merge({"id": "village-%02d" % villages.size(), "count": random.integer(3, 6)})
 			villages.append(point)
-	var monuments: Array = []
-	var occupied := villages.duplicate()
+	var occupied := villages + monuments
 	var monument_target := random.integer(38, 48)
 	for index in monument_target:
 		var point := spaced_point(random, occupied, 92, RADIUS - 90, 62)
