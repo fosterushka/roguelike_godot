@@ -11,6 +11,11 @@ func setup(owner: Node3D) -> void:
 	panel = CasePanel.new()
 	game.hud.get_node("Screen").add_child(panel)
 	panel.closed.connect(_closed)
+	panel.reel_step.connect(_play_reel_step)
+
+func _play_reel_step() -> void:
+	if is_instance_valid(game.sound):
+		game.sound.play_cue("caseReel", true)
 
 func enqueue(event: Dictionary) -> void:
 	var value: Dictionary = event.get("case", {})

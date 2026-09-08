@@ -5,9 +5,12 @@ const MilitaryPeople = preload("res://presentation/combat/military_people.gd")
 const MilitaryFieldProps = preload("res://presentation/combat/military_field_props.gd")
 const PaintedMaterials = preload("res://presentation/style/painted_materials.gd")
 const SourceAnimation = preload("res://presentation/combat/source_animation.gd")
+const WorldScale = preload("res://modules/world/world_scale.gd")
+const EnemyCatalog = preload("res://modules/combat/enemy_catalog.gd")
 
 static var _templates: Dictionary = {}
 static var _materials: Dictionary = {}
+static var _drone_models: Array[String] = EnemyCatalog.model_ids("drone")
 
 
 static func preload_models() -> void:
@@ -22,6 +25,7 @@ static func instantiate(model_name: String) -> Node3D:
 	_prepare(model_name)
 	var root := Node3D.new()
 	root.name = model_name
+	root.scale = Vector3.ONE * model_scale(model_name)
 	for part in _templates.get(model_name, []):
 		var visual: GeometryInstance3D
 		if part.instances != null:
@@ -46,6 +50,11 @@ static func instantiate(model_name: String) -> Node3D:
 		visual.set_meta("source_part", part)
 		root.add_child(visual)
 	return root
+
+static func model_scale(model_name: String) -> float:
+	if model_name in _drone_models:
+		return WorldScale.DRONE_SCALE
+	return WorldScale.SOLDIER_SCALE if MilitaryPeople.has_model(model_name) else 1.0
 
 
 static func _prepare(model_name: String) -> void:

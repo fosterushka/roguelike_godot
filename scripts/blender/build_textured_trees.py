@@ -1,4 +1,4 @@
-"""Build shared solid-color tree silhouettes. Safe to run through Blender MCP."""
+"""Build shared tree silhouettes with a padded height-gradient atlas via Blender MCP."""
 from pathlib import Path
 import bpy
 import bmesh
@@ -15,6 +15,9 @@ TRUNK_SIDES = 8
 CROWN_SIDES = 12
 SPHERE_RINGS = 6
 COLORS = ('705742', 'd6d2bd', '42674b', '819750')
+GRADIENTS = (('493d30', '967454'), ('969b86', 'eee9d7'),
+             ('233f35', '799268'), ('4d633a', 'b5bf75'))
+UV_PADDING = 2
 TREE_SPECS = {
     'spruceTrees': {
         'trunk': (5.5, .27, .16, 0),
@@ -35,20 +38,21 @@ TREE_SPECS = {
 
 def atlas():
     pixels = [0.0] * (ATLAS_SIZE * ATLAS_SIZE * 4)
-    for tile, hex_color in enumerate(COLORS):
-        rgb = [int(hex_color[i:i + 2], 16) / 255 for i in (0, 2, 4)]
-        linear = [c / 12.92 if c <= .04045 else ((c + .055) / 1.055) ** 2.4 for c in rgb]
+    for tile, (low, high) in enumerate(GRADIENTS):
+        ends = [[int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)] for h in (low, high)]
         for y in range(TILE_SIZE):
+            t = max(0, min(1, (y - UV_PADDING) / (TILE_SIZE - UV_PADDING * 2 - 1)))
+            rgb = [a + (b-a) * t for a, b in zip(*ends)]
             for x in range(TILE_SIZE):
                 index = (((tile // 2) * TILE_SIZE + y) * ATLAS_SIZE + (tile % 2) * TILE_SIZE + x) * 4
-                pixels[index:index + 4] = [*linear, 1]
-    image = bpy.data.images.new('TreeSolidPalette', width=ATLAS_SIZE, height=ATLAS_SIZE, alpha=True)
+                pixels[index:index + 4] = [*rgb, 1]
+    image = bpy.data.images.new('TreeGradientPalette', width=ATLAS_SIZE, height=ATLAS_SIZE, alpha=True)
     image.pixels.foreach_set(pixels)
     image.filepath_raw = str(OUT / 'tree_atlas.png')
     image.file_format = 'PNG'
     image.save()
     shutil.copyfile(OUT / 'tree_atlas.png', GAME / 'tree_atlas.png')
-    material = bpy.data.materials.new('TreeSolidPalette')
+    material = bpy.data.materials.new('TreeGradientPalette')
     material.use_nodes = True
     shader = material.node_tree.nodes.get('Principled BSDF')
     shader.inputs['Roughness'].default_value = .95
@@ -67,8 +71,12 @@ class TreeBuilder:
     def add(self, tile):
         obj = bpy.context.object
         uv = obj.data.uv_layers.active or obj.data.uv_layers.new(name='TreeUV')
-        for loop in uv.data:
-            loop.uv = ((tile % 2 + .5) / 2, (tile // 2 + .5) / 2)
+        low = min(v.co.z for v in obj.data.vertices)
+        span = max(v.co.z for v in obj.data.vertices) - low
+        for loop in obj.data.loops:
+            t = (obj.data.vertices[loop.vertex_index].co.z - low) / max(span, .001)
+            uv.data[loop.index].uv = ((tile % 2 + .5) / 2,
+                (tile // 2 * TILE_SIZE + UV_PADDING + .5 + t * (TILE_SIZE - UV_PADDING * 2 - 1)) / ATLAS_SIZE)
         obj.data.materials.append(self.material)
         for face in obj.data.polygons:
             face.use_smooth = len(face.vertices) <= 4

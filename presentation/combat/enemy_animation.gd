@@ -12,8 +12,9 @@ static func advance(enemy: Dictionary, pose: Dictionary, delta: float, elapsed: 
 		pose[key] = enemy.get(key, 1.0 if key == "gait_direction" else 0.0)
 	pose.instance_index = pose.get("instance_index", enemy.id)
 	pose.components = {}
+	# Exposure controls targeting; intact armor and drives remain visible in every phase.
 	for component: Dictionary in enemy.get("components", []):
-		pose.components[component.kind] = component.get("exposed", false) and not component.get("dead", false)
+		pose.components[component.kind] = not component.get("dead", false)
 	var pulse := sin(clampf(float(enemy.get("hit_time", 0.0)) * 6.0, 0.0, 1.0) * PI)
 	# Bases are buildings: damage feedback must not make their hull bounce or deform.
 	var scale_value := 1.0 if type == "garrison" else 1.0 + pulse * (0.12 if type == "soldier" else 0.07 if type == "drone" else 0.06 if type in ["bike", "buggy"] else 0.055 if type == "priorityVehicle" else 0.045)

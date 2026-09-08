@@ -13,7 +13,7 @@ func _run() -> void:
 	game.run_seed_override = 72841
 	root.add_child(game)
 	await game.game_ready
-	_check(game.sound.streams.size() == 42 and game.sound.voices.size() == 16, "All 42 original sound recipes preload into a bounded 16-voice pool")
+	_check(game.sound.streams.size() == 43 and game.sound.voices.size() == 16, "All 43 sound recipes preload into a bounded 16-voice pool")
 	_check(game.sound.accepted_events == 0 and not game.sound.running, "Loading warmup is silent and gameplay audio remains stopped at menu")
 	var total_samples := 0
 	for stream: AudioStreamWAV in game.sound.streams.values():

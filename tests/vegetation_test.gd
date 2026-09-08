@@ -9,6 +9,7 @@ const Replacements = preload("res://presentation/world/tree_replacements.gd")
 const Source = preload("res://presentation/combat/source_model.gd")
 const Natural = preload("res://modules/world/generation/natural_props.gd")
 const Trees = preload("res://presentation/world/tree_meshes.gd")
+const WorldScale = preload("res://modules/world/world_scale.gd")
 var checks := 0
 var failures := 0
 
@@ -28,7 +29,7 @@ func _run() -> void:
 	for y in palette.get_height():
 		for x in palette.get_width():
 			palette_colors[palette.get_pixel(x, y).to_html()] = true
-	check(palette_colors.size() == 4, "Tree palette contains only four solid colors without leaf, bark or gradient detail")
+	check(palette_colors.size() > 32, "Tree atlas has smooth height gradients in four padded material regions")
 	var signatures := {}
 	for pool: String in Trees.POOLS.filter(func(pool: String) -> bool: return pool != Trees.DEAD_POOL):
 		var mesh := Trees.mesh_for(pool)
@@ -37,7 +38,11 @@ func _run() -> void:
 		check(mesh.get_aabb().size.y > 6.0 and mesh.get_aabb().size.x > 2.0, "Every species has a recognizable full-sized silhouette")
 		var arrays := mesh.surface_get_arrays(0)
 		var tree_material := mesh.surface_get_material(0) as StandardMaterial3D
-		check(tree_material.albedo_texture != null, "Trees retain their shared solid-color palette")
+		var crown_uvs := {}
+		for uv: Vector2 in arrays[Mesh.ARRAY_TEX_UV]:
+			crown_uvs[snappedf(uv.y, 0.001)] = true
+		check(crown_uvs.size() >= 3, "Vertices sample different heights of the gradient")
+		check(tree_material.albedo_texture != null, "Trees retain their shared gradient palette")
 		check(arrays[Mesh.ARRAY_VERTEX].size() == arrays[Mesh.ARRAY_COLOR].size(), "Trunk and foliage colors survive instancing")
 		check(arrays[Mesh.ARRAY_INDEX].size() <= Trees.Library.TREE_TRIANGLE_BUDGET * 3, "Simple tree geometry stays inside the exported triangle budget")
 		signatures[str(mesh.get_aabb())] = true
@@ -59,6 +64,7 @@ func _run() -> void:
 			check(Layout.distance_to_road(prop.position, context.layout.roads) > 12.0, "Road and shoulder retain at least twelve meters of center clearance")
 			check(not context.near_village(point.x, point.y, 32.0), "Additional trees preserve settlement access")
 			check(not prop.solid and prop.parts.size() == 1 and prop.parts[0].instance >= 0, "Destructible trees use one instance and create no static body")
+			check(float(prop.radius) >= 0.9 * 0.76 * 0.78 * WorldScale.TREE_SCALE, "Vegetation tree collision radius follows the shared 1.5x visible scale")
 			var pose: Transform3D = prop.parts[0].transform
 			check(absf(pose.basis.y.x) < 0.0001 and absf(pose.basis.y.z) < 0.0001, "Generated tree trunks stay upright")
 		check(vegetation.size() >= 900 and vegetation.size() <= Vegetation.TREE_BUDGET, "Groves add substantial bounded vegetation")

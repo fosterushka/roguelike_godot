@@ -1,5 +1,7 @@
 extends RefCounted
 
+const CHOICE_COUNT := 3
+
 const Support = preload("res://modules/progression/support_effects.gd")
 const RadarRules = preload("res://modules/progression/radar_rules.gd")
 const Rules = preload("res://modules/progression/upgrade_rules.gd")
@@ -287,23 +289,23 @@ func _ensure_draft() -> void:
 				break
 	for type: String in _shuffle(catalog.modules.keys()):
 		var definition: Dictionary = catalog.modules[type]
-		if not definition.has("projectile") and not definition.get("purchasable", false) and p.modules.size() < 12 + p.carriers.size() * 3 and (not definition.get("unique", false) or not _installed(type)) and _draft.size() < 3:
+		if not definition.has("projectile") and not definition.get("purchasable", false) and p.modules.size() < 12 + p.carriers.size() * 3 and (not definition.get("unique", false) or not _installed(type)) and _draft.size() < CHOICE_COUNT:
 			_draft_row("draft_module:" + type, definition.name, definition.desc)
 			break
 	for index: int in _shuffle(range(model.weapons.size())):
 		var weapon: Dictionary = model.weapons[index]
-		if not weapon.get("disabled", false) and weapon.level < weapon.def.get("maxLevel", 5) and _draft.size() < 3:
+		if not weapon.get("disabled", false) and weapon.level < weapon.def.get("maxLevel", 5) and _draft.size() < CHOICE_COUNT:
 			_draft_row("draft_weapon:" + str(index), weapon.def.name + " MK " + str(weapon.level + 1), "Raise damage and range while reducing reload time.")
 			break
 	var traits: Array = _shuffle(catalog.levelUpgrades)
-	if p.mobility_upgrades < 3 and _draft.size() < 3:
+	if p.mobility_upgrades < 3 and _draft.size() < CHOICE_COUNT:
 		for definition: Dictionary in traits:
 			if definition.get("category", "") == "mobility":
 				_draft_row("trait:" + Rules.trait_id(0, definition), definition.title, definition.desc)
 				break
 	for definition: Dictionary in traits:
 		var id: String = Rules.trait_id(0, definition)
-		if _draft.size() >= 3:
+		if _draft.size() >= CHOICE_COUNT:
 			break
 		if definition.get("category", "") != "mobility" and Rules.trait_available(id, p):
 			_draft_row("trait:" + id, definition.title, definition.desc)
@@ -318,6 +320,9 @@ func _choices() -> Array:
 			if model.player.core_upgrades[id] < 5:
 				choices.append(_row("core:" + id, catalog.coreUpgrades[id].title + " LV " + str(model.player.core_upgrades[id] + 1), catalog.coreUpgrades[id].description, 0))
 	if not choices.is_empty():
+		if choices.size() < CHOICE_COUNT:
+			_ensure_draft()
+			choices.append_array(_draft.slice(0, CHOICE_COUNT - choices.size()))
 		return choices
 	_core_done = true
 	_ensure_draft()
@@ -334,6 +339,7 @@ func buy_upgrade(id: String) -> bool:
 	if kind in ["core", "trait", "protocol", "blueprint", "draft_module", "draft_weapon"]:
 		if not choice:
 			return false
+		var core_stage := not _core_done
 		var applied := false
 		match kind:
 			"core": applied = Rules.apply_core(value, p)
@@ -351,8 +357,11 @@ func buy_upgrade(id: String) -> bool:
 					applied = Rules.upgrade_weapon(model.weapons[index])
 		if not applied:
 			return false
-		if kind == "core":
+		if core_stage:
 			_core_done = true
+			# A draft replacement occupies the core reward slot; rebuild eligibility
+			# before offering the regular second reward.
+			_draft.clear()
 		else:
 			p.pending_upgrades -= 1
 			_core_done = false
@@ -509,4 +518,7 @@ func get_shop_state() -> Dictionary:
 		row.selected = _selected_sidegrades.get(definition.bucket, "") == id
 		sidegrade_rows.append(row)
 	var choices := _choices()
-	return {"modules": rows, "radar_upgrade": RadarRules.shop_row(p), "weapons": weapons, "choices": choices, "trailer": _row("trailer", "Wheeled Trailer", "Three module mounts, +8 weight, +12% fuel use", 90, trailer_reason), "protocols": protocols, "contracts": contract_rows, "sidegrades": sidegrade_rows, "pending_upgrades": p.pending_upgrades, "choice_stage": "draft" if _core_done else "core", "storage_status": store.status, "dirty": dirty}
+	var choice_stage := "draft" if _core_done else "core"
+	if not _core_done and choices.any(func(row: Dictionary) -> bool: return not str(row.id).begins_with("core:")):
+		choice_stage = "mixed"
+	return {"modules": rows, "radar_upgrade": RadarRules.shop_row(p), "weapons": weapons, "choices": choices, "trailer": _row("trailer", "Wheeled Trailer", "Three module mounts, +8 weight, +12% fuel use", 90, trailer_reason), "protocols": protocols, "contracts": contract_rows, "sidegrades": sidegrade_rows, "pending_upgrades": p.pending_upgrades, "choice_stage": choice_stage, "storage_status": store.status, "dirty": dirty}

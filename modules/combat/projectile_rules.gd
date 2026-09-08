@@ -55,6 +55,11 @@ static func hit_fraction(start: Vector3, end: Vector3, center: Vector3, radius: 
 	var fraction := (-b - sqrt(discriminant)) / (2.0 * a)
 	return fraction if fraction >= 0.0 and fraction <= 1.0 else -1.0
 
+# Cheap conservative rejection before terrain height and full 3D intersection.
+static func segment_may_hit_xz(start: Vector3, end: Vector3, center: Vector3, radius: float) -> bool:
+	return center.x >= minf(start.x, end.x) - radius and center.x <= maxf(start.x, end.x) + radius \
+		and center.z >= minf(start.z, end.z) - radius and center.z <= maxf(start.z, end.z) + radius
+
 # Slab intersection against a rotated hull. Origin is its ground-level center.
 static func box_hit_fraction(start: Vector3, end: Vector3, origin: Vector3, size: Vector3, yaw: float = 0.0, padding: float = 0.0) -> float:
 	var inverse := Basis(Vector3.UP, -yaw)

@@ -344,6 +344,8 @@ func _resolve_projectile_segment(shot: Dictionary) -> bool:
 				var hull_size: Vector3 = enemy.get("hitbox_size", EnemyFactory.BaseGeometry.profile(int(enemy.get("tier", 1))).hitbox_size)
 				fraction = Shots.box_hit_fraction(start, end, hull_origin, hull_size, float(enemy.get("yaw", 0.0)), float(shot.radius))
 			else:
+				if not Shots.segment_may_hit_xz(start, end, enemy.position, hit_radius):
+					continue
 				fraction = Shots.hit_fraction(start, end, _aim_center(enemy), hit_radius)
 			if fraction >= 0.0:
 				hits.append({"fraction": fraction, "enemy": enemy})
@@ -651,7 +653,7 @@ func _wave_remaining() -> int:
 func _target_aim(enemy: Dictionary) -> Vector3:
 	if enemy.get("is_component", false):
 		return enemy.position
-	var height: float = enemy.height if enemy.type in ["drone", "garrison"] else 2.8 if enemy.type == "keep" else 1.05
+	var height: float = enemy.height if enemy.type in ["drone", "garrison"] else 2.8 if enemy.type == "keep" else Enemies.SOLDIER_AIM_HEIGHT
 	if enemy.type == "garrison":
 		height *= Enemies.GARRISON_AIM_HEIGHT_RATIO
 	return enemy.position + Vector3.UP * (height + Terrain.height_at(enemy.position.x, enemy.position.z) + float(enemy.get("lift_height", 0.0)))
@@ -659,7 +661,7 @@ func _target_aim(enemy: Dictionary) -> Vector3:
 func _aim_center(enemy: Dictionary) -> Vector3:
 	if enemy.get("is_component", false):
 		return enemy.position
-	var height: float = enemy.height if enemy.type in ["drone", "garrison"] else 2.5 if enemy.type == "keep" else 1.5 if enemy.type == "buggy" else 1.0 if enemy.type == "bike" else 1.05
+	var height: float = enemy.height if enemy.type in ["drone", "garrison"] else 2.5 if enemy.type == "keep" else 1.5 if enemy.type == "buggy" else 1.0 if enemy.type == "bike" else Enemies.SOLDIER_AIM_HEIGHT
 	if enemy.type == "garrison":
 		height *= Enemies.GARRISON_AIM_HEIGHT_RATIO
 	return enemy.position + Vector3.UP * (height + Terrain.height_at(enemy.position.x, enemy.position.z) + float(enemy.get("lift_height", 0.0)))

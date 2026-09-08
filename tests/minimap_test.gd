@@ -23,11 +23,11 @@ func _run() -> void:
 	var data := {"generation": 1, "running": true, "status": "combat", "player": {"position": Vector3.ZERO, "hp": 250, "radar_range": 260.0, "heading": 0.0}, "enemies": []}
 	data.player.radar_range = 0.0
 	radar.update_state(data, camera)
-	_check(radar.visible and radar.effective_range == 18 and is_equal_approx(radar.display_range, 64.8), "Fresh run reveals only18m on compact local map")
+	_check(radar.visible and radar.effective_range == 18 and is_equal_approx(radar.display_range, 256), "Fresh run opens at the maximum 256m radar zoom")
 	_check(radar.explored(Vector3.ZERO), "Basic map reveals immediate surroundings")
 	data.player.radar_range = 260.0
 	radar.update_state(data, camera)
-	_check(radar.effective_range == 260 and radar.display_range == 468, "Radar upgrade extends basic map detection and display range")
+	_check(radar.effective_range == 260 and radar.display_range == 256, "Radar detection range stays independent from the 256m map zoom")
 	for heading in [0.0, PI * 0.25, PI * 0.5, PI, PI * 1.5]:
 		var forward := Vector3(sin(heading), 0, cos(heading))
 		camera.position = -forward * 20 + Vector3.UP * 20
@@ -43,7 +43,12 @@ func _run() -> void:
 	_check(not radar.explored(Vector3(2000, 0, 0)), "Coordinates outside map do not alias explored boundary cells")
 	_check(radar._map_rect.end.y <= radar.size.y - 34, "Compact map leaves footer space")
 	radar.step_zoom(-1)
-	_check(radar.zoom_index == 3 and radar.zoom_label() == "133%", "Zoom button uses source scale")
+	_check(radar.zoom_index == 3 and radar.zoom_label() == "192m", "Zoom button selects the next named radar distance")
+	radar.step_zoom(-10)
+	_check(radar.zoom_index == 0 and radar.zoom_label() == "64m" and is_equal_approx(radar.display_range, 64), "Radar zoom clamps at 64m")
+	radar.step_zoom(10)
+	_check(radar.zoom_index == radar.DEFAULT_ZOOM_INDEX and radar.zoom_label() == "256m" and is_equal_approx(radar.display_range, 256), "Radar zoom clamps at 256m")
+	radar.step_zoom(-1)
 	paused = true
 	radar.step_zoom(-1)
 	_check(radar.zoom_index == 3, "Pause blocks radar zoom")
@@ -57,7 +62,7 @@ func _run() -> void:
 	_check(radar.explored(Vector3.ZERO) and radar.explored(data.player.position), "Explored terrain persists while driving")
 	data.generation = 2
 	radar.update_state(data, camera)
-	_check(not radar.explored(Vector3.ZERO) and radar.explored(data.player.position) and radar.zoom_index == 4, "Restart clears exploration and restores default zoom")
+	_check(not radar.explored(Vector3.ZERO) and radar.explored(data.player.position) and radar.zoom_index == radar.DEFAULT_ZOOM_INDEX, "Restart clears exploration and restores 256m zoom")
 	data.player.position = Vector3.ZERO
 	data.enemies = [{"position": Vector3(20, 100, 0), "kind": "jammerTruck", "dead": false}]
 	radar.update_state(data, camera)

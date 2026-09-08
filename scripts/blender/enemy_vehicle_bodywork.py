@@ -26,8 +26,8 @@ def hull(p,name,rings,color='paint'):
     return finish(obj,color)
 
 
-def panel(p,name,loc,size,color='paint',angle=0):
-    obj=cube(p,name,loc,size,color,min(size)*.2);obj.rotation_euler.x=angle;return obj
+def panel(p,name,loc,size,color='paint',angle=0,bevel=True):
+    obj=cube(p,name,loc,size,color,min(size)*.2 if bevel else 0);obj.rotation_euler.x=angle;return obj
 
 
 def vent(p,loc,width=.5,count=5):
@@ -180,39 +180,15 @@ def crawler():
     return p
 
 
-def boss():
-    p=group('boss')
-    for side in (-1,1):track(p,'Component_%sDrive'%('Left' if side<0 else 'Right'),side*2.23,1.32,.68,1.0,6)
-    hull(p,'ArmoredCitadel',[(-2.17,1.53,.80,1.55,.18),(-1.18,1.77,.80,2.29,.20),(1.68,1.68,.80,2.40,.20),(2.09,1.42,.80,1.74,.16)],'paint')
-    hull(p,'SlopedGlacis',[(-2.32,1.65,1.03,1.32,.10),(-1.38,1.83,1.12,2.01,.14)],'light')
-    for side in (-1,1):
-        for i in range(4):
-            panel(p,'SpacedSideArmor',(side*1.87,-1.36+i*.86,1.80),(.18,.70,.60),'light')
-        for y in (-1.84,1.67):cube(p,'RunningLamp',(side*1.44,y,1.66),(.31,.09,.14),'cream' if y<0 else 'red',.015)
-        vent(p,(side*1.07,1.42,2.36),.55)
-    # Core and pods are authored at existing gameplay anchors (after 2.1x scale).
-    core=cube(p,'Component_Core',(0,-.126,2.797),(1.12,1.08,1.08),'shadow',.12)
-    parts=[]
-    for z in (2.45,2.70,2.95,3.20):parts.append(cyl(p,'ReactorRing',(0,-.126,z),.54,.10,'steel',(0,0,0),12))
-    for side in (-1,1):parts.append(panel(p,'ReactorGlow',(side*.571,-.126,2.81),(.028,.60,.59),'amber'))
-    join_into(core,parts)
-    hull(p,'CommandTower',[(.49,.78,2.17,3.70,.12),(1.35,.78,2.17,3.70,.12)],'shadow')
-    missile=cube(p,'Component_MissilePod',(0,.754,3.96),(1.63,1.23,.56),'paint',.09)
-    parts=[]
-    for x in (-.57,-.19,.19,.57):
-        for z in (3.82,4.09):parts.append(cyl(p,'MissileCell',(x,.108,z),.11,.10,'dark',vertices=10))
-    parts.append(panel(p,'MissileRoof',(0,.75,4.28),(1.74,1.30,.09),'light'))
-    join_into(missile,parts)
-    gun=cube(p,'Component_GunPod',(.943,-.817,3.457),(.98,.97,.61),'light',.10)
-    parts=[cyl(p,'GunTrunnion',(.943,-.38,2.9),.19,.91,'steel',(0,0,0),12)]
-    for x in (.76,1.12):
-        parts.append(cyl(p,'GatlingBarrel',(x,-1.66,3.47),.09,1.02,'steel',vertices=10))
-        parts.append(cube(p,'GatlingMuzzle',(x,-2.22,3.47),(.19,.18,.18),'dark',.02))
-    join_into(gun,parts)
-    cyl(p,'Mantlet',(0,-2.06,1.93),.31,.38,'shadow',vertices=12)
-    cyl(p,'SiegeCannon',(0,-2.66,1.93),.13,1.14,'steel',vertices=12)
-    cube(p,'SiegeMuzzle',(0,-3.26,1.93),(.36,.29,.29),'shadow',.04)
-    return p
+def boss(variant='armored'):
+    # The shared factory owns the new siege chassis; no legacy duplicate model.
+    import importlib.util
+    from pathlib import Path
+    path=Path(__file__).with_name('leviathan_bodywork.py')
+    spec=importlib.util.spec_from_file_location('leviathan_bodywork',path)
+    builder=importlib.util.module_from_spec(spec);spec.loader.exec_module(builder)
+    builder.install(globals())
+    return builder.build(variant)
 
 
 def wreck(name,source,size,original_factories):
@@ -299,4 +275,107 @@ def wreck(name,source,size,original_factories):
         for side in (-1,1):
             obj=panel(p,'TornArmor',(side*size[0]*.32,.56,.46),(.48,.73,.065),'shadow');obj.rotation_euler=(.18,side*.54,side*.22)
             strut(p,'ExposedFrame',(side*.42,-.82,.30),(side*.46,.9,.38),.045,'steel')
+    return p
+
+
+def utility_truck(name, feature):
+    """Pickup-family utility cab with equipment exposed on a proper load bed."""
+    p=group(name)
+    hull(p,'Frame',[(-1.8,.72,.32,.52,.06),(1.8,.72,.32,.52,.06)],'shadow')
+    for side in (-1,1):
+        for y in (-1.17,1.18):
+            wheel(p,'Wheel_%s_%s'%(side,y),side*.92,y,.48,.48,.31)
+            panel(p,'FenderTop',(side*.90,y,1.0),(.44,.75,.08),'paint')
+            for end in (-1,1):
+                panel(p,'FenderLip',(side*.9,y+end*.37,.88),(.44,.10,.26),'shadow',end*.3)
+        panel(p,'Step',(side*.88,-.05,.49),(.28,.69,.09),'steel')
+        panel(p,'Door',(side*.738,-.34,.94),(.04,.68,.47),'paint')
+        panel(p,'SideWindow',(side*.735,-.30,1.45),(.032,.53,.33),'glass')
+        cube(p,'DoorHandle',(side*.773,-.12,1.19),(.05,.16,.035),'cream')
+        strut(p,'MirrorArm',(side*.74,-.66,1.28),(side*.98,-.65,1.45),.025)
+        cube(p,'Mirror',(side*1.0,-.65,1.46),(.07,.14,.22),'shadow',.02)
+        cube(p,'Lamp',(side*.55,-1.80,.85),(.22,.06,.16),'cream',.018)
+        panel(p,'BedSide',(side*.76,.97,.97),(.10,1.56,.43),'paint')
+        panel(p,'BedRail',(side*.78,.97,1.22),(.15,1.62,.06),'light')
+        cube(p,'TailLamp',(side*.63,1.79,.76),(.15,.05,.16),'red')
+    hull(p,'PickupCab',[(-.94,.72,.56,1.13,.06),(-.56,.72,.56,1.75,.06),(.15,.72,.56,1.75,.06)],'paint')
+    hull(p,'Hood',[(-1.77,.68,.64,.91,.06),(-.92,.72,.64,1.14,.06)],'light')
+    for side in (-1,1):panel(p,'Windshield',(side*.34,-.759,1.46),(.58,.035,.48),'glass',-.55)
+    panel(p,'Roof',(0,-.18,1.78),(1.51,.84,.09),'light')
+    cube(p,'Grille',(0,-1.795,.67),(.83,.07,.21),'dark')
+    for x in (-.32,-.16,0,.16,.32):cube(p,'GrilleSlat',(x,-1.84,.67),(.045,.04,.22),'steel')
+    cube(p,'Bumper',(0,-1.89,.48),(1.89,.18,.18),'shadow',.02)
+    for side in (-1,1):strut(p,'BullbarUpright',(side*.64,-1.96,.45),(side*.64,-1.96,1.01),.043)
+    strut(p,'BullbarTop',(-.79,-1.96,1.01),(.79,-1.96,1.01),.043)
+    cube(p,'BedFloor',(0,1.0,.68),(1.46,1.69,.12),'shadow')
+    vent(p,(0,-1.23,1.08),.46)
+    if feature=='jammer':
+        cube(p,'Transceiver',(0,.80,1.04),(.98,.84,.59),'shadow',.04)
+        for side in (-1,1):
+            for y in (.51,.65,.79,.93,1.07):cube(p,'HeatSink',(side*.52,y,1.05),(.08,.035,.48),'steel')
+        cyl(p,'Mast',(0,.80,1.71),.075,.88,'steel',(0,0,0),10)
+        head=cube(p,'JammerHead',(0,.80,2.16),(.21,.21,.15),'steel')
+        pieces=[]
+        for side in (-1,1):
+            pieces.append(panel(p,'AntennaPanel',(side*.48,.80,2.13),(.39,.12,.59),'cream'))
+            pieces.append(strut(p,'AntennaBeam',(0,.80,2.15),(side*.51,.80,2.15),.035))
+        join_into(head,pieces)
+        cyl(p,'JammerScan',(0,.80,1.68),.49,.06,'amber',(0,0,0),12)
+        strut(p,'Whip',(-.59,1.52,1.24),(-.59,1.52,2.33),.018,'steel')
+    else:
+        for side in (-1,1):
+            panel(p,'ConveyorRail',(side*.39,1.16,1.19),(.08,1.33,.1),'steel',-.22)
+            for y in (.56,.91,1.26):
+                cyl(p,'Mine',(side*.32,y,1.13),.21,.13,'shadow',(0,0,0),10)
+                cyl(p,'MineFuse',(side*.32,y,1.23),.06,.06,'amber',(0,0,0),8)
+        panel(p,'DeploymentChute',(0,1.75,.89),(.91,.63,.08),'steel',-.48)
+        gun=cube(p,'WeaponPitch',(0,-.20,1.94),(.23,.30,.19),'shadow',.02)
+        join_into(gun,[cyl(p,'Barrel',(0,-.60,1.94),.045,.63,'steel',vertices=10)])
+    return p
+
+
+def variant_details(p, variant):
+    """Shared pickup construction language; role silhouette stays recognizable."""
+    name=p.name
+    if name == 'boss': return p
+    # Purposeful hardware on all six chassis; merged into their static body.
+    sizes={'buggy':(.60,-1.12,.64),'raider':(.96,-1.72,1.05),
+           'jammerTruck':(.70,-1.78,.89),'minelayer':(.70,-1.78,.89),
+           'repairCrawler':(.70,-1.19,1.05),'boss':(1.61,-2.31,1.40)}
+    half,front,z=sizes[name]
+    for side in (-1,1):
+        cube(p,'RecoveryMount',(side*half*.62,front-.07,z-.32),(.17,.10,.17),'amber',.025)
+        cube(p,'RecoveryInset',(side*half*.62,front-.13,z-.32),(.075,.015,.07),'dark')
+    if name=='buggy':
+        panel(p,'RoofVisor',(0,-.02,1.47),(1.30,.39,.07),'light')
+        cube(p,'NoseGrille',(0,-1.14,.54),(.51,.04,.16),'dark')
+        for x in (-.17,0,.17):cube(p,'GrilleRib',(x,-1.17,.54),(.028,.04,.15),'steel')
+        # Distinct spare wheel, utility basket and lamp bar visible from game camera.
+        cyl(p,'SpareTyre',(0,.84,1.14),.31,.19,'rubber',(0,0,0),16)
+        cyl(p,'SpareHub',(0,.84,1.25),.16,.025,'steel',(0,0,0),10)
+    if name=='raider':
+        for side in (-1,1):
+            strut(p,'RoofRack',(side*.82,-.40,2.11),(side*.82,.44,2.11),.035)
+            cube(p,'Stowage',(side*.68,1.35,1.65),(.38,.33,.32),'shadow',.03)
+        for x in (-.58,-.29,0,.29,.58):cube(p,'RoofLamp',(x,-.48,2.10),(.16,.12,.11),'cream',.012)
+    if name=='repairCrawler':
+        cube(p,'FrontRadiator',(0,-1.21,1.03),(.61,.06,.22),'dark')
+        for x in (-.24,-.12,0,.12,.24):cube(p,'RadiatorFin',(x,-1.25,1.03),(.025,.05,.22),'steel')
+        for side in (-1,1):
+            cube(p,'ServiceStripe',(side*.825,.75,1.48),(.024,.72,.06),'cream')
+            cyl(p,'AirTank',(side*.67,1.21,1.65),.14,.51,'amber',vertices=10)
+    if variant=='armored':
+        if name=='buggy':
+            panel(p,'HardRoof',(0,.31,1.50),(1.33,.75,.10),'paint')
+            for side in (-1,1):
+                panel(p,'BallisticDoor',(side*.625,.11,.91),(.07,.85,.45),'paint')
+                panel(p,'WindowGuard',(side*.65,.16,1.25),(.035,.62,.11),'shadow')
+        else:
+            length={'raider':1.12,'jammerTruck':1.46,'minelayer':1.46,'repairCrawler':1.30,'boss':2.8}[name]
+            for side in (-1,1):
+                for index in range(3):
+                    yy=.20+(index+.5)*length/3
+                    panel(p,'AppliqueArmor',(side*(half+.14),yy,z+.27),(.15,length/3-.07,.43),'light')
+                    cube(p,'PlateFastener',(side*(half+.225),yy,z+.38),(.02,.075,.075),'steel')
+            panel(p,'HoodArmor',(0,front+.34,z+.08),(half*1.5,.47,.09),'paint',-.10)
     return p

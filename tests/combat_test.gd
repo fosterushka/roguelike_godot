@@ -17,6 +17,18 @@ func check(value: bool, label: String) -> void:
 		printerr("FAIL: ", label)
 
 func run() -> void:
+	var random := RandomNumberGenerator.new()
+	random.seed = 912
+	var conservative := true
+	for index in 2000:
+		var start := Vector3(random.randf_range(-10, 10), 0, random.randf_range(-10, 10))
+		var end := Vector3(random.randf_range(-10, 10), 0, random.randf_range(-10, 10))
+		var center := start.lerp(end, random.randf()) + Vector3(random.randf_range(-1, 1), 0, random.randf_range(-1, 1))
+		var radius := random.randf_range(0.1, 2)
+		if Shots.hit_fraction(start, end, center, radius) >= 0:
+			conservative = conservative and Shots.segment_may_hit_xz(start, end, center, radius)
+	check(conservative, "Projectile broad phase never rejects an actual sphere hit")
+	check(not Shots.segment_may_hit_xz(Vector3.ZERO, Vector3.RIGHT, Vector3(20, 0, 20), 1), "Projectile broad phase skips distant targets")
 	var model = Model.new()
 	check(model.weapons.size() == 1, "source starter M4 is installed")
 	check(Waves.queue_for(1).size() == 9, "wave one has eight riflemen and one bike")

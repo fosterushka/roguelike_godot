@@ -1,4 +1,5 @@
 extends RefCounted
+const WorldScale = preload("res://modules/world/world_scale.gd")
 var context: RefCounted
 var natural: RefCounted
 var authored: RefCounted
@@ -128,13 +129,14 @@ func monuments() -> void:
 			"refinery": authored.refinery(site.x, site.z, site.rotation)
 			_: authored.satellite_array(site.x, site.z, site.rotation)
 		context.aggregate_destructible = false
+		context.scale_feature(starts, group_start, Vector3(site.x, 0, site.z), WorldScale.MONUMENT_SCALE)
 		natural.ground_cover(site.x, site.z, 18, random.integer(16, 28), site.type == "dead-grove")
 		var parts: Array = []
 		for pool: String in context.POOLS:
 			for index in range(starts[pool], context.instances[pool].size()):
 				parts.append({"pool": pool, "instance": index, "transform": context.instances[pool][index]})
 		var factory: bool = site.type == "recycling-factory"
-		context.register_prop("monument", site.x, site.z, 1, {"parts": parts, "groups": context.groups.slice(group_start)}, {"id": "prop:" + site.id, "radius": 10 if factory else 7, "hp": 260 if factory else 150, "salvage": 18 if factory else 10})
+		context.register_prop("monument", site.x, site.z, WorldScale.MONUMENT_SCALE, {"parts": parts, "groups": context.groups.slice(group_start)}, {"id": "prop:" + site.id, "radius": (10 if factory else 7) * WorldScale.MONUMENT_SCALE, "hp": (260 if factory else 150) * WorldScale.MONUMENT_SCALE, "salvage": 18 if factory else 10})
 		context.landmarks.append({"id": site.id, "x": site.x, "z": site.z, "type": site.type})
 
 func outer_dressing() -> void:

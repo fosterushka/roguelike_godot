@@ -5,6 +5,7 @@ const Appearance = preload("res://presentation/crew/crew_appearance.gd")
 const Source = preload("res://presentation/combat/source_model.gd")
 const Crew = preload("res://modules/crew/crew_catalog.gd")
 const Seats = preload("res://presentation/crew/crew_seats.gd")
+const WorldScale = preload("res://modules/world/world_scale.gd")
 var checks := 0
 var failures := 0
 
@@ -40,6 +41,7 @@ func _run() -> void:
 	near(view.views[0].root.global_position, pickup.to_global(Seats.anchor("crawler", 0)), "Pickup crew follows interpolated pickup transform at its bed-edge seat")
 	near(view.views[1].root.global_position, wagon.to_global(Seats.anchor("wagon-1", 1)), "Wagon crew follows its own rendered carrier transform")
 	check(view.views[0].seated.visible and not view.views[0].body.visible, "Boarded living crew uses seated low-poly pose")
+	check(view.views[0].body.scale.is_equal_approx(Vector3.ONE * WorldScale.SOLDIER_SCALE) and view.views[0].seated.scale.is_equal_approx(Vector3.ONE), "Standing crew shares the soldier scale while seated crew keeps the authored vehicle-safe size")
 	check(view.views[0].seated.get_node_or_null("PickupBench") == null and pickup.get_node_or_null("PickupBench") != null and wagon.get_node_or_null("PickupBench") == null, "Pickup bench is mounted on the carrier instead of duplicated inside each person")
 	var thigh := view.views[0].seated.get_node("Thigh") as MeshInstance3D
 	var shin := view.views[0].seated.get_node("Shin") as MeshInstance3D

@@ -1,6 +1,7 @@
 extends "res://modules/world/generation/authored_monuments.gd"
 
 const Wildlife = preload("res://modules/world/wildlife_rules.gd")
+const WorldScale = preload("res://modules/world/world_scale.gd")
 
 func utility_pole(x: float, z: float, size: float = 1, angle: float = NAN) -> void:
 	if is_nan(angle):
@@ -109,7 +110,7 @@ func village(id: String, x: float, z: float, count: int = 4) -> void:
 		var px := x + cos(angle) * radius
 		var pz := z + sin(angle) * radius
 		var home := house(px, pz, rng.between(0, TAU))
-		var size: float = rng.between(0.75, 1.1)
+		var size: float = rng.between(0.75, 1.1) * WorldScale.BUILDING_SCALE
 		home.scale = Vector3.ONE * size
 		data.houses.append(home)
 		ctx.register_prop("building", px, pz, size, {"groups": [home]}, {"salvage": rng.integer(2, 4), "village_id": id})

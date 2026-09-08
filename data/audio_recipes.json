@@ -1095,6 +1095,18 @@
         "delay": 0,
         "filter": 0
       }
+    ],
+    "caseReel": [
+      {
+        "kind": "tone",
+        "frequency": 920,
+        "duration": 0.035,
+        "type": "square",
+        "gain": 0.018,
+        "slide": -120,
+        "delay": 0,
+        "filter": 3200
+      }
     ]
   }
 }

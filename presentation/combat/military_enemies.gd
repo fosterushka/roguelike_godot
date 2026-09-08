@@ -7,27 +7,41 @@ const PALETTE_TEXTURE := preload("res://assets/actors/military_enemies_palette.p
 const MODELS := ["bike", "buggy", "drone", "kamikaze", "raider", "jammerTruck", "repairCrawler", "minelayer", "boss", "wreck_bike", "wreck_buggy", "wreck_jammerTruck", "wreck_repairCrawler", "wreck_minelayer"]
 ## Detailed bodywork retains a single static body draw and existing pivots.
 const TRIANGLE_BUDGET := 6000
-const BOSS_TRIANGLE_BUDGET := 7000
+const BossGeometry = preload("res://modules/combat/leviathan_geometry.gd")
+static var BOSS_TRIANGLE_BUDGET: int = BossGeometry.TRIANGLE_BUDGET
 static var _cache: Dictionary = {}
 static var _body_material: StandardMaterial3D
+static var _styles: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/enemy_vehicle_styles.json"))
+static var _preset_materials: Dictionary = {}
+const VARIANT_DIRECTORY := "res://assets/actors/enemies_revised/"
+const PAINT_CELLS := {"paint": Vector2i(0, 3), "light": Vector2i(1, 3), "shadow": Vector2i(2, 3)}
 
 
 static func has_model(model_name: String) -> bool:
 	return model_name in MODELS
 
 
-static func templates(model_name: String) -> Array:
-	if _cache.has(model_name):
-		return _cache[model_name]
-	var root: Node = SCENE.instantiate()
-	var model := root.get_node_or_null(NodePath(model_name)) as Node3D
+static func templates(model_name: String, variant: String = "", preset: String = "") -> Array:
+	var revised: bool = _styles.models.has(model_name)
+	if revised:
+		if not _styles.variants.has(variant):
+			variant = str(_styles.models[model_name].variant)
+		if not _styles.presets.has(preset):
+			preset = str(_styles.models[model_name].preset)
+	var key := model_name + ":" + variant + ":" + preset
+	if _cache.has(key):
+		return _cache[key]
+	var asset_name := model_name + "_" + variant if revised else model_name
+	var scene: PackedScene = load(VARIANT_DIRECTORY + asset_name + ".glb") if revised else SCENE
+	var root: Node = scene.instantiate()
+	var model := root.get_node_or_null(NodePath(asset_name)) as Node3D
 	var result: Array = []
 	if model != null:
 		for child: Node in model.get_children():
 			if child is MeshInstance3D and child.mesh != null:
 				var mesh := child.mesh.duplicate(true) as Mesh
 				for surface in mesh.get_surface_count():
-					mesh.surface_set_material(surface, _palette_material())
+					mesh.surface_set_material(surface, material_for_preset(preset) if revised else _palette_material())
 				var transform: Transform3D = child.transform
 				result.append({
 					"name": child.name,
@@ -40,8 +54,34 @@ static func templates(model_name: String) -> Array:
 					"cast_shadow": true,
 				})
 	root.free()
-	_cache[model_name] = result
+	_cache[key] = result
 	return result
+
+
+## Cached palettes are immutable. Callers can choose a preset without changing peers.
+static func material_for_preset(preset: String) -> StandardMaterial3D:
+	if not _styles.presets.has(preset):
+		preset = "olive"
+	if _preset_materials.has(preset):
+		return _preset_materials[preset]
+	var image := PALETTE_TEXTURE.get_image()
+	if image.is_compressed():
+		image.decompress()
+	for role: String in PAINT_CELLS:
+		var cell: Vector2i = PAINT_CELLS[role]
+		# Palette hex colors and PNG pixels are both sRGB.
+		image.set_pixelv(cell, Color(str(_styles.presets[preset][role])))
+	var material := _palette_material().duplicate() as StandardMaterial3D
+	material.albedo_texture = ImageTexture.create_from_image(image)
+	_preset_materials[preset] = material
+	return material
+
+
+## Per-instance material override; never edits shared Mesh/Material resources.
+static func apply_preset(root: Node3D, preset: String) -> void:
+	for child: Node in root.get_children():
+		if child is GeometryInstance3D:
+			child.material_override = material_for_preset(preset)
 
 
 static func _palette_material() -> StandardMaterial3D:

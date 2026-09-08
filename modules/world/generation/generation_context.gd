@@ -48,6 +48,19 @@ func append(pool: String, position: Vector3, rotation: Vector3, scale: Vector3) 
 func structure(pool: String, x: float, y: float, z: float, width: float, height: float, depth: float, rotation: float = 0, tilt: float = 0) -> Dictionary:
 	return append(pool, Vector3(x, y, z), Vector3(0, rotation, tilt), Vector3(width, height, depth))
 
+func scale_feature(starts: Dictionary, group_start: int, origin: Vector3, scale: float) -> void:
+	for pool: String in starts:
+		var values: Array = instances[pool]
+		for index in range(int(starts[pool]), values.size()):
+			var pose: Transform3D = values[index]
+			pose.origin = origin + (pose.origin - origin) * scale
+			pose.basis = pose.basis.scaled(Vector3.ONE * scale)
+			values[index] = pose
+	for index in range(group_start, groups.size()):
+		var group := groups[index] as Node3D
+		group.position = origin + (group.position - origin) * scale
+		group.scale *= Vector3.ONE * scale
+
 func register_prop(kind: String, x: float, z: float, scale: float = 1, visual: Dictionary = {}, overrides: Dictionary = {}) -> Dictionary:
 	if aggregate_destructible:
 		return {}

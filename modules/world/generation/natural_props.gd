@@ -1,4 +1,5 @@
 extends RefCounted
+const WorldScale = preload("res://modules/world/world_scale.gd")
 var context: RefCounted
 var random: RefCounted
 
@@ -7,21 +8,22 @@ func setup(value: RefCounted) -> void:
 	random = value.random
 
 func tree(x: float, z: float, scale: float = 1, sparse: bool = false, destructible: bool = true) -> void:
+	var tree_scale := scale * WorldScale.TREE_SCALE
 	var rotation := Vector3(0, random.between(0, TAU), random.between(-0.06, 0.06))
-	var trunk_scale := Vector3(scale, scale * random.between(0.88, 1.18), scale)
+	var trunk_scale := Vector3(tree_scale, tree_scale * random.between(0.88, 1.18), tree_scale)
 	var parts: Array = []
 	parts.append(context.append("treeTrunks", Vector3(x, 1.14 * trunk_scale.y, z), rotation, trunk_scale))
 	var crown_pool := "treeCrowns" if random.next() < 0.5 else "treeCrownsAlt"
-	var crown_scale := Vector3(scale * random.between(0.82, 1.12), scale * random.between(0.82, 1.18), scale * random.between(0.82, 1.12))
-	parts.append(context.append(crown_pool, Vector3(x, 2.65 * scale, z), rotation, crown_scale))
+	var crown_scale := Vector3(tree_scale * random.between(0.82, 1.12), tree_scale * random.between(0.82, 1.18), tree_scale * random.between(0.82, 1.12))
+	parts.append(context.append(crown_pool, Vector3(x, 2.65 * tree_scale, z), rotation, crown_scale))
 	var branch_rotation := Vector3(random.between(-0.35, 0.35), rotation.y, random.between(0.72, 1.05))
-	parts.append(context.append("treeBranches", Vector3(x + 0.28 * scale, 2.1 * scale, z), branch_rotation, Vector3.ONE * scale))
+	parts.append(context.append("treeBranches", Vector3(x + 0.28 * tree_scale, 2.1 * tree_scale, z), branch_rotation, Vector3.ONE * tree_scale))
 	if not sparse and random.next() < 0.42:
-		var side: float = random.between(-0.55, 0.55) * scale
-		parts.append(context.append(crown_pool, Vector3(x + side, 3.35 * scale, z - side * 0.4), rotation, crown_scale * 0.62))
-	_tree_view(x, z, scale, parts, false)
+		var side: float = random.between(-0.55, 0.55) * tree_scale
+		parts.append(context.append(crown_pool, Vector3(x + side, 3.35 * tree_scale, z - side * 0.4), rotation, crown_scale * 0.62))
+	_tree_view(x, z, tree_scale, parts, false)
 	if destructible:
-		context.register_prop("tree", x, z, scale, {"parts": parts}, {"salvage": 1 if random.next() < 0.16 else 0})
+		context.register_prop("tree", x, z, tree_scale, {"parts": parts}, {"salvage": 1 if random.next() < 0.16 else 0})
 
 func boulder(x: float, z: float, scale: float = 1, light: bool = false) -> void:
 	var pool := "stoneInstances" if light else "rockInstances"
@@ -38,14 +40,15 @@ func scrub(x: float, z: float, scale: float = 1, dead: bool = false) -> void:
 	context.register_prop("scrub", x, z, scale, {"parts": [part]})
 
 func dead_tree(x: float, z: float, scale: float = 1) -> void:
+	var tree_scale := scale * WorldScale.TREE_SCALE
 	var rotation: float = random.between(0, TAU)
 	var parts: Array = []
-	parts.append(context.append("treeTrunks", Vector3(x, 1.55 * scale, z), Vector3(0, rotation, random.between(-0.08, 0.08)), Vector3(scale * 0.82, scale * 1.42, scale * 0.82)))
-	parts.append(context.landmark_box("woodStructure", x, z, 0.38 * scale, 2.42 * scale, 0, 1.2 * scale, 0.13 * scale, 0.14 * scale, rotation, 0.38))
+	parts.append(context.append("treeTrunks", Vector3(x, 1.55 * tree_scale, z), Vector3(0, rotation, random.between(-0.08, 0.08)), Vector3(tree_scale * 0.82, tree_scale * 1.42, tree_scale * 0.82)))
+	parts.append(context.landmark_box("woodStructure", x, z, 0.38 * tree_scale, 2.42 * tree_scale, 0, 1.2 * tree_scale, 0.13 * tree_scale, 0.14 * tree_scale, rotation, 0.38))
 	if random.next() < 0.68:
-		parts.append(context.landmark_box("woodStructure", x, z, -0.25 * scale, 2.9 * scale, 0, 0.92 * scale, 0.11 * scale, 0.12 * scale, rotation, -0.46))
-	_tree_view(x, z, scale, parts, true)
-	context.register_prop("deadTree", x, z, scale, {"parts": parts})
+		parts.append(context.landmark_box("woodStructure", x, z, -0.25 * tree_scale, 2.9 * tree_scale, 0, 0.92 * tree_scale, 0.11 * tree_scale, 0.12 * tree_scale, rotation, -0.46))
+	_tree_view(x, z, tree_scale, parts, true)
+	context.register_prop("deadTree", x, z, tree_scale, {"parts": parts})
 
 func fence(x: float, z: float, rotation: float = 0, count: int = 5) -> void:
 	var right_x := cos(rotation)

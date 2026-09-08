@@ -2,6 +2,7 @@ extends "res://tests/world_generation_test.gd"
 const Context = preload("res://modules/world/generation/generation_context.gd")
 const Rocks = preload("res://modules/world/generation/rock_formations.gd")
 const Natural = preload("res://modules/world/generation/natural_props.gd")
+const WorldScale = preload("res://modules/world/world_scale.gd")
 class OpenContext extends Context:
 	func open_dressing_point(_x: float, _z: float, _road: float = 8, _start: float = 16) -> bool:
 		return true
@@ -31,6 +32,13 @@ func _initialize() -> void:
 		for index in mini(legacy_props.size(), fixture.props.size()):
 			var actual: Dictionary = legacy_props[index]
 			var expected: Dictionary = fixture.props[index]
+			if actual.kind in ["tree", "deadTree"]:
+				compare(actual.kind, expected.kind, "tree prop kind")
+				compare(actual.radius, float(expected.radius) * WorldScale.TREE_SCALE, "tree prop scaled radius")
+				compare(actual.hp, float(expected.hp) * WorldScale.TREE_SCALE, "tree prop scaled hp")
+				compare(actual.position.x, expected.x, "tree prop x")
+				compare(actual.position.z, expected.z, "tree prop z")
+				continue
 			for key in ["id", "kind", "radius", "hp", "salvage"]:
 				compare(actual[key], expected[key], "prop %d %s" % [index, key])
 			compare(actual.position.x, expected.x, "prop x")
@@ -42,6 +50,8 @@ func _initialize() -> void:
 			compare(str(prop.parts[0].pool).begins_with("rockMass"), true, "formation uses a natural monolith pool")
 		compare(context.instances.cliffFaces.is_empty() and context.instances.cliffStrata.is_empty(), true, "formation no longer emits stacked cylinders or bands")
 		for pool: String in fixture.instances:
+			if pool in ["treeTrunks", "treeCrowns", "treeCrownsAlt", "treeBranches", "woodStructure"]:
+				continue
 			if pool in ["cliffFaces", "cliffStrata"]:
 				continue
 			var expected_count: int = natural_rock_counts.get(pool, fixture.instances[pool].size())

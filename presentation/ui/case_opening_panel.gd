@@ -1,6 +1,7 @@
 extends ColorRect
 
 signal closed
+signal reel_step
 const Styles = preload("res://presentation/ui/ui_styles.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 const Icon = preload("res://presentation/ui/case_reward_icon.gd")
@@ -20,6 +21,7 @@ var guaranteed: Label
 var contents: Label
 var button: Button
 var panel: PanelContainer
+var _last_reel_step := 0
 
 static func words(ru: String, en: String) -> String:
 	return ru if Locale.language == "ru" else en
@@ -102,6 +104,7 @@ func show_case(value: Dictionary) -> void:
 	reward = value.duplicate(true)
 	elapsed = 0
 	revealed = false
+	_last_reel_step = 0
 	_rebuild_strip()
 	refresh_language()
 	show()
@@ -178,10 +181,12 @@ func refresh_language() -> void:
 		subtitle.text = words("Чертёж открыт. Установите оружие в арсенале.", "Blueprint unlocked. Install the weapon in Armory.")
 	button.text = words("ПРОДОЛЖИТЬ [ENTER]", "CONTINUE [ENTER]") if revealed else words("ПОКАЗАТЬ СРАЗУ [ENTER]", "REVEAL NOW [ENTER]")
 
-func advance(delta: float) -> void:
+func advance(delta: float, emit_reel_steps: bool = true) -> void:
 	if not visible or revealed:
 		return
 	elapsed = minf(DURATION, elapsed + maxf(0, delta))
+	if emit_reel_steps:
+		_emit_reel_steps()
 	if elapsed >= DURATION:
 		revealed = true
 		refresh_language()
@@ -193,15 +198,24 @@ func _process(delta: float) -> void:
 func _position_strip() -> void:
 	if not is_instance_valid(window):
 		return
+	strip.position = Vector2(window.size.x * 0.5 - reel_offset(), 0)
+
+func reel_offset() -> float:
 	var progress := 1.0 - pow(1.0 - clampf(elapsed / DURATION, 0, 1), 4.0)
 	var target := WINNER_INDEX * (CARD_WIDTH + CARD_GAP) + CARD_WIDTH * 0.5
-	strip.position = Vector2(window.size.x * 0.5 - lerpf(CARD_WIDTH * 0.5, target, progress), 0)
+	return lerpf(CARD_WIDTH * 0.5, target, progress)
+
+func _emit_reel_steps() -> void:
+	var card_step := mini(WINNER_INDEX, floori(reel_offset() / (CARD_WIDTH + CARD_GAP)))
+	while _last_reel_step < card_step:
+		_last_reel_step += 1
+		reel_step.emit()
 
 func activate() -> void:
 	if not visible:
 		return
 	if not revealed:
-		advance(DURATION)
+		advance(DURATION, false)
 	else:
 		hide()
 		closed.emit()

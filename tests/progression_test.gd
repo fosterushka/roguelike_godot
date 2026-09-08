@@ -50,6 +50,7 @@ func run() -> void:
 	choices = progression.get_shop_state().choices
 	progression.buy_upgrade(choices[0].id)
 	check(model.player.pending_upgrades == 0, "second batch completes")
+	_check_late_choice_cards()
 	check(not progression.buy_upgrade("trailer") and model.player.carriers.is_empty(), "Levels do not create free wagons")
 	model.player.level = 4
 	check(not progression.buy_upgrade("trailer"), "Raid armory never bypasses the paid garage")
@@ -129,3 +130,19 @@ func run() -> void:
 	check(not unavailable.save_profile(Store.defaults()) and unavailable.status == "unsaved", "unavailable path preserves retry status")
 	print("Progression tests: ", checks - failures, "/", checks)
 	quit(1 if failures else 0)
+
+func _check_late_choice_cards() -> void:
+	var late_model := Model.new()
+	var late := Progression.new("/private/tmp/late-choice-%d.json" % Time.get_ticks_usec())
+	late.setup(late_model)
+	late_model.player.pending_upgrades = 1
+	late_model.player.core_upgrades = {"motor": 5, "armor": 5, "fuel": 0}
+	var state := late.get_shop_state()
+	var choices: Array = state.choices
+	check(choices.size() == 3 and choices[0].id == "core:fuel" and state.choice_stage == "mixed", "Maxed core upgrades are replaced by real eligible draft choices")
+	var ids: Array = choices.map(func(row: Dictionary) -> String: return row.id)
+	check(ids.size() == 3 and ids[0] != ids[1] and ids[1] != ids[2] and ids[0] != ids[2], "Late upgrade cards remain three distinct rewards")
+	check(late.get_shop_state().choices == choices, "Repeated UI reads preserve the same late-level choices")
+	check(late.buy_upgrade(choices[1].id) and late_model.player.pending_upgrades == 1 and late._core_done, "Selecting a replacement preserves the second reward for this level")
+	choices = late.get_shop_state().choices
+	check(choices.size() == 3 and late.buy_upgrade(choices[0].id) and late_model.player.pending_upgrades == 0, "The normal second draft still completes the level after a replacement")

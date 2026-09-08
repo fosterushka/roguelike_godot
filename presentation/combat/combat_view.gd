@@ -102,7 +102,7 @@ func apply_state(data: Dictionary) -> void:
 		alive[enemy.id] = true
 		var animated := EnemyAnimation.advance(enemy, pose, delta, elapsed)
 		var point: Vector3 = animated.position
-		_place(model_name, point, float(enemy.get("yaw", 0.0)), counts, animated.basis, animated.pose)
+		_place(model_name, point, float(enemy.get("yaw", 0.0)), counts, animated.basis.scaled(Vector3.ONE * SourceModel.model_scale(model_name)), animated.pose)
 		if int(enemy.id) == focus_id and is_instance_valid(_vehicle):
 			var view := _vehicle.get_node_or_null("VehicleView")
 			if view != null and view.has_method("set_aim"):

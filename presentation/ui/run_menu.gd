@@ -11,7 +11,12 @@ var _background: TextureRect
 var _column: VBoxContainer
 var _title: Label
 var _description: Label
-var _rows: VBoxContainer
+const ChoiceCard = preload("res://presentation/ui/upgrade_choice_card.gd")
+const CHOICE_WIDTH := 840.0
+const CHOICE_GAP := 12
+const SCREEN_MARGIN := 40.0
+var _choice_controls: Array[Button] = []
+var _rows: BoxContainer
 var _scroll: ScrollContainer
 
 func _ready() -> void:
@@ -45,13 +50,21 @@ func _ready() -> void:
 	_scroll = ScrollContainer.new()
 	_scroll.custom_minimum_size = Vector2(520, 320)
 	_column.add_child(_scroll)
-	_rows = VBoxContainer.new()
+	_rows = BoxContainer.new()
+	_rows.vertical = true
 	_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_scroll.add_child(_rows)
 	visible = false
 
 func display(title: String, description: String, rows: Array, main_menu: bool = false) -> void:
 	_content = {"title": title, "description": description, "rows": rows, "main_menu": main_menu}
+	var choices := not rows.is_empty() and rows.all(func(row: Dictionary) -> bool: return row.get("action", "") == "choose")
+	_choice_controls.clear()
+	_rows.vertical = not choices
+	_rows.add_theme_constant_override("separation", CHOICE_GAP if choices else 0)
+	_column.custom_minimum_size.x = minf(CHOICE_WIDTH, get_viewport_rect().size.x - SCREEN_MARGIN) if choices else 520.0
+	_scroll.custom_minimum_size.x = _column.custom_minimum_size.x
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_background.visible = main_menu
 	_language_button.visible = main_menu
 	_scroll.custom_minimum_size.y = mini(rows.size() * 54, 300) if main_menu else 280
@@ -64,6 +77,13 @@ func display(title: String, description: String, rows: Array, main_menu: bool = 
 		_rows.remove_child(child)
 		child.queue_free()
 	for row: Dictionary in rows:
+		if choices:
+			var slot := ChoiceCard.new()
+			_rows.add_child(slot)
+			slot.configure(row)
+			slot.selected.connect(func(id: String) -> void: action_requested.emit("choose", id))
+			_choice_controls.append(slot.button)
+			continue
 		var button := Styles.button(str(row.get("label", "")))
 		var action: String = str(row.get("action", ""))
 		button.disabled = bool(row.get("disabled", false))
@@ -85,7 +105,7 @@ func display(title: String, description: String, rows: Array, main_menu: bool = 
 func _input(event: InputEvent) -> void:
 	if not visible or not event is InputEventKey or not event.pressed or event.keycode != KEY_TAB:
 		return
-	var controls: Array = _rows.get_children().filter(func(child: Node) -> bool: return child is Button and not child.disabled)
+	var controls: Array = _choice_controls.filter(func(button: Button) -> bool: return not button.disabled) if not _choice_controls.is_empty() else _rows.get_children().filter(func(child: Node) -> bool: return child is Button and not child.disabled)
 	if _language_button.visible:
 		controls.append(_language_button)
 	if controls.is_empty():

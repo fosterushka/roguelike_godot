@@ -6,6 +6,7 @@ const Palette = preload("res://presentation/world/military_environment_palette.g
 const Library = preload("res://presentation/world/environment_library.gd")
 const Generator = preload("res://modules/world/generation/world_generator.gd")
 const Authored = preload("res://modules/world/generation/authored_props.gd")
+const WorldScale = preload("res://modules/world/world_scale.gd")
 var checks := 0
 var failures := 0
 
@@ -37,6 +38,10 @@ func _run() -> void:
 	check(world.villages.size() > 0 and world.landmarks.size() > 0 and world.groups.size() > 0, "Live generated world retains village and landmark composition")
 	var semantic: Array = world.props.filter(func(prop: Dictionary) -> bool: return prop.kind in ["building", "monument", "ruin", "wreck", "tree", "boulder", "scrub"])
 	check(semantic.size() > 80 and world.instances.spruceTrees.size() > 0 and world.instances.rockMass0.size() > 0, "Live generation covers natural props, buildings and monuments through runtime pools")
+	var buildings: Array = world.props.filter(func(prop: Dictionary) -> bool: return prop.kind == "building")
+	check(buildings.all(func(prop: Dictionary) -> bool: return float(prop.radius) >= 2.25 * 0.75 * WorldScale.BUILDING_SCALE), "Generated buildings apply the shared 1.5x scale to their visuals and blockers")
+	var monuments: Array = world.props.filter(func(prop: Dictionary) -> bool: return prop.kind == "monument")
+	check(monuments.all(func(prop: Dictionary) -> bool: return float(prop.radius) >= 7.0 * WorldScale.MONUMENT_SCALE and float(prop.hp) >= 150.0 * WorldScale.MONUMENT_SCALE), "Generated monuments scale geometry together with destruction radius and health")
 	for group: Node in world.groups:
 		group.free()
 	await process_frame

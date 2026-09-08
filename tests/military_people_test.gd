@@ -2,6 +2,7 @@ extends SceneTree
 
 const People = preload("res://presentation/combat/military_people.gd")
 const Source = preload("res://presentation/combat/source_model.gd")
+const WorldScale = preload("res://modules/world/world_scale.gd")
 const LIBRARY := "res://assets/actors/military_people.glb"
 var checks := 0
 var failures := 0
@@ -32,6 +33,7 @@ func _run() -> void:
 		check(roles.get("body", 0) == 1 and roles.get("head", 0) == 1 and roles.get("leg", 0) == 2 and roles.get("arm", 0) == 2 and roles.get("weapon", 0) == 1, kind + " keeps soldier animation rig roles")
 		var model := Source.instantiate(kind)
 		check(model.get_child_count() == 7, kind + " replaces the legacy JSON model through SourceModel")
+		check(model.scale.is_equal_approx(Vector3.ONE * WorldScale.SOLDIER_SCALE), kind + " uses the shared soldier scale in direct world views")
 		var leg := model.get_child(2) as GeometryInstance3D
 		var rest := leg.transform
 		Source.animate_instance(model, {"move_blend": 1.0, "phase": PI * 0.5, "animation_time": 0.4, "instance_index": 1, "attack_animation": 0.5})

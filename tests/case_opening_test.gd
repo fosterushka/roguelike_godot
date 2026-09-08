@@ -53,16 +53,22 @@ func _run() -> void:
 	check(game.session_flow.clock.phase == "paused", "Reward screen pauses the authoritative run clock")
 	check(not game.world.running and not game.combat.model.running, "Enemies and world stop during the opening")
 	var panel = game.case_flow.panel
+	var reel_steps := [0]
+	panel.reel_step.connect(func() -> void: reel_steps[0] += 1)
 	panel.set_process(false)
+	panel.show_case(panel.reward)
 	check(panel.reward_name({"kind": "fuel", "amount": 0.5}).ends_with("+0.5"), "Fractional fuel reward is not rounded to a different award")
 	check(panel.reward.selected == receipt.selected and panel.reward.pool == receipt.pool, "Visible pool and winner exactly match the awarded domain receipt")
 	check(game.case_flow.pending.is_empty(), "Duplicate events cannot queue a second case")
 	var coins: int = game.combat.model.player.coins
 	var unlocks: Array = game.combat.model.player.unlocked_weapons.duplicate()
+	var accepted_events_before: int = game.sound.accepted_events
 	_key(game, KEY_J)
 	check(game.screen_state == "case_opening", "Crew shortcut cannot interrupt the reveal")
 	panel.advance(1.5)
 	check(not panel.revealed and panel.strip.position.x < 0, "Reward reel moves before decelerating to the winner")
+	check(reel_steps[0] > 0, "Reward reel emits a click step for crossed cards")
+	check(game.sound.accepted_events == accepted_events_before + reel_steps[0], "Every reel step plays a UI sound while the case pauses gameplay")
 	_key(game, KEY_ENTER)
 	check(panel.revealed and game.screen_state == "case_opening", "Enter skips animation without skipping the reward result")
 	var center: float = panel.strip.position.x + panel.WINNER_INDEX * (panel.CARD_WIDTH + panel.CARD_GAP) + panel.CARD_WIDTH * 0.5

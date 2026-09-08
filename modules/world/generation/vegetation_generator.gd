@@ -2,8 +2,9 @@ extends RefCounted
 
 const Random = preload("res://modules/world/activities/source_random.gd")
 const Biomes = preload("res://modules/world/biome_rules.gd")
+const WorldScale = preload("res://modules/world/world_scale.gd")
 const DRY_GROVE_DENSITY := 0.38
-const TREE_SIZE_SCALE := 1.18
+const TREE_SIZE_SCALE := WorldScale.TREE_SCALE
 const SPECIES := ["spruceTrees", "birchTrees"]
 const CROWNS := [2.6, 2.3]
 const TREE_BUDGET := 1800

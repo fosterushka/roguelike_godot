@@ -6,6 +6,7 @@ const Primitives = preload("res://presentation/world/world_primitive_catalog.gd"
 const Quality = preload("res://presentation/world/world_quality_models.gd")
 const Renderer = preload("res://presentation/world/generated_world_view.gd")
 const Trees = preload("res://presentation/world/tree_meshes.gd")
+const WorldScale = preload("res://modules/world/world_scale.gd")
 
 func _initialize() -> void:
 	_run.call_deferred()
@@ -36,11 +37,26 @@ func _run() -> void:
 		for index in mini(context.props.size(), fixture.props.size()):
 			var p: Dictionary = context.props[index]
 			var actual := {"id": p.id, "kind": p.kind, "x": p.position.x, "z": p.position.z, "radius": p.radius, "hp": p.hp, "salvage": p.salvage, "village_id": p.get("village_id")}
-			compare(actual, fixture.props[index], label + " prop")
+			var expected: Dictionary = fixture.props[index]
+			if p.kind in ["tree", "deadTree", "building"]:
+				var scale := WorldScale.BUILDING_SCALE if p.kind == "building" else WorldScale.TREE_SCALE
+				compare(actual.kind, expected.kind, label + " scaled prop kind")
+				compare(actual.x, expected.x, label + " scaled prop x")
+				compare(actual.z, expected.z, label + " scaled prop z")
+				compare(actual.radius, float(expected.radius) * scale, label + " scaled prop radius")
+				compare(actual.hp, float(expected.hp) * scale, label + " scaled prop hp")
+				compare(actual.salvage, expected.salvage, label + " scaled prop salvage")
+				compare(actual.village_id, expected.village_id, label + " scaled prop village")
+			else:
+				compare(actual, expected, label + " prop")
 		var original_groups: Array = context.groups.filter(func(group: Node) -> bool: return not group.get_meta("military_detail", false))
 		compare(original_groups.size(), fixture.groups.size(), label + " animation group count")
 		for index in mini(original_groups.size(), fixture.groups.size()):
-			_node(original_groups[index], fixture.groups[index], label + " group " + str(index))
+			if fixture.name == "village" and _has_quality_mesh(original_groups[index], "house"):
+				compare(Renderer.matrix(original_groups[index].transform), _scaled_matrix(fixture.groups[index].matrix, WorldScale.BUILDING_SCALE), label + " scaled building group matrix", 0.0001)
+				compare(_has_quality_mesh(original_groups[index], "house"), true, label + " scaled building keeps authored house mesh")
+			else:
+				_node(original_groups[index], fixture.groups[index], label + " group " + str(index))
 		compare(context.ambient_animators.size(), fixture.animators.size(), label + " animator count")
 		for index in mini(context.ambient_animators.size(), fixture.animators.size()):
 			for key in fixture.animators[index]:
@@ -52,7 +68,11 @@ func _run() -> void:
 				if actual is Vector3:
 					actual = [actual.x, actual.y, actual.z]
 				compare(actual, fixture.critters[index][key], label + " critter " + key, 0.0001)
-		compare(context.activity_blockers, fixture.activityBlockers, label + " activity blockers")
+		var blockers: Array = fixture.activityBlockers.duplicate(true)
+		if fixture.name == "village":
+			for blocker: Dictionary in blockers:
+				blocker.radius = float(blocker.radius) * WorldScale.BUILDING_SCALE
+		compare(context.activity_blockers, blockers, label + " activity blockers")
 		var pool_counts := []
 		for pool: String in context.POOLS:
 			if pool.begins_with("rockMass") or Trees.POOLS.has(pool):
@@ -118,6 +138,12 @@ func _node(actual: Node3D, expected: Dictionary, label: String) -> void:
 	compare(actual.get_child_count(), expected.children.size(), label + " hierarchy count")
 	for index in mini(actual.get_child_count(), expected.children.size()):
 		_node(actual.get_child(index), expected.children[index], label + "/" + str(index))
+
+func _scaled_matrix(matrix: Array, scale: float) -> Array:
+	var result: Array = matrix.duplicate()
+	for index in [0, 1, 2, 4, 5, 6, 8, 9, 10]:
+		result[index] = float(result[index]) * scale
+	return result
 
 func _quality_model(node: Node) -> String:
 	for model: String in ["utility_pole", "wreck", "well", "market_stall", "loot_scrap", "grazer", "house", "satellite_dish", "windmill", "windmill_blades", "pumpjack_arm"]:

@@ -124,12 +124,12 @@ static func attack(model, enemy: Dictionary, delta: float, cadence: float, dista
 		return
 	if enemy.type == "garrison" and enemy.position.length() >= model.Waves.radius(model.wave):
 		return
-	var height := 1.3
+	var height := Catalog.SOLDIER_FIRE_ORIGIN_HEIGHT
 	var aim_height := 2.4
 	var lead := 0.22
 	match enemy.type:
 		"drone":
-			height = enemy.height - 0.2
+			height = enemy.height - Catalog.DRONE_FIRE_ORIGIN_OFFSET
 			aim_height = 2.3
 			lead = 0.28
 		"buggy":

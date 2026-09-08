@@ -1,0 +1,76 @@
+{
+  "variants": {
+    "field": "A · Полевая",
+    "armored": "B · Усиленная"
+  },
+  "presets": {
+    "olive": {
+      "label": "Олива",
+      "paint": "596744",
+      "light": "74805a",
+      "shadow": "394431"
+    },
+    "oxide": {
+      "label": "Красная глина",
+      "paint": "874d3d",
+      "light": "b57857",
+      "shadow": "503a30"
+    },
+    "sand": {
+      "label": "Песок",
+      "paint": "9b875b",
+      "light": "c2af7a",
+      "shadow": "645c43"
+    },
+    "slate": {
+      "label": "Серо-синий",
+      "paint": "4c6976",
+      "light": "79929a",
+      "shadow": "344950"
+    },
+    "ochre": {
+      "label": "Охра",
+      "paint": "a07839",
+      "light": "caa25b",
+      "shadow": "655133"
+    }
+  },
+  "models": {
+    "buggy": {
+      "label": "Багги",
+      "variant": "armored",
+      "preset": "oxide",
+      "scale": 1.6
+    },
+    "raider": {
+      "label": "Рейдер",
+      "variant": "armored",
+      "preset": "sand",
+      "scale": 2.2
+    },
+    "jammerTruck": {
+      "label": "Глушитель",
+      "variant": "armored",
+      "preset": "slate",
+      "scale": 1.72
+    },
+    "repairCrawler": {
+      "label": "Ремонтник",
+      "variant": "armored",
+      "preset": "ochre",
+      "scale": 2.45
+    },
+    "minelayer": {
+      "label": "Минный заградитель",
+      "variant": "armored",
+      "preset": "olive",
+      "scale": 1.72
+    },
+    "boss": {
+      "label": "Левиафан",
+      "variant": "armored",
+      "preset": "oxide",
+      "scale": 2.1
+    }
+  }
+}

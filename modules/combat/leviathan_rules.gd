@@ -1,8 +1,7 @@
 extends RefCounted
 const Terrain = preload("res://modules/caravan/terrain_surface.gd")
 
-const ANCHORS := {"missilePod": Vector3(0, 6.3, -1.2), "gunPod": Vector3(1.5, 5.5, 1.3), "leftDrive": Vector3(-3.55, 2.25, -0.35), "rightDrive": Vector3(3.55, 2.25, -0.35), "core": Vector3(0, 4.45, 0.2)}
-const RADII := {"missilePod": 1.35, "gunPod": 1.15, "leftDrive": 1.45, "rightDrive": 1.45, "core": 1.55}
+const Geometry = preload("res://modules/combat/leviathan_geometry.gd")
 
 static func setup(enemy: Dictionary, model) -> void:
 	enemy.core_cooldown = 2.8
@@ -11,7 +10,7 @@ static func setup(enemy: Dictionary, model) -> void:
 	enemy.damageable = false
 	for component: Dictionary in enemy.components:
 		component.merge({"id": model._id(), "type": "bossComponent", "is_component": true,
-			"parent_id": enemy.id, "radius": RADII[component.kind], "priority": 8.0,
+			"parent_id": enemy.id, "radius": Geometry.radius(component.kind), "priority": 8.0,
 			"position": enemy.position, "velocity": Vector3.ZERO, "dead": false,
 			"exposed": component.phase == 0, "targetable": component.phase == 0,
 			"damageable": true, "collidable": false, "repairable": false,
@@ -21,7 +20,7 @@ static func setup(enemy: Dictionary, model) -> void:
 static func sync(enemy: Dictionary) -> void:
 	var rotation := Basis(Vector3.UP, enemy.yaw)
 	for component: Dictionary in enemy.components:
-		component.position = enemy.position + Vector3.UP * Terrain.height_at(enemy.position.x, enemy.position.z) + rotation * (ANCHORS[component.kind] * 1.32)
+		component.position = enemy.position + Vector3.UP * Terrain.height_at(enemy.position.x, enemy.position.z) + rotation * Geometry.anchor(component.kind)
 		component.velocity = enemy.velocity
 		component.wet_until = enemy.get("wet_until", 0.0)
 		component.exposed = not component.dead and component.phase == enemy.phase

@@ -1,0 +1,50 @@
+{
+  "buggy_field": {
+    "triangles": 3996,
+    "parts": 6
+  },
+  "buggy_armored": {
+    "triangles": 4216,
+    "parts": 6
+  },
+  "raider_field": {
+    "triangles": 4216,
+    "parts": 6
+  },
+  "raider_armored": {
+    "triangles": 4596,
+    "parts": 6
+  },
+  "jammerTruck_field": {
+    "triangles": 4304,
+    "parts": 7
+  },
+  "jammerTruck_armored": {
+    "triangles": 4684,
+    "parts": 7
+  },
+  "repairCrawler_field": {
+    "triangles": 3592,
+    "parts": 1
+  },
+  "repairCrawler_armored": {
+    "triangles": 3972,
+    "parts": 1
+  },
+  "minelayer_field": {
+    "triangles": 4496,
+    "parts": 6
+  },
+  "minelayer_armored": {
+    "triangles": 4876,
+    "parts": 6
+  },
+  "boss_field": {
+    "triangles": 4264,
+    "parts": 6
+  },
+  "boss_armored": {
+    "triangles": 4488,
+    "parts": 6
+  }
+}

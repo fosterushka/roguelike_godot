@@ -107,7 +107,7 @@ func _run() -> void:
 	_check(game.combat.model.focus_id == enemy.id, "Released click selects actual target through camera projection")
 	game.combat.buy_upgrade("module:radar")
 	var radar = game.hud.radar
-	_check(radar.ZOOMS == [0.6, 0.8, 1.0, 1.35, 1.8] and radar.zoom_index == 4 and radar.zoom_label() == "100%", "Radar preserves all five source zooms and100percent default")
+	_check(radar.ZOOM_RANGES == [64.0, 96.0, 128.0, 192.0, 256.0] and radar.zoom_index == radar.DEFAULT_ZOOM_INDEX and radar.zoom_label() == "256m", "Radar opens with five named zoom distances up to256m")
 	_check(radar.visible and radar.effective_range == 40 and radar.explored(Vector3.ZERO), "Installed radar reveals local cells and starts with40mrange")
 	game.combat.model.spawn_enemy("jammerTruck", Vector3(20, 0, 0))
 	game.combat._publish()
@@ -116,7 +116,7 @@ func _run() -> void:
 	var preview := UpgradeProjection.description("core:armor", game.combat.model.player, game.combat.model.weapons)
 	_check(preview.contains("250.00 → 295.00") and game.combat.model.player.max_hp == previous_hp, "Choice comparison previews actual core rule without mutating player")
 	await game.restart_run()
-	_check(game.hud.radar.zoom_index == 4 and game.hud.radar.visible and game.hud.radar.effective_range == 18, "Restart resets radar upgrade but keeps basic map visible")
+	_check(game.hud.radar.zoom_index == game.hud.radar.DEFAULT_ZOOM_INDEX and game.hud.radar.visible and game.hud.radar.effective_range == 18, "Restart resets radar upgrade and restores the default map zoom")
 	game.queue_free()
 	await process_frame
 	paused = false

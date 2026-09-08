@@ -6,7 +6,9 @@ const SourceModel = preload("res://presentation/combat/source_model.gd")
 const PATH := "res://assets/actors/military_enemies.glb"
 const MODELS := ["bike", "buggy", "drone", "kamikaze", "raider", "jammerTruck", "repairCrawler", "minelayer", "boss", "wreck_bike", "wreck_buggy", "wreck_jammerTruck", "wreck_repairCrawler", "wreck_minelayer"]
 const MIN_WIDTH := {"bike": 0.8, "buggy": 2.2, "drone": 2.2, "kamikaze": 2.2, "raider": 5.0, "jammerTruck": 2.5, "repairCrawler": 6.0, "minelayer": 2.5, "boss": 10.0}
-const BOSS_ANCHORS := {"missilePod": Vector3(0, 8.316, -1.584), "gunPod": Vector3(1.98, 7.26, 1.716), "leftDrive": Vector3(-4.686, 2.97, -0.462), "rightDrive": Vector3(4.686, 2.97, -0.462), "core": Vector3(0, 5.874, 0.264)}
+const BossGeometry = preload("res://modules/combat/leviathan_geometry.gd")
+const Combat = preload("res://modules/combat/combat_model.gd")
+const EnemyVisualAnimation = preload("res://presentation/combat/enemy_animation.gd")
 var checks := 0
 var failures := 0
 
@@ -60,13 +62,66 @@ func _run() -> void:
 		var runtime := SourceModel.instantiate(model_name)
 		check(runtime.get_child_count() == parts.size(), model_name + " is served through SourceModel without legacy JSON")
 		runtime.free()
+	# Both selectable variants must preserve their animation contracts and budgets.
+	var styles: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/enemy_vehicle_styles.json"))
+	for model_name: String in styles.models:
+		for variant: String in styles.variants:
+			var parts := Enemies.templates(model_name, variant, "olive")
+			var triangles := 0
+			var roles := []
+			for part: Dictionary in parts:
+				triangles += part.mesh.get_faces().size() / 3
+				for binding: Dictionary in part.bindings: roles.append(binding.role)
+			check(not parts.is_empty() and triangles < (Enemies.BOSS_TRIANGLE_BUDGET if model_name == "boss" else Enemies.TRIANGLE_BUDGET), model_name + variant + " imports inside triangle budget")
+			check(parts.size() <= (6 if model_name == "boss" else 7), model_name + variant + " keeps batched static geometry")
+			if model_name in ["buggy", "raider", "jammerTruck", "minelayer"]:
+				check(roles.count("wheel") == 4, model_name + variant + " retains four wheel pivots")
+			if model_name == "boss":
+				check(roles.count("boss_component") == 5, variant + " retains all five boss components")
+	var olive := Enemies.material_for_preset("olive")
+	var before := olive.albedo_texture.get_image().get_data()
+	var red := Enemies.material_for_preset("oxide")
+	check(olive != red and olive == Enemies.material_for_preset("olive"), "Presets cache separate immutable materials")
+	var a := olive.albedo_texture.get_image()
+	var b := red.albedo_texture.get_image()
+	check(a.get_data() == before, "Selecting another preset never mutates the first palette")
+	for y in a.get_height():
+		for x in a.get_width():
+			check((a.get_pixel(x,y) != b.get_pixel(x,y)) == (y == 3 and x < 3), "Only paint, light and shadow atlas cells change")
+	var first := SourceModel.instantiate("buggy")
+	var second := SourceModel.instantiate("buggy")
+	Enemies.apply_preset(first, "slate")
+	check(first.get_child(0).material_override == Enemies.material_for_preset("slate") and second.get_child(0).material_override == null, "Instance recoloring leaves other vehicles unchanged")
+	first.free()
+	second.free()
 	var boss_components := {}
 	for part: Dictionary in Enemies.templates("boss"):
 		if part.bindings.size() > 0 and part.bindings[0].role == "boss_component":
 			boss_components[part.bindings[0].kind] = part.transform.origin
-	check(boss_components.size() == BOSS_ANCHORS.size(), "Boss has removable component bindings")
-	for kind: String in BOSS_ANCHORS:
-		check(boss_components.get(kind, Vector3.INF).distance_to(BOSS_ANCHORS[kind]) < 0.01, "Boss " + kind + " mesh aligns with combat component anchor")
+	check(boss_components.size() == BossGeometry.DEFINITION.components.size(), "Boss has removable component bindings")
+	for kind: String in BossGeometry.DEFINITION.components:
+		check(boss_components.get(kind, Vector3.INF).distance_to(BossGeometry.anchor(kind)) < 0.01, "Boss " + kind + " mesh aligns with combat component anchor")
+	var combat := Combat.new()
+	var boss: Dictionary = combat.spawn_enemy("leviathan", Vector3.ZERO)
+	for phase in 3:
+		boss.phase = phase
+		combat.Leviathan.sync(boss)
+		var presentation: Dictionary = EnemyVisualAnimation.advance(boss, {}, 0.0, 0.0)
+		check(presentation.pose.components.values().all(func(visible): return visible), "Intact components remain visible in phase " + str(phase))
+		for component: Dictionary in boss.components:
+			check(component.targetable == (component.phase == phase), "Visibility does not unlock protected boss components")
+	for variant: String in styles.variants:
+		var bounds := AABB()
+		for part: Dictionary in Enemies.templates("boss", variant):
+			bounds = bounds.merge(part.transform * part.mesh.get_aabb())
+			if part.bindings.is_empty(): continue
+			var kind: String = part.bindings[0].kind
+			var local_anchor: Vector3 = part.transform.affine_inverse() * BossGeometry.anchor(kind)
+			check(part.mesh.get_aabb().grow(0.1).has_point(local_anchor), variant + " target anchor sits inside its visible component bounds: " + kind)
+		check(bounds.size.y < bounds.size.x * 0.55, variant + " keeps the new broad, low siege silhouette")
+	boss.components[0].dead = true
+	var damaged: Dictionary = EnemyVisualAnimation.advance(boss, {}, 0.0, 0.0)
+	check(not damaged.pose.components.missilePod and damaged.pose.components.leftDrive, "Only destroyed components disappear")
 	print("Military enemies: %d checks, %d failures" % [checks, failures])
 	quit(0 if failures == 0 else 1)
 

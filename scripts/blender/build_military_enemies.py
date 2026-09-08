@@ -270,7 +270,14 @@ def bake_scale(parent, amount):
 def align_boss_components(parent):
     # Move origins only. Geometry stays integrated with the chassis while runtime
     # damage hitboxes and removable component animations retain their anchors.
-    anchors = {"Component_MissilePod": (0.0, 1.584, 8.316), "Component_GunPod": (1.98, -1.716, 7.26), "Component_LeftDrive": (-4.686, 0.462, 2.97), "Component_RightDrive": (4.686, 0.462, 2.97), "Component_Core": (0.0, -0.264, 5.874)}
+    import json
+    with open(os.path.join(ROOT, 'data/leviathan_geometry.json')) as file:
+        geometry = json.load(file)
+    with open(os.path.join(ROOT, 'data/enemy_vehicle_styles.json')) as file:
+        scale = json.load(file)['models']['boss']['scale']
+    anchors = {'Component_' + kind[0].upper() + kind[1:]:
+               tuple(value * scale for value in item['anchor'])
+               for kind, item in geometry['components'].items()}
     from mathutils import Vector
     for name, location in anchors.items():
         child = next(item for item in parent.children if item.name == name)

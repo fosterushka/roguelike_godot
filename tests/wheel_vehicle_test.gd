@@ -254,7 +254,7 @@ func _test_dynamic_grounding() -> void:
 	check(not model.projectiles.is_empty() and absf(model.projectiles[-1].position.y - height - 1.3) < 0.0001, "Enemy muzzle inherits terrain elevation exactly once")
 	var boss: Dictionary = model.spawn_enemy("leviathan", point)
 	var component: Dictionary = boss.components[0]
-	check(absf(component.position.y - height - model.Leviathan.ANCHORS[component.kind].y * 1.32) < 0.0001 and model._target_aim(component) == component.position, "Boss component target shares boss ground baseline without double offset")
+	check(absf(component.position.y - height - model.Leviathan.Geometry.anchor(component.kind).y) < 0.0001 and model._target_aim(component) == component.position, "Boss component target shares boss ground baseline without double offset")
 	var mines = preload("res://presentation/combat/mine_views.gd").new()
 	root.add_child(mines)
 	mines.sync_state([{"position": point + Vector3.UP * 0.4}])

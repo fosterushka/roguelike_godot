@@ -1,15 +1,20 @@
 extends RefCounted
 
+const WorldScale = preload("res://modules/world/world_scale.gd")
 const GARRISON_AIM_HEIGHT_RATIO := 0.6
+const SOLDIER_RADIUS := 0.7 * WorldScale.SOLDIER_SCALE
+const SOLDIER_AIM_HEIGHT := 1.05 * WorldScale.SOLDIER_SCALE
+const SOLDIER_FIRE_ORIGIN_HEIGHT := 1.3 * WorldScale.SOLDIER_SCALE
+const DRONE_FIRE_ORIGIN_OFFSET := 0.2 * WorldScale.DRONE_SCALE
 
 # Values ported from combat/spawning.ts, enemy-system.ts and leviathan.ts.
 const DEFINITIONS := {
-	"rifleman": {"model": "rifleman","type": "soldier", "hp": 12.0, "speed": 2.25, "damage": 5.0, "radius": 0.7, "preferred": 18.0, "range": 34.0, "interval": 1.05, "jitter": 0.35},
-	"ak": {"model": "ak","type": "soldier", "hp": 16.0, "speed": 2.7, "damage": 6.0, "radius": 0.7, "preferred": 14.0, "range": 28.0, "interval": 0.68, "jitter": 0.22},
-	"bazooka": {"model": "bazooka","type": "soldier", "hp": 24.0, "speed": 1.75, "damage": 24.0, "radius": 0.7, "preferred": 24.0, "range": 46.0, "interval": 3.2, "jitter": 0.7, "projectile": "rocket"},
-	"bomber": {"model": "bomber","type": "soldier", "hp": 72.0, "speed": 3.85, "damage": 46.0, "radius": 0.7, "preferred": 3.4, "range": 3.4, "interval": 0.0, "incoming": 0.72, "detonate": true},
-	"shooter": {"model": "drone","type": "drone", "hp": 48.0, "speed": 4.5, "damage": 7.0, "radius": 0.95, "preferred": 24.0, "range": 46.0, "interval": 0.78, "height": 4.8},
-	"kamikaze": {"model": "kamikaze","type": "drone", "hp": 38.0, "speed": 6.4, "damage": 38.0, "radius": 1.05, "preferred": 0.0, "range": 4.2, "interval": 0.0, "height": 3.6, "detonate": true},
+	"rifleman": {"model": "rifleman","type": "soldier", "hp": 12.0, "speed": 2.25, "damage": 5.0, "radius": SOLDIER_RADIUS, "preferred": 18.0, "range": 34.0, "interval": 1.05, "jitter": 0.35},
+	"ak": {"model": "ak","type": "soldier", "hp": 16.0, "speed": 2.7, "damage": 6.0, "radius": SOLDIER_RADIUS, "preferred": 14.0, "range": 28.0, "interval": 0.68, "jitter": 0.22},
+	"bazooka": {"model": "bazooka","type": "soldier", "hp": 24.0, "speed": 1.75, "damage": 24.0, "radius": SOLDIER_RADIUS, "preferred": 24.0, "range": 46.0, "interval": 3.2, "jitter": 0.7, "projectile": "rocket"},
+	"bomber": {"model": "bomber","type": "soldier", "hp": 72.0, "speed": 3.85, "damage": 46.0, "radius": SOLDIER_RADIUS, "preferred": 3.4, "range": 3.4, "interval": 0.0, "incoming": 0.72, "detonate": true},
+	"shooter": {"model": "drone","type": "drone", "hp": 48.0, "speed": 4.5, "damage": 7.0, "radius": 0.95 * WorldScale.DRONE_SCALE, "preferred": 24.0, "range": 46.0, "interval": 0.78, "height": 4.8},
+	"kamikaze": {"model": "kamikaze","type": "drone", "hp": 38.0, "speed": 6.4, "damage": 38.0, "radius": 1.05 * WorldScale.DRONE_SCALE, "preferred": 0.0, "range": 4.2, "interval": 0.0, "height": 3.6, "detonate": true},
 	"bike": {"model": "bike","spawn": {"speed_range": [5.2, 6.5], "speed_multiplier": 1.5}, "type": "bike", "hp": 34.0, "speed": 8.775, "damage": 9.0, "radius": 1.15, "preferred": 0.0, "range": 0.0, "interval": 0.0},
 	"buggy": {"model": "buggy","spawn": {"speed_range": [3.4, 4.2]}, "type": "buggy", "hp": 96.0, "speed": 3.8, "damage": 15.0, "radius": 2.05, "preferred": 16.0, "range": 34.0, "interval": 1.25, "jitter": 0.55},
 	"keep": {"model": "raider","type": "keep", "hp": 320.0, "speed": 2.0, "damage": 23.0, "radius": 3.8, "preferred": 15.8, "range": 64.0, "interval": 3.1, "projectile": "rocket", "height": 2.5},

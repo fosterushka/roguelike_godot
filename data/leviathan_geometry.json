@@ -1,0 +1,46 @@
+{
+  "coordinate_system": "Blender: X right, Y rear, Z up; scaled by enemy_vehicle_styles.models.boss.scale",
+  "triangle_budget": 4500,
+  "components": {
+    "missilePod": {
+      "anchor": [
+        -1.25,
+        0.37,
+        2.13
+      ],
+      "radius": 1.35
+    },
+    "gunPod": {
+      "anchor": [
+        0.0,
+        -0.55,
+        1.96
+      ],
+      "radius": 1.15
+    },
+    "leftDrive": {
+      "anchor": [
+        -2.15,
+        0.1,
+        0.66
+      ],
+      "radius": 1.45
+    },
+    "rightDrive": {
+      "anchor": [
+        2.15,
+        0.1,
+        0.66
+      ],
+      "radius": 1.45
+    },
+    "core": {
+      "anchor": [
+        0.0,
+        1.6,
+        1.62
+      ],
+      "radius": 1.55
+    }
+  }
+}

@@ -2,19 +2,20 @@ extends Control
 
 const Geometry = preload("res://presentation/ui/map_geometry.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
-const ZOOMS := [0.6, 0.8, 1.0, 1.35, 1.8]
+const ZOOM_RANGES: Array[float] = [64.0, 96.0, 128.0, 192.0, 256.0]
+const DEFAULT_ZOOM_INDEX := 4
 const WORLD_SIZE := 3008.0
 const GRID := 216
 const RadarRules = preload("res://modules/progression/radar_rules.gd")
 const BASE_RANGE := RadarRules.BASE_MAP_RANGE
-var zoom_index := 4
+var zoom_index: int = DEFAULT_ZOOM_INDEX
 var state: Dictionary = {}
 var world_state: Dictionary = {}
 var layout: Dictionary = {}
 var view_camera: Camera3D
 var cells := PackedByteArray()
 var generation := -1
-var display_range := 468.0
+var display_range: float = ZOOM_RANGES[DEFAULT_ZOOM_INDEX]
 var effective_range := 0.0
 var jammed := false
 var _heading := 0.0
@@ -56,7 +57,7 @@ func update_state(data: Dictionary, camera: Camera3D) -> void:
 	if int(data.get("generation", 0)) != generation:
 		generation = int(data.get("generation", 0))
 		cells.fill(0)
-		zoom_index = 4
+		zoom_index = DEFAULT_ZOOM_INDEX
 	var player: Dictionary = data.get("player", {})
 	var radar_range := float(player.get("radar_range", 0.0))
 	visible = not player.is_empty()
@@ -66,7 +67,7 @@ func update_state(data: Dictionary, camera: Camera3D) -> void:
 	var fog_strength := float(weather.get("fog_strength", 1.0 if weather.get("type", "") == "foggy" else 0.0))
 	interference *= preload("res://modules/world/weather_rules.gd").visibility_multiplier(fog_strength, radar_range > 0.0)
 	effective_range = maxf(BASE_RANGE, radar_range) * interference
-	display_range = maxf(BASE_RANGE * 2.0, radar_range) * ZOOMS[zoom_index]
+	display_range = ZOOM_RANGES[zoom_index]
 	if is_instance_valid(view_camera):
 		var forward := -view_camera.global_basis.z
 		if Vector2(forward.x, forward.z).length_squared() > 0.000001:
@@ -74,7 +75,7 @@ func update_state(data: Dictionary, camera: Camera3D) -> void:
 	if data.get("running", false) and data.get("status", "") not in ["dead", "complete", "extracted"]:
 		reveal(player.get("position", Vector3.ZERO), maxf(BASE_RANGE, radar_range) * interference)
 	_zoom_in.disabled = zoom_index <= 0
-	_zoom_out.disabled = zoom_index >= 4
+	_zoom_out.disabled = zoom_index >= DEFAULT_ZOOM_INDEX
 	queue_redraw()
 
 func update_world(data: Dictionary) -> void:
@@ -87,17 +88,17 @@ func update_world(data: Dictionary) -> void:
 func cycle_zoom() -> void:
 	if not is_visible_in_tree() or get_tree().paused:
 		return
-	zoom_index = (zoom_index + 1) % ZOOMS.size()
+	zoom_index = (zoom_index + 1) % ZOOM_RANGES.size()
 	update_state(state, view_camera)
 
 func step_zoom(direction: int) -> void:
 	if not is_visible_in_tree() or get_tree().paused:
 		return
-	zoom_index = clampi(zoom_index + direction, 0, 4)
+	zoom_index = clampi(zoom_index + direction, 0, DEFAULT_ZOOM_INDEX)
 	update_state(state, view_camera)
 
 func zoom_label() -> String:
-	return "%d%%" % roundi(180.0 / ZOOMS[zoom_index])
+	return "%d%s" % [roundi(display_range), Locale.text("м")]
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:

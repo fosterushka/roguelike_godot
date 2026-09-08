@@ -4,6 +4,8 @@ const Factory = preload("res://modules/combat/enemy_factory.gd")
 const Catalog = preload("res://modules/combat/enemy_catalog.gd")
 const Model = preload("res://modules/combat/combat_model.gd")
 const View = preload("res://presentation/combat/combat_view.gd")
+const CatalogScale = preload("res://modules/combat/enemy_catalog.gd")
+const WorldScale = preload("res://modules/world/world_scale.gd")
 var checks := 0
 var failures := 0
 
@@ -26,6 +28,8 @@ func _run() -> void:
 		first.hp = 0
 		var second := Factory.create(kind, 43, Vector3.ZERO, random)
 		check(second.hp == definition.hp and not second.dead, "An instance cannot mutate catalog or next spawn: " + kind)
+	for kind in ["rifleman", "ak", "bazooka", "bomber"]:
+		check(is_equal_approx(float(Catalog.DEFINITIONS[kind].radius), CatalogScale.SOLDIER_RADIUS) and is_equal_approx(CatalogScale.SOLDIER_RADIUS, 0.7 * WorldScale.SOLDIER_SCALE), kind + " hit radius follows the visible soldier size")
 	var boss := Factory.create("leviathan", 10, Vector3.ZERO, random)
 	boss.components[0].hp = 0
 	check(Factory.create("leviathan", 20, Vector3.ZERO, random).components[0].hp == 220, "Boss components are deep-copied per instance")
