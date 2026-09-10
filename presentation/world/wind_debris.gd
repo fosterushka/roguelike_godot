@@ -70,6 +70,9 @@ func spawn(direction: Vector3, strength: float) -> void:
 	cursor = (cursor + 1) % CAPACITY
 
 func _process(delta: float) -> void:
+	advance_visual(delta)
+
+func advance_visual(delta: float) -> void:
 	if warmup:
 		return
 	for index in CAPACITY:

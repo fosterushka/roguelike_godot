@@ -4,6 +4,10 @@ const Catalog = preload("res://modules/combat/enemy_catalog.gd")
 const BaseGeometry = preload("res://modules/world/activities/base_geometry_rules.gd")
 const TYPES := ["soldier", "drone", "bike", "buggy", "keep", "garrison", "priorityVehicle"]
 const REQUIRED := ["hp", "speed", "damage", "radius", "preferred", "range", "interval"]
+const FLIGHT_FIELDS := ["turn_rate", "strafe", "near_throttle", "hold_throttle", "altitude_bob"]
+const EVASION_FIELDS := ["chance", "cooldown", "reaction", "duration", "minimum_radius", "padding", "strength", "urgency_strength"]
+const REPAIR_FIELDS := ["stop_range", "turn_rate", "recheck", "range", "heal_rate", "tick_cap", "pulse_interval"]
+const BEHAVIOR_KEYS := {"soldier": ["retreat", "detonation"], "drone": ["flight", "evasion", "detonation"], "priorityVehicle": ["repair", "mines"]}
 
 static func create(kind: String, id: int, position: Vector3, random: RandomNumberGenerator, options: Dictionary = {}) -> Dictionary:
 	if not Catalog.DEFINITIONS.has(kind):
@@ -12,6 +16,10 @@ static func create(kind: String, id: int, position: Vector3, random: RandomNumbe
 
 static func from_definition(kind: String, definition: Dictionary, id: int, position: Vector3, random: RandomNumberGenerator, options: Dictionary = {}) -> Dictionary:
 	if not validation_errors(definition).is_empty():
+		return {}
+	var candidate := definition.duplicate(true)
+	candidate.merge(options, true)
+	if not options.is_empty() and not validation_errors(candidate).is_empty():
 		return {}
 	var data := definition.duplicate(true)
 	var recipe: Dictionary = data.get("spawn", {})
@@ -68,4 +76,53 @@ static func validation_errors(definition: Dictionary) -> Array[String]:
 		var multiplier: Variant = recipe.speed_multiplier
 		if not (multiplier is float or multiplier is int) or not is_finite(float(multiplier)) or float(multiplier) < 0.0:
 			errors.append("Invalid spawn speed multiplier")
+	if definition.has("salvage_drops") and (not (definition.salvage_drops is int) or definition.salvage_drops <= 0):
+		errors.append("Salvage drops must be a positive integer")
+	_validate_behavior(definition, errors)
 	return errors
+
+static func _validate_behavior(definition: Dictionary, errors: Array[String]) -> void:
+	var raw_behavior: Variant = definition.get("behavior", {})
+	if not raw_behavior is Dictionary:
+		errors.append("Behavior must be a dictionary")
+		return
+	var behavior: Dictionary = raw_behavior
+	var allowed: Array = BEHAVIOR_KEYS.get(definition.get("type"), [])
+	for key: String in behavior:
+		if key not in allowed:
+			errors.append("Unknown behavior: " + key)
+	if definition.get("type") == "drone":
+		_validate_numeric_fields(behavior.get("flight"), FLIGHT_FIELDS, "flight", errors)
+		_validate_numeric_fields(behavior.get("evasion"), EVASION_FIELDS, "evasion", errors)
+		var flight: Variant = behavior.get("flight")
+		if flight is Dictionary and flight.has("always_advance") and not (flight.always_advance is bool):
+			errors.append("Flight always_advance must be boolean")
+	if behavior.has("detonation"):
+		var detonation: Variant = behavior.detonation
+		_validate_numeric_fields(detonation, ["range", "effect_radius"], "detonation", errors)
+		if detonation is Dictionary and not (detonation.get("jammed") is bool):
+			errors.append("Detonation requires jammed flag")
+	if behavior.has("repair"):
+		_validate_numeric_fields(behavior.repair, REPAIR_FIELDS, "repair", errors)
+	if behavior.has("mines"):
+		_validate_numeric_fields(behavior.mines, ["interval"], "mines", errors)
+	if behavior.has("retreat") and not (behavior.retreat is bool):
+		errors.append("Retreat behavior must be boolean")
+
+static func _validate_numeric_fields(profile: Variant, fields: Array, label: String, errors: Array[String]) -> void:
+	if not profile is Dictionary:
+		errors.append("Missing " + label + " behavior")
+		return
+	for key: String in profile:
+		if key not in fields and not (label == "flight" and key == "always_advance") and not (label == "detonation" and key == "jammed"):
+			errors.append("Unknown " + label + " field: " + key)
+	for field: String in fields:
+		var value: Variant = profile.get(field)
+		var may_be_signed := label == "flight" and field in ["near_throttle", "hold_throttle"]
+		if not (value is float or value is int) or not is_finite(float(value)) or (not may_be_signed and float(value) < 0.0):
+			errors.append("Invalid " + label + " field: " + field)
+		elif label == "evasion" and field == "chance" and float(value) > 1.0:
+			errors.append("Invalid evasion chance")
+		elif (label == "detonation" and field == "range") or (label == "mines" and field == "interval"):
+			if float(value) <= 0.0:
+				errors.append(label.capitalize() + " " + field + " must be positive")

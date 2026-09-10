@@ -2,5 +2,8 @@
 .godot/
 /android/
 
+# Generated Python tooling cache
+__pycache__/
+
 # Generated validation artifacts
 /docs/validation/

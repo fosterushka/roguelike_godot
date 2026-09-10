@@ -76,6 +76,9 @@ func apply_state(tornado: Dictionary) -> void:
 		_update()
 
 func _process(delta: float) -> void:
+	advance_visual(delta)
+
+func advance_visual(delta: float) -> void:
 	if warmup or state.is_empty():
 		return
 	elapsed += delta

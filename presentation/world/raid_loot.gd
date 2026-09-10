@@ -1,20 +1,19 @@
 extends Node3D
 
 const Catalog = preload("res://modules/meta/expedition_catalog.gd")
+const LootState = preload("res://modules/meta/raid_loot_state.gd")
 const Models = preload("res://presentation/ui/item_loot_models.gd")
 const Motion = preload("res://presentation/world/pickup_motion.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
-const CAPACITY := 64
-const COLLECT_RADIUS := 4.5
 const LABEL_HEIGHT := 2.6
 const LABEL_FONT_SIZE := 48
 const LABEL_PIXEL_SIZE := 0.016
-const ITEM_SPACING := 2.4
-const PHASE_SPACING := 0.7
+var state := LootState.new()
+# Compatibility surface for callers that read crate ids and positions. These
+# are presentation projections; state is the only owner of live loot values.
 var crates: Array[Dictionary] = []
-var _seen: Dictionary = {}
+var _views: Dictionary = {}
 var _elapsed := 0.0
-var _spawn_index := 0
 
 func _process(delta: float) -> void:
 	advance(delta)
@@ -36,24 +35,27 @@ func _update_view(crate: Dictionary) -> void:
 
 func reset() -> void:
 	for crate: Dictionary in crates:
-		crate.view.queue_free()
+		_free_view(crate)
 	crates.clear()
-	_seen.clear()
+	_views.clear()
+	state.reset()
 	_elapsed = 0.0
-	_spawn_index = 0
 
 func on_event(event: Dictionary) -> void:
-	if event.get("kind", "") != "activity_completed" or not event.has("loot_source"):
+	var crate := state.on_event(event)
+	if crate.is_empty():
 		return
-	var id := "activity:" + str(event.get("id", ""))
-	if _seen.has(id) or crates.size() >= CAPACITY or int(event.get("loot_count", 1)) <= 0:
+	_project(crate)
+
+func _project(record: Dictionary) -> void:
+	var id := str(record.id)
+	if _views.has(id):
+		var existing: Dictionary = _views[id]
+		existing.merge(record, true)
+		_update_view(existing)
 		return
-	_seen[id] = true
-	var point: Vector3 = event.get("position", Vector3.ZERO)
-	var source := str(event.loot_source)
-	# Resolve once, before displaying or handing the item to a crew collector.
-	var item := Catalog.loot_item(source, _spawn_index)
-	_spawn_index += 1
+	var crate := record.duplicate(true)
+	var item := str(crate.item)
 	var view := Node3D.new()
 	view.name = "Pickup_" + item
 	var model := Models.build(item)
@@ -65,44 +67,48 @@ func on_event(event: Dictionary) -> void:
 	label.position.y = LABEL_HEIGHT
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	view.add_child(label)
-	var crate := {"id": id, "view": view, "model": model, "label": label, "position": point, "source": source, "item": item, "count": int(event.get("loot_count", 1)), "phase": float(_spawn_index) * PHASE_SPACING}
+	crate.view = view
+	crate.model = model
+	crate.label = label
+	_views[id] = crate
 	crates.append(crate)
 	_update_view(crate)
 
 func spawn_items(id: String, point: Vector3, items: Dictionary) -> void:
-	var index := 0
-	for item: String in items:
-		var count := int(items[item])
-		if count > 0:
-			var offset := Vector3.ZERO
-			if items.size() > 1:
-				var angle := TAU * index / items.size()
-				offset = Vector3(cos(angle), 0, sin(angle)) * ITEM_SPACING
-			on_event({"kind": "activity_completed", "id": "cargo:" + id + ":" + item, "position": point + offset, "loot_source": item, "loot_count": count})
-			index += 1
+	for crate: Dictionary in state.spawn_items(id, point, items):
+		_project(crate)
 
 func claim(id: String, expedition: RefCounted) -> bool:
-	for index in crates.size():
-		var crate: Dictionary = crates[index]
-		if str(crate.id) != id or int(crate.count) <= 0:
-			continue
-		if not expedition.collect_loot(str(crate.item), 1):
-			return false
-		crate.count -= 1
-		_update_view(crate)
-		if crate.count == 0:
-			crate.view.queue_free()
-			crates.remove_at(index)
-		return true
-	return false
+	var result := state.claim(id, expedition)
+	if result.is_empty():
+		return false
+	var crate: Dictionary = result.record
+	if result.removed:
+		_remove_view(crate)
+	else:
+		_project(crate)
+	return true
 
 func collect_near(point: Vector3, expedition: RefCounted) -> bool:
-	var collected := false
-	for crate: Dictionary in crates.duplicate():
-		var offset: Vector3 = point - crate.position
-		offset.y = 0
-		if offset.length() > COLLECT_RADIUS:
-			continue
-		while int(crate.count) > 0 and claim(str(crate.id), expedition):
-			collected = true
-	return collected
+	var claimed := state.collect_near(point, expedition)
+	for result: Dictionary in claimed:
+		var crate: Dictionary = result.record
+		if result.removed:
+			_remove_view(crate)
+		else:
+			_project(crate)
+	return not claimed.is_empty()
+
+func _remove_view(record: Dictionary) -> void:
+	var id := str(record.id)
+	if not _views.has(id):
+		return
+	var crate: Dictionary = _views[id]
+	crate.merge(record, true)
+	_free_view(crate)
+	crates.erase(crate)
+	_views.erase(id)
+
+func _free_view(crate: Dictionary) -> void:
+	if crate.has("view") and is_instance_valid(crate.view):
+		crate.view.queue_free()

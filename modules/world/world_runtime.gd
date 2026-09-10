@@ -139,7 +139,7 @@ func step_ambient(delta: float) -> void:
 		combat.model.spawn_pickup(position, preload("res://modules/world/wildlife_rules.gd").SCRAP_REWARD)
 	ambient.rewards.clear()
 	if raw_weather_driven:
-		_weather_view._wind_debris._process(delta)
+		_weather_view.advance_ambient(delta)
 
 func step(delta: float) -> void:
 	if not raw_weather_driven:
@@ -175,9 +175,8 @@ func step(delta: float) -> void:
 	tornado.step(_seed, weather.phase, weather.elapsed, delta)
 	_update_tornado(delta)
 	if raw_weather_driven:
-		_activity_view._process(delta)
-		_weather_view._bolt._process(delta)
-		_weather_view._tornado_view._process(delta)
+		_activity_view.advance_visual(delta)
+		_weather_view.advance_effects(delta)
 	if not raw_weather_driven:
 		_drain_weather_events()
 	_publish_remaining -= delta
@@ -406,10 +405,7 @@ func prepare_run_actors() -> void:
 	combat._publish()
 
 func update_weather_raw(delta: float) -> void:
-	_weather_view.externally_driven = raw_weather_driven
-	_weather_view._wind_debris.set_process(not raw_weather_driven)
-	_weather_view._bolt.set_process(not raw_weather_driven)
-	_weather_view._tornado_view.set_process(not raw_weather_driven)
+	_weather_view.set_externally_driven(raw_weather_driven)
 	_activity_view.set_process(not raw_weather_driven)
 	weather.step(delta)
 	_sync_weather_model()

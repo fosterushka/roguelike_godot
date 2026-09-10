@@ -405,6 +405,11 @@ func buy_upgrade(id: String) -> bool:
 		return _remove_support(int(value))
 	return false
 
+func update_settings(values: Dictionary) -> void:
+	profile.settings = preload("res://modules/settings/settings_catalog.gd").normalize(values)
+	_mark_dirty()
+	flush()
+
 func set_sound_enabled(enabled: bool) -> void:
 	profile.settings.soundEnabled = enabled
 	_mark_dirty()

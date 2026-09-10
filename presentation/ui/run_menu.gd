@@ -3,6 +3,7 @@ extends ColorRect
 signal action_requested(action: String, id: String)
 signal language_requested(language: String)
 const Locale = preload("res://presentation/ui/ui_locale.gd")
+var settings_panel: ColorRect
 var _language_button: Button
 var _content: Dictionary = {}
 const Icons = preload("res://presentation/ui/ui_icons.gd")
@@ -54,9 +55,15 @@ func _ready() -> void:
 	_rows.vertical = true
 	_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_scroll.add_child(_rows)
+	settings_panel = preload("res://presentation/ui/settings_panel.gd").new()
+	add_child(settings_panel)
+	settings_panel.closed.connect(func() -> void: action_requested.emit("options_back", ""))
+	settings_panel.language_requested.connect(func(value: String) -> void: language_requested.emit(value))
 	visible = false
 
 func display(title: String, description: String, rows: Array, main_menu: bool = false) -> void:
+	settings_panel.hide()
+	_column.get_parent().show()
 	_content = {"title": title, "description": description, "rows": rows, "main_menu": main_menu}
 	var choices := not rows.is_empty() and rows.all(func(row: Dictionary) -> bool: return row.get("action", "") == "choose")
 	_choice_controls.clear()
@@ -103,6 +110,8 @@ func display(title: String, description: String, rows: Array, main_menu: bool = 
 	visible = true
 
 func _input(event: InputEvent) -> void:
+	if settings_panel.visible:
+		return
 	if not visible or not event is InputEventKey or not event.pressed or event.keycode != KEY_TAB:
 		return
 	var controls: Array = _choice_controls.filter(func(button: Button) -> bool: return not button.disabled) if not _choice_controls.is_empty() else _rows.get_children().filter(func(child: Node) -> bool: return child is Button and not child.disabled)
@@ -118,3 +127,8 @@ func refresh_language() -> void:
 	_language_button.text = "LANGUAGE: ENGLISH" if Locale.language == "en" else "ЯЗЫК: РУССКИЙ"
 	if visible and not _content.is_empty():
 		display(_content.title, _content.description, _content.rows, _content.get("main_menu", false))
+
+func show_settings(controller: RefCounted) -> void:
+	_column.get_parent().hide()
+	settings_panel.display(controller)
+	visible = true

@@ -290,7 +290,7 @@ func _upgrades() -> void:
 func _settings() -> void:
 	body.add_child(Styles.label(words("Сила тряски камеры", "Camera shake intensity"), 20))
 	var slider := HSlider.new()
-	slider.max_value = 1.5
+	slider.max_value = preload("res://modules/settings/settings_catalog.gd").MAX_CAMERA_SHAKE
 	slider.step = 0.1
 	slider.value = intensity
 	slider.custom_minimum_size = Vector2(300, 40)

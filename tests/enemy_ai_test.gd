@@ -48,6 +48,12 @@ func movement() -> void:
 	AI.move(model, drone, 0.1, 4.5, 24.0, Vector3.FORWARD)
 	check(absf(drone.position.x) > 0.001, "drone source strafe")
 	check(drone.height >= 4.58 and drone.height <= 5.02, "drone altitude oscillation")
+	var drone_variant: Dictionary = drone.duplicate(true)
+	drone_variant.kind = "convoy_shooter"
+	drone_variant.position = Vector3(0, 0, 24)
+	drone_variant.behavior.flight.strafe = 0.91
+	AI.move(model, drone_variant, 0.1, 4.5, 24.0, Vector3.FORWARD)
+	check(absf(drone_variant.position.x) > 0.001, "named shooter variant uses its flight profile at runtime")
 	model.enemy_steering_query = func(_enemy: Dictionary, _direction: Vector3, _speed: float) -> Vector3: return Vector3.RIGHT
 	soldier.position = Vector3(0, 0, 30)
 	AI.move(model, soldier, 0.1, 2.25, 30.0, Vector3.FORWARD)
@@ -58,6 +64,14 @@ func movement() -> void:
 	AI.attack(model, bomber, 0.1, 1.0, 3.3, false)
 	close(model.player.hp, hp - 46.0, "fog doesnt shrink physical bomber blast")
 	check(bomber.dead, "bomber detonates once")
+	var bomber_variant: Dictionary = bomber.duplicate(true)
+	bomber_variant.kind = "convoy_bomber"
+	bomber_variant.dead = false
+	bomber_variant.hp = bomber_variant.max_hp
+	bomber_variant.position = Vector3(0, 0, 3.3)
+	hp = model.player.hp
+	AI.attack(model, bomber_variant, 0.1, 1.0, 3.3, false)
+	close(model.player.hp, hp - 46.0, "named bomber variant uses detonation profile")
 func evasion() -> void:
 	var model = fresh()
 	var drone: Dictionary = model.spawn_enemy("shooter", Vector3(0, 0, 12))
@@ -76,6 +90,16 @@ func evasion() -> void:
 	check(drone.dodge_attempt == 1, "samebullet doesnt reroll dodge")
 	model.projectiles[0].kind = "rocket"
 	check(Evasion.threat(drone, model.projectiles).is_empty(), "dodge ignores rockets")
+	var drone_variant: Dictionary = drone.duplicate(true)
+	drone_variant.kind = "convoy_shooter"
+	drone_variant.behavior.evasion.chance = 1.0
+	drone_variant.behavior.evasion.duration = 0.37
+	drone_variant.dodge_remaining = 0.0
+	drone_variant.dodge_cooldown = 0.0
+	drone_variant.dodge_threat_id = -1
+	model.projectiles[0].kind = "bullet"
+	var variant_vector := Evasion.advance(drone_variant, model.projectiles, 0.01)
+	check(not variant_vector.is_zero_approx() and drone_variant.dodge_remaining == 0.37, "named shooter variant uses its evasion profile at runtime")
 func support() -> void:
 	var model = fresh()
 	var repair: Dictionary = model.spawn_enemy("repairCrawler", Vector3(0, 0, 40))
@@ -86,6 +110,14 @@ func support() -> void:
 	check(Priority.repair_target(repair, model.enemies) == second, "repair chooses lowest healthratio")
 	Priority.heal(model, repair, second, 1.0)
 	close(second.hp, 23.0, "repair tick bounded250ms")
+	var repair_variant: Dictionary = repair.duplicate(true)
+	repair_variant.kind = "convoy_repair"
+	repair_variant.id = 700
+	repair_variant.position = Vector3(0, 0, 40)
+	second.hp = 20.0
+	model.enemies.append(repair_variant)
+	AI.move(model, repair_variant, 0.1, 2.75, 40.0, Vector3.FORWARD)
+	close(second.hp, 21.2, "named repair variant heals through repair profile at runtime")
 	var boss_target: Dictionary = model.spawn_enemy("leviathan", Vector3(0, 0, 43))
 	boss_target.hp = 1.0
 	check(not Priority.valid_repair(repair, boss_target), "repair excludesboss")
@@ -94,6 +126,13 @@ func support() -> void:
 	for index in range(41):
 		AI.move(model, minelayer, 0.1, 3.45, 80.0, Vector3.FORWARD)
 	check(model.hazards.mines.size() == 1, "moving minelayer dropsafter4s")
+	var mine_variant: Dictionary = minelayer.duplicate(true)
+	mine_variant.kind = "convoy_mines"
+	mine_variant.id = 701
+	mine_variant.dead = false
+	mine_variant.mine_drop_remaining = 0.1
+	AI.move(model, mine_variant, 0.1, 3.45, 80.0, Vector3.FORWARD)
+	check(model.hazards.mines.size() == 2, "named minelayer variant drops mines through profile at runtime")
 	var jammer: Dictionary = model.spawn_enemy("jammerTruck", Vector3(0, 0, 48))
 	check(Priority.jammed(model.player, model.enemies), "jammer radius inclusive48")
 	jammer.stagger_remaining = 0.1

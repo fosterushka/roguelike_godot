@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Explicit offline Godot test manifest. A zero exit code with engine errors is a failure."""
 import argparse
+import architecture_guard
 import json
 import os
 from pathlib import Path
@@ -10,6 +11,8 @@ import tempfile
 import time
 
 TESTS = [
+    'settings_test.gd',
+    'ui_audio_test.gd',
     'performance_bar_test.gd', 'combat_optimization_test.gd',
     'vehicle_playground_test.gd',
     'vehicle_airborne_test.gd',
@@ -48,6 +51,12 @@ def has_success(output):
     return any(int(a) > 0 and int(a) == int(b) for a, b in re.findall(r'(?im)^(?:[^\n]*tests|Combat presentation|Source combat VFX):\s*(\d+)/(\d+)(?:\s+passed)?\s*$', output))
 
 def main():
+    guard_failures = architecture_guard.self_check() + architecture_guard.validate(Path(__file__).resolve().parent.parent)
+    if guard_failures:
+        print('ARCHITECTURE_GUARD_FAIL')
+        print('\n'.join(f'- {failure}' for failure in guard_failures))
+        return 1
+    print('ARCHITECTURE_GUARD_OK')
     parser = argparse.ArgumentParser(description=__doc__)
     installed = Path('/Applications/Godot.app/Contents/MacOS/Godot')
     downloaded = Path.home() / 'Downloads/Godot.app/Contents/MacOS/Godot'

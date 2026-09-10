@@ -30,7 +30,7 @@ func _run() -> void:
 	game._close_expedition()
 	_check(game.screen_state == "menu" and _actions(game.hud.run_menu) == ["raid", "vault", "menu"], "Closing vault returns to singleplayer menu")
 	game._menu_action("options", "")
-	_check(game.screen_state == "options" and _actions(game.hud.run_menu).has("shake_up"), "Options expose persisted camera and audio controls")
+	_check(game.screen_state == "options" and game.hud.run_menu.settings_panel.visible and game.hud.run_menu.settings_panel._tabs.get_child_count() == 3, "Options expose persisted camera and audio controls")
 	game._menu_action("language", "")
 	_check(game.hud.run_menu._title.text == "НАСТРОЙКИ", "Options rebuild after language switch")
 	game._menu_action("options_back", "")

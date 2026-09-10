@@ -126,6 +126,20 @@ func _process(delta: float) -> void:
 	if not externally_driven:
 		advance_visual(delta)
 
+# Weather and gameplay use distinct clocks; the owner chooses each delta.
+func set_externally_driven(enabled: bool) -> void:
+	externally_driven = enabled
+	_wind_debris.set_process(not enabled)
+	_bolt.set_process(not enabled)
+	_tornado_view.set_process(not enabled)
+
+func advance_ambient(delta: float) -> void:
+	_wind_debris.advance_visual(delta)
+
+func advance_effects(delta: float) -> void:
+	_bolt.advance_visual(delta)
+	_tornado_view.advance_visual(delta)
+
 func advance_visual(delta: float) -> void:
 	if _warmup or _state.is_empty() or not is_instance_valid(_vehicle):
 		return

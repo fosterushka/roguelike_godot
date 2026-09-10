@@ -102,7 +102,18 @@ func _run() -> void:
 	var view := View.new()
 	arena.add_child(view)
 	view.setup(arena, vehicle)
-	view.externally_driven = true
+	view.set_externally_driven(true)
+	check(not view._wind_debris.is_processing() and not view._bolt.is_processing() and not view._tornado_view.is_processing(), "External clock disables automatic effect processing")
+	view.on_event({"kind": "lightning", "position": Vector3.ZERO, "cosmetic_seed": 1})
+	var bolt_life: float = view._bolt.life
+	view.advance_ambient(0.1)
+	view.advance_visual(0.1)
+	check(is_equal_approx(view._bolt.life, bolt_life), "Weather and ambient updates do not advance gameplay effects")
+	view.advance_effects(0.1)
+	check(is_equal_approx(view._bolt.life, bolt_life - 0.1), "Effects advance once on the supplied gameplay clock")
+	view.set_externally_driven(false)
+	check(view._wind_debris.is_processing() and view._bolt.is_processing() and view._tornado_view.is_processing(), "Automatic effect processing can be restored")
+	view.set_externally_driven(true)
 	var clear_density := 0.0
 	for elapsed in [0.0, 6.0, 12.0, 18.0, 24.0]:
 		var phase := {"type": "foggy", "previous_type": "rainy", "starts_at": 0}

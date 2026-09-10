@@ -64,6 +64,9 @@ func strike(point: Vector3, seed_value: int) -> void:
 	_update_light()
 
 func _process(delta: float) -> void:
+	advance_visual(delta)
+
+func advance_visual(delta: float) -> void:
 	if warmup or life <= 0:
 		return
 	life = maxf(0, life - delta)

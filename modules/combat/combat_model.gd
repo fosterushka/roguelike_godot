@@ -503,7 +503,7 @@ func kill_enemy(enemy: Dictionary, options: Dictionary = {}) -> void:
 	if focus_id == enemy.id:
 		focus_id = -1
 	var boss: bool = enemy.get("boss", false)
-	var drops := 12 if boss else 5 if enemy.type == "keep" else 4 + int(enemy.tier) if enemy.type == "garrison" else 3 if enemy.type == "buggy" else 2 if enemy.kind == "kamikaze" else 1
+	var drops := 12 if boss else 5 if enemy.type == "keep" else 4 + int(enemy.tier) if enemy.type == "garrison" else 3 if enemy.type == "buggy" else int(enemy.get("salvage_drops", 1))
 	for _index in drops:
 		var value := random.randi_range(6, 10) if boss else random.randi_range(4, 7) if enemy.type == "keep" else random.randi_range(3, 5) if enemy.type == "garrison" else random.randi_range(2, 4) if enemy.type == "buggy" else random.randi_range(1, 2)
 		spawn_pickup(enemy.position + Vector3(random.randf_range(-2.5, 2.5), 0, random.randf_range(-2.5, 2.5)), value)

@@ -1,7 +1,8 @@
 extends RefCounted
 
 static func valid_repair(owner: Dictionary, target: Dictionary) -> bool:
-	return not target.is_empty() and target != owner and not target.dead and target.hp > 0.0 and target.hp < target.max_hp and target.get("counts_as_hostile", true) and target.get("repairable", true) and not target.get("boss", false) and not target.get("is_component", false) and target.position.distance_squared_to(owner.position) <= 36.0 * 36.0
+	var repair: Dictionary = owner.get("behavior", {}).get("repair", {})
+	return not target.is_empty() and target != owner and not target.dead and target.hp > 0.0 and target.hp < target.max_hp and target.get("counts_as_hostile", true) and target.get("repairable", true) and not target.get("boss", false) and not target.get("is_component", false) and target.position.distance_squared_to(owner.position) <= repair.get("range", 0.0) * repair.get("range", 0.0)
 
 static func repair_target(owner: Dictionary, enemies: Array[Dictionary]) -> Dictionary:
 	var selected: Dictionary = {}
@@ -19,7 +20,8 @@ static func repair_target(owner: Dictionary, enemies: Array[Dictionary]) -> Dict
 	return selected
 
 static func support(model, enemy: Dictionary, delta: float) -> Dictionary:
-	if enemy.kind != "repairCrawler":
+	var repair: Dictionary = enemy.get("behavior", {}).get("repair", {})
+	if repair.is_empty():
 		return {}
 	enemy.repair_recheck = enemy.get("repair_recheck", 0.0) - delta
 	var target: Dictionary = {}
@@ -28,7 +30,7 @@ static func support(model, enemy: Dictionary, delta: float) -> Dictionary:
 			target = candidate
 	if enemy.repair_recheck <= 0.0:
 		target = repair_target(enemy, model.enemies)
-		enemy.repair_recheck = 0.25
+		enemy.repair_recheck = repair.recheck
 	elif not valid_repair(enemy, target):
 		target = {}
 	enemy.repair_target_id = target.get("id", -1)
@@ -40,10 +42,11 @@ static func heal(model, enemy: Dictionary, target: Dictionary, delta: float) -> 
 		enemy.repair_beam_target = Vector3.ZERO
 		return
 	var before: float = target.hp
-	target.hp = minf(target.max_hp, target.hp + clampf(delta, 0.0, 0.25) * 12.0)
+	var repair: Dictionary = enemy.get("behavior", {}).get("repair", {})
+	target.hp = minf(target.max_hp, target.hp + clampf(delta, 0.0, repair.tick_cap) * repair.heal_rate)
 	enemy.repair_beam_target = target.position
 	if target.hp > before and enemy.repair_pulse <= 0.0:
-		enemy.repair_pulse = 0.85
+		enemy.repair_pulse = repair.pulse_interval
 		model._emit("repair_pulse", {"id": enemy.id, "position": enemy.position, "target_position": target.position})
 
 static func jammed(player: Dictionary, enemies: Array[Dictionary]) -> bool:

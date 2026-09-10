@@ -189,6 +189,9 @@ static func airdrop_overrides(drop: Dictionary, time: float, since_state: float 
 	return overrides
 
 func _process(delta: float) -> void:
+	advance_visual(delta)
+
+func advance_visual(delta: float) -> void:
 	if _warmup or _state.is_empty():
 		return
 	_since_state += delta

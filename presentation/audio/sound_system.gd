@@ -1,7 +1,10 @@
 extends Node
 
+const MIX_BUSES := {"effectsVolume": "CaravanEffects", "engineVolume": "CaravanEngine", "uiVolume": "CaravanUI"}
+const MIX_GAIN := 0.72 * 0.86
 const MAX_VOICES := 16
 const ENGINE_RATE := 22050.0
+const UI_CLICK_CUE := "caseReel"
 const COOLDOWNS := {"shot": 0.042, "enemyShot": 0.072, "hit": 0.068, "crush": 0.085, "bumper": 0.11, "pickup": 0.06, "explosion": 0.125, "thunder": 0.5, "horn": 0.28, "nitro": 0.18, "lowHp": 0.38, "mineDrop": 0.26, "mineTrigger": 0.12}
 var enabled := true
 var running := false
@@ -20,6 +23,8 @@ var _phase := Vector3.ZERO
 var _filter := 0.0
 var _noise := 0.0
 var _random := RandomNumberGenerator.new()
+var _ui_voice: AudioStreamPlayer
+var _ui_sounds: Node
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -29,20 +34,29 @@ func _ready() -> void:
 		AudioServer.add_bus()
 		bus = AudioServer.bus_count - 1
 		AudioServer.set_bus_name(bus, "Caravan")
-		AudioServer.set_bus_volume_db(bus, linear_to_db(0.72 * 0.86))
+		AudioServer.set_bus_volume_db(bus, linear_to_db(MIX_GAIN))
 		var compressor := AudioEffectCompressor.new()
 		compressor.threshold = -18
 		compressor.ratio = 8
 		compressor.attack_us = 3000
 		compressor.release_ms = 180
 		AudioServer.add_bus_effect(bus, compressor)
+	for bus_name: String in MIX_BUSES.values():
+		if AudioServer.get_bus_index(bus_name) < 0:
+			AudioServer.add_bus()
+			var index := AudioServer.bus_count - 1
+			AudioServer.set_bus_name(index, bus_name)
+			AudioServer.set_bus_send(index, "Caravan")
 	for index in MAX_VOICES:
 		var voice := AudioStreamPlayer.new()
-		voice.bus = "Caravan"
+		voice.bus = "CaravanEffects"
 		add_child(voice)
 		voices.append(voice)
+	_ui_voice = AudioStreamPlayer.new()
+	_ui_voice.bus = "CaravanUI"
+	add_child(_ui_voice)
 	_engine = AudioStreamPlayer.new()
-	_engine.bus = "Caravan"
+	_engine.bus = "CaravanEngine"
 	var generator := AudioStreamGenerator.new()
 	generator.mix_rate = ENGINE_RATE
 	generator.buffer_length = 0.15
@@ -52,6 +66,11 @@ func _ready() -> void:
 	for id: String in recipes.recipes:
 		streams[id] = load("res://assets/audio/%s.wav" % id)
 
+func set_mix(values: Dictionary) -> void:
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Caravan"), linear_to_db(MIX_GAIN * float(values.masterVolume)))
+	for key: String in MIX_BUSES:
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(MIX_BUSES[key]), linear_to_db(float(values[key])))
+
 func set_enabled(value: bool) -> void:
 	enabled = value
 	if not enabled:
@@ -60,9 +79,11 @@ func set_enabled(value: bool) -> void:
 func set_running(value: bool) -> void:
 	running = value
 	if not running:
-		stop_all()
+		stop_all(false)
 
-func stop_all() -> void:
+func stop_all(include_ui: bool = true) -> void:
+	if include_ui and is_instance_valid(_ui_voice):
+		_ui_voice.stop()
 	pending_thunder.clear()
 	for voice in voices:
 		voice.stop()
@@ -70,10 +91,25 @@ func stop_all() -> void:
 	_playback = null
 
 func reset_run() -> void:
-	stop_all()
+	stop_all(false)
 	last_events.clear()
 	_phase = Vector3.ZERO
 	_rpm = 42.0
+
+func bind_ui(ui_root: Node) -> void:
+	if not is_instance_valid(_ui_sounds):
+		_ui_sounds = preload("res://presentation/audio/ui_sounds.gd").new()
+		add_child(_ui_sounds)
+	_ui_sounds.setup(ui_root, play_ui_click)
+
+func play_ui_click() -> bool:
+	if not enabled or not streams.has(UI_CLICK_CUE):
+		return false
+	_ui_voice.stream = streams[UI_CLICK_CUE]
+	if DisplayServer.get_name() != "headless":
+		_ui_voice.play()
+	accepted_events += 1
+	return true
 
 func play_cue(id: String, ui: bool = false, start_offset: float = 0.0) -> bool:
 	if not enabled or (not running and not ui) or not streams.has(id):
@@ -86,6 +122,7 @@ func play_cue(id: String, ui: bool = false, start_offset: float = 0.0) -> bool:
 	var voice := voices[_cursor]
 	_cursor = (_cursor + 1) % MAX_VOICES
 	voice.stop()
+	voice.bus = "CaravanUI" if ui else "CaravanEffects"
 	voice.stream = streams[id]
 	if DisplayServer.get_name() != "headless":
 		voice.play(start_offset)

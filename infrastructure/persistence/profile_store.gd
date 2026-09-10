@@ -1,5 +1,7 @@
 extends RefCounted
 
+const Settings = preload("res://modules/settings/settings_catalog.gd")
+
 const ExpeditionCatalog = preload("res://modules/meta/expedition_catalog.gd")
 
 const MAX_BYTES := 32768
@@ -11,7 +13,7 @@ func _init(save_path: String = "user://iron-caravan-profile.json") -> void:
 	path = save_path
 
 static func defaults() -> Dictionary:
-	return {"version": 1, "unlockedSidegradeIds": [], "selectedContractIds": [], "completedContractIds": [], "contractProgress": {}, "recentEventIds": [], "lifetimeStats": {"runs": 0, "victories": 0, "foundriesDestroyed": 0, "activitiesCompleted": 0}, "settings": {"soundEnabled": true}, "expedition": ExpeditionCatalog.defaults()}
+	return {"version": 1, "unlockedSidegradeIds": [], "selectedContractIds": [], "completedContractIds": [], "contractProgress": {}, "recentEventIds": [], "lifetimeStats": {"runs": 0, "victories": 0, "foundriesDestroyed": 0, "activitiesCompleted": 0}, "settings": Settings.DEFAULTS.duplicate(true), "expedition": ExpeditionCatalog.defaults()}
 
 static func ids(value: Variant, maximum: int) -> Array:
 	var result: Array = []
@@ -42,10 +44,7 @@ static func normalize(value: Dictionary) -> Dictionary:
 	if value.get("lifetimeStats") is Dictionary:
 		for key: String in profile.lifetimeStats:
 			profile.lifetimeStats[key] = bounded(value.lifetimeStats.get(key, 0))
-	if value.get("settings") is Dictionary:
-		profile.settings.soundEnabled = value.settings.get("soundEnabled", true) != false
-		var shake: Variant = value.settings.get("cameraShake", 1.0)
-		profile.settings.cameraShake = clampf(float(shake), 0.0, 1.5) if (shake is int or shake is float) and is_finite(float(shake)) else 1.0
+	profile.settings = Settings.normalize(value.get("settings"))
 	return profile
 
 func load_profile() -> Dictionary:

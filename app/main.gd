@@ -50,6 +50,7 @@ var caravan_flow := preload("res://app/caravan_flow.gd").new()
 var case_flow := preload("res://app/case_opening_flow.gd").new()
 var _expedition_return := "menu"
 var _expedition_return_page := "main"
+var settings_controller := preload("res://app/settings_controller.gd").new()
 var _options_return := "menu"
 var _options_return_page := "main"
 var _menu_page := "main"
@@ -144,6 +145,8 @@ func _ready() -> void:
 	sound = SoundSystem.new()
 	add_child(sound)
 	sound.set_enabled(bool(progression.profile.settings.soundEnabled))
+	settings_controller.setup(self)
+	sound.bind_ui(self)
 	hud.set_sound_enabled(sound.enabled)
 	progression_feedback.setup(progression, hud, sound)
 	combat.combat_event.connect(sound.on_combat_event)
@@ -204,6 +207,9 @@ func _ready() -> void:
 	print("OFFLINE_READY: loaded world, vehicle, weapons, enemy pools, effects and HUD; waiting for start")
 
 func _input(event: InputEvent) -> void:
+	if is_instance_valid(hud) and is_instance_valid(hud.run_menu) and hud.run_menu.settings_panel.capture_input(event):
+		get_viewport().set_input_as_handled()
+		return
 	if not ready_to_drive or screen_state in ["countdown", "death"] or (event is InputEventKey and event.echo):
 		return
 	if screen_state == "encounter":
@@ -347,23 +353,8 @@ func _show_options(return_screen: String) -> void:
 	_options_return = return_screen
 	_options_return_page = _menu_page
 	_set_screen("options")
-	var sound_on: bool = sound.enabled if is_instance_valid(sound) else true
-	var shake := int(roundf(camera.shake_intensity * 100.0))
-	hud.show_menu(ExpeditionPanel.words("НАСТРОЙКИ", "OPTIONS"), ExpeditionPanel.words("Настройки сохраняются в профиле.", "Settings are saved to your profile."), [
-		{"label": ExpeditionPanel.words("ЗВУК: ВКЛ", "SOUND: ON") if sound_on else ExpeditionPanel.words("ЗВУК: ВЫКЛ", "SOUND: OFF"), "action": "sound"},
-		{"label": ExpeditionPanel.words("ТРЯСКА КАМЕРЫ −  %d%%" % shake, "CAMERA SHAKE −  %d%%" % shake), "action": "shake_down"},
-		{"label": ExpeditionPanel.words("ТРЯСКА КАМЕРЫ +  %d%%" % shake, "CAMERA SHAKE +  %d%%" % shake), "action": "shake_up"},
-		{"label": "LANGUAGE: ENGLISH" if Locale.language == "en" else "ЯЗЫК: РУССКИЙ", "action": "language"},
-		{"label": ExpeditionPanel.words("НАЗАД", "BACK"), "action": "options_back"},
-	], true)
-	hud.run_menu._language_button.visible = false
-
-func _change_camera_shake(delta: float) -> void:
-	camera.shake_intensity = clampf(camera.shake_intensity + delta, 0.0, 1.0)
-	expedition_panel.intensity = camera.shake_intensity
-	progression.profile.settings["cameraShake"] = camera.shake_intensity
-	progression._mark_dirty()
-	progression.flush()
+	hud.show_menu(ExpeditionPanel.words("НАСТРОЙКИ", "OPTIONS"), "", [], true)
+	hud.run_menu.show_settings(settings_controller)
 
 func _set_screen(value: String) -> void:
 	if is_instance_valid(hideout_hub) and hideout_hub.visible and value != "expedition":
@@ -584,12 +575,6 @@ func _menu_action(action: String, id: String) -> void:
 			else:
 				show_start_menu()
 		"language": _set_language("ru" if Locale.language == "en" else "en")
-		"shake_down":
-			_change_camera_shake(-0.1)
-			_show_options(_options_return)
-		"shake_up":
-			_change_camera_shake(0.1)
-			_show_options(_options_return)
 		"retry_save":
 			expedition.action("retry_save", "")
 			_show_result()
@@ -666,10 +651,7 @@ func _on_combat_event(event: Dictionary) -> void:
 		_show_result()
 
 func _toggle_sound() -> void:
-	var value: bool = not sound.enabled
-	sound.set_enabled(value)
-	progression.set_sound_enabled(value)
-	hud.set_sound_enabled(value)
+	settings_controller.change("soundEnabled", not sound.enabled)
 
 func _loading_failed() -> void:
 	hud.set_loading(false)
@@ -778,11 +760,7 @@ func _setup_expedition_ui() -> void:
 	hideout_hub.closed.connect(_close_expedition)
 	hideout_hub.garage_requested.connect(_open_caravan)
 	hideout_hub.tab_selected.connect(_select_hideout_tab)
-	expedition_panel.shake_changed.connect(func(value: float) -> void:
-		camera.shake_intensity = value
-		progression.profile.settings["cameraShake"] = value
-		progression._mark_dirty()
-		progression.flush())
+	expedition_panel.shake_changed.connect(func(value: float) -> void: settings_controller.change("cameraShake", value))
 	camera.shake_intensity = float(progression.profile.settings.get("cameraShake", 1.0))
 	expedition_panel.intensity = camera.shake_intensity
 	var cargo := preload("res://presentation/ui/ui_styles.gd").button(ExpeditionPanel.words("ГРУЗ [I]", "CARGO [I]"))

@@ -297,3 +297,8 @@ func rebuild_from_context(context: RefCounted) -> bool:
 
 func set_game_time(elapsed: float) -> void:
 	get_node("OriginalTerrainSurface").material_override.set_shader_parameter("uTime", elapsed)
+
+func set_graphics_quality(quality: Dictionary) -> void:
+	var sun := get_node("WastelandSun") as DirectionalLight3D
+	sun.shadow_enabled = quality.shadows
+	sun.directional_shadow_max_distance = quality.shadow_distance

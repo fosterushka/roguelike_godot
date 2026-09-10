@@ -33,3 +33,13 @@ static func register() -> void:
 			event.physical_keycode = key as Key
 			if not InputMap.action_has_event(action, event):
 				InputMap.action_add_event(action, event)
+
+static func apply_bindings(bindings: Dictionary) -> void:
+	register()
+	for action: String in bindings:
+		if action not in KEYS or action in ["pause_game", "restart_run"]:
+			continue
+		InputMap.action_erase_events(action)
+		var event := InputEventKey.new()
+		event.physical_keycode = int(bindings[action]) as Key
+		InputMap.action_add_event(action, event)

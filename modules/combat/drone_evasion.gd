@@ -1,15 +1,14 @@
 extends RefCounted
 const Seed = preload("res://modules/combat/rocket_rules.gd")
 
-const PROFILES := {
-	"shooter": {"chance": 0.3, "cooldown": 0.95, "reaction": 0.32, "duration": 0.21, "minimum_radius": 1.6, "padding": 0.55, "strength": 1.05, "urgency_strength": 0.45},
-	"kamikaze": {"chance": 0.18, "cooldown": 1.2, "reaction": 0.24, "duration": 0.16, "minimum_radius": 1.5, "padding": 0.45, "strength": 0.72, "urgency_strength": 0.3}}
+static func profile(enemy: Dictionary) -> Dictionary:
+	return enemy.behavior.evasion
 
 static func dodge_sample(seed_value: int, attempt: int) -> float:
 	return Seed._unit(seed_value, ((maxi(0, attempt) + 1) * 0x9e3779b9) & 0xffffffff)
 
 static func threat(enemy: Dictionary, projectiles: Array[Dictionary]) -> Dictionary:
-	var profile: Dictionary = PROFILES.get(enemy.kind, PROFILES.shooter)
+	var profile := profile(enemy)
 	var nearest: Dictionary = {}
 	var center: Vector3 = enemy.position + Vector3.UP * enemy.height
 	for shot: Dictionary in projectiles:
@@ -31,7 +30,7 @@ static func threat(enemy: Dictionary, projectiles: Array[Dictionary]) -> Diction
 	return nearest
 
 static func advance(enemy: Dictionary, projectiles: Array[Dictionary], delta: float) -> Vector3:
-	var profile: Dictionary = PROFILES.get(enemy.kind, PROFILES.shooter)
+	var profile := profile(enemy)
 	enemy.dodge_cooldown = maxf(0.0, enemy.get("dodge_cooldown", 0.0) - delta)
 	enemy.dodge_remaining = maxf(0.0, enemy.get("dodge_remaining", 0.0) - delta)
 	if enemy.dodge_remaining > 0.0:

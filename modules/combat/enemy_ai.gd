@@ -36,7 +36,7 @@ static func move(model, enemy: Dictionary, delta: float, speed: float, distance:
 			desired = steer(model, enemy, direction, speed)
 			enemy.position += desired * speed * delta
 			blend = 1.0
-		elif enemy.kind != "bomber" and distance < enemy.preferred * 0.58:
+		elif enemy.get("behavior", {}).get("retreat", true) and distance < enemy.preferred * 0.58:
 			desired = steer(model, enemy, -direction, speed * 0.5)
 			enemy.position += desired * speed * 0.5 * delta
 			desired = -desired
@@ -47,16 +47,17 @@ static func move(model, enemy: Dictionary, delta: float, speed: float, distance:
 		enemy.phase_animation = enemy.get("phase_animation", 0.0) + delta * (4.8 + enemy.speed * 1.15) * maxf(0.12, enemy.get("move_blend", 0.0))
 		enemy.yaw += wrapf(atan2(desired.x, desired.z) - enemy.yaw, -PI, PI) * (1.0 - pow(0.0008, delta))
 	elif enemy.type == "drone":
+		var flight: Dictionary = enemy.behavior.flight
 		var desired := atan2(direction.x, direction.z)
 		var turn := wrapf(desired - enemy.yaw, -PI, PI)
-		enemy.yaw += turn * delta * (3.4 if enemy.kind == "kamikaze" else 2.6)
+		enemy.yaw += turn * delta * flight.turn_rate
 		var evasion := Evasion.advance(enemy, model.projectiles, delta)
 		enemy.dodging = not evasion.is_zero_approx()
-		var strafe := sin(model.elapsed * 0.9 + enemy.yaw) * 0.65 if enemy.kind == "shooter" else 0.0
-		var throttle := 1.0 if enemy.kind == "kamikaze" or distance > enemy.preferred else -0.55 if distance < enemy.preferred * 0.7 else 0.08
+		var strafe: float = sin(model.elapsed * 0.9 + enemy.yaw) * float(flight.strafe)
+		var throttle: float = 1.0 if flight.get("always_advance", false) or distance > enemy.preferred else float(flight.near_throttle) if distance < enemy.preferred * 0.7 else float(flight.hold_throttle)
 		enemy.position += (direction * throttle + Vector3(direction.z, 0.0, -direction.x) * strafe + evasion) * speed * delta
 		enemy.position = enemy.position.limit_length(maxf(20.0, model.Waves.radius(model.wave) - 36.0))
-		enemy.height = enemy.get("flight_height", enemy.height) + sin(model.elapsed * 2.7 + enemy.yaw) * (0.12 if enemy.kind == "kamikaze" else 0.22)
+		enemy.height = enemy.get("flight_height", enemy.height) + sin(model.elapsed * 2.7 + enemy.yaw) * flight.altitude_bob
 		enemy.roll = -turn * 0.12 + evasion.x * 0.18
 	elif enemy.type in ["bike", "buggy", "priorityVehicle"]:
 		var support: Dictionary = Priority.support(model, enemy, delta) if enemy.type == "priorityVehicle" else {}
@@ -68,23 +69,26 @@ static func move(model, enemy: Dictionary, delta: float, speed: float, distance:
 		if enemy.type == "buggy":
 			throttle = -0.35 if distance < 13.0 else 0.2 if distance < 20.0 else 1.0
 		elif enemy.type == "priorityVehicle":
+			var repair: Dictionary = enemy.get("behavior", {}).get("repair", {})
 			throttle = 1.0 if target_distance > enemy.preferred else -0.32 if target_distance < enemy.preferred * 0.62 else 0.18
-			if enemy.kind == "repairCrawler" and not support.is_empty() and target_distance < 9.0:
+			if not repair.is_empty() and not support.is_empty() and target_distance < repair.stop_range:
 				throttle = 0.0
-			rate = 1.25 if enemy.kind == "repairCrawler" else 1.55
+			rate = repair.get("turn_rate", 1.55)
 		enemy.visual_throttle = throttle
 		var movement_sign := -1.0 if throttle < 0.0 else 1.0
 		var navigation := steer(model, enemy, offset.normalized() * movement_sign, speed * absf(throttle)) * movement_sign
 		enemy.yaw = heading(enemy.yaw, atan2(navigation.x, navigation.z), rate * turn_mult, delta)
 		enemy.position += Vector3(sin(enemy.yaw), 0.0, cos(enemy.yaw)) * speed * throttle * delta
 		enemy.position = enemy.position.limit_length(maxf(20.0, model.Waves.radius(model.wave) - 40.0))
-		if enemy.kind == "repairCrawler":
+		var repair: Dictionary = enemy.get("behavior", {}).get("repair", {})
+		var mines: Dictionary = enemy.get("behavior", {}).get("mines", {})
+		if not repair.is_empty():
 			Priority.heal(model, enemy, support, delta)
-		elif enemy.kind == "minelayer" and absf(speed * throttle * delta) > 0.01:
-			enemy.mine_drop_remaining = enemy.get("mine_drop_remaining", 4.0) - delta
+		elif not mines.is_empty() and absf(speed * throttle * delta) > 0.01:
+			enemy.mine_drop_remaining = enemy.get("mine_drop_remaining", mines.interval) - delta
 			if enemy.mine_drop_remaining <= 0.000001:
 				model.hazards.drop(model, enemy)
-				enemy.mine_drop_remaining = 4.0
+				enemy.mine_drop_remaining = mines.interval
 	elif enemy.type == "keep":
 		var navigation := steer(model, enemy, direction, speed)
 		enemy.yaw = heading(enemy.yaw, atan2(navigation.x, navigation.z), (1.35 if enemy.get("boss", false) else 2.1) * turn_mult, delta)
@@ -98,15 +102,12 @@ static func move(model, enemy: Dictionary, delta: float, speed: float, distance:
 static func attack(model, enemy: Dictionary, delta: float, cadence: float, distance: float, jammed: bool) -> void:
 	if enemy.get("deploying", false):
 		return
-	if enemy.kind == "bomber":
-		if distance <= 3.4:
+	var detonation: Dictionary = enemy.get("behavior", {}).get("detonation", {})
+	if not detonation.is_empty():
+		if distance <= detonation.range and (not detonation.jammed or not jammed):
 			model.damage_player(enemy.damage)
-			model._emit("enemy_detonation", {"id": enemy.id, "position": enemy.position, "radius": 5.2})
-			model.kill_enemy(enemy)
-		return
-	if enemy.kind == "kamikaze":
-		if distance <= 4.2 and not jammed:
-			model.damage_player(enemy.damage)
+			if detonation.effect_radius > 0.0:
+				model._emit("enemy_detonation", {"id": enemy.id, "position": enemy.position, "radius": detonation.effect_radius})
 			model.kill_enemy(enemy)
 		return
 	if enemy.get("boss", false):
