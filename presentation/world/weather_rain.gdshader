@@ -13,6 +13,7 @@ uniform float uScreenMargin = 1.08;
 uniform vec2 uStreakWidthPixels = vec2(0.7, 1.2);
 varying vec2 vUv;
 varying float vAlpha;
+varying vec3 vColor;
 uniform float uLightning;
 
 void vertex() {
@@ -37,6 +38,9 @@ void vertex() {
     float widthPixels = mix(uStreakWidthPixels.x, uStreakWidthPixels.y, INSTANCE_CUSTOM.w);
     vec2 pixelSpan = halfSpan * 2.0 / VIEWPORT_SIZE;
     viewPosition.xy += direction * VERTEX.y * streakLength + side * VERTEX.x * widthPixels * pixelSpan;
+    vec3 color = mix(vec3(0.52, 0.68, 0.74), vec3(0.72, 0.84, 0.94), uStorm);
+    color = mix(color, vec3(0.95, 0.98, 1.0), uLightning);
+    vColor = color;
     vUv = UV;
     vAlpha = uRain * mix(0.24, 0.5, INSTANCE_CUSTOM.w)
       * smoothstep(0.0, 0.06, phase) * (1.0 - smoothstep(0.92, 1.0, phase));
@@ -48,8 +52,6 @@ void fragment() {
     float tail = smoothstep(0.0, 0.18, vUv.y) * (1.0 - smoothstep(0.4, 1.0, vUv.y));
     float alpha = vAlpha * edge * tail;
     if (alpha < 0.003) discard;
-    vec3 color = mix(vec3(0.52, 0.68, 0.74), vec3(0.72, 0.84, 0.94), uStorm);
-    color = mix(color, vec3(0.95, 0.98, 1.0), uLightning);
-    ALBEDO = color;
+    ALBEDO = vColor;
     ALPHA = alpha * (1.0 + uLightning * 0.5);
 }

@@ -34,6 +34,7 @@ render_mode unshaded,cull_disabled,depth_draw_never;
   }
 
   void fragment() {
+    if (vOpacity < 0.012) discard;
     vec2 centered = UV * 2.0 - 1.0;
     float seedPhase = vSeed * 17.17;
     float curl = noise(centered * 1.8 + vec2(seedPhase, uTime * 0.14 + vAge * 0.27)) - 0.5;

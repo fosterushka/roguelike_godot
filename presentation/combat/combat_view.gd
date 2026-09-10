@@ -2,6 +2,7 @@ extends Node3D
 const Profiler = preload("res://infrastructure/diagnostics/runtime_profiler.gd")
 const Terrain = preload("res://modules/caravan/terrain_surface.gd")
 const PickupMotion = preload("res://presentation/world/pickup_motion.gd")
+const ViewCulling = preload("res://presentation/camera/view_culling.gd")
 signal screen_impact(power: float)
 
 const SourceModel = preload("res://presentation/combat/source_model.gd")
@@ -12,6 +13,12 @@ const EnemyCatalog = preload("res://modules/combat/enemy_catalog.gd")
 static var ENEMY_MODELS: Array[String] = EnemyCatalog.model_ids()
 const ProjectileVisuals = preload("res://presentation/combat/projectile_visuals.gd")
 const PROJECTILE_MODELS := ProjectileVisuals.MODEL_IDS
+# Room a visual claims above its record position: terrain relief under the actor, plus the
+# flight or lift height the animation adds. Actors keep their own ground radius in the catalog.
+const GROUND_RELIEF := Terrain.HUMMOCK_HEIGHT + Terrain.SWELL_HEIGHT
+const DEFAULT_ACTOR_RADIUS := 1.0
+const PROJECTILE_EXTENT := 1.2
+const PICKUP_EXTENT := 1.5
 var _pools: Dictionary = {}
 var _active_counts: Dictionary = {}
 var _vehicle: Node3D
@@ -83,6 +90,7 @@ func apply_state(data: Dictionary) -> void:
 		if is_instance_valid(_effects):
 			_effects.reset_effects()
 	var profile_started := Profiler.begin()
+	ViewCulling.refresh(get_viewport().get_camera_3d() if is_inside_tree() else null)
 	var elapsed := float(data.get("elapsed", 0.0))
 	var delta := maxf(0.0, elapsed - _last_elapsed)
 	if is_instance_valid(tracers):
@@ -103,6 +111,10 @@ func apply_state(data: Dictionary) -> void:
 			pose.soldier_kind = model_name
 		_animation[enemy.id] = pose
 		alive[enemy.id] = true
+		# Off-screen actors keep their pool bookkeeping but skip skinning and terrain sampling.
+		# The aimed target stays animated: the turret reads its muzzle point at any range.
+		if int(enemy.id) != focus_id and not ViewCulling.contains(enemy.position, _enemy_extent(enemy)):
+			continue
 		var animated := EnemyAnimation.advance(enemy, pose, delta, elapsed)
 		var point: Vector3 = animated.position
 		_place(model_name, point, float(enemy.get("yaw", 0.0)), counts, animated.basis.scaled(Vector3.ONE * SourceModel.model_scale(model_name)), animated.pose)
@@ -126,6 +138,8 @@ func apply_state(data: Dictionary) -> void:
 			continue
 		live_projectiles[projectile.id] = true
 		_projectile_age[projectile.id] = float(_projectile_age.get(projectile.id, 0.0)) + delta
+		if not ViewCulling.contains(projectile.position, PROJECTILE_EXTENT):
+			continue
 		var velocity: Vector3 = projectile.position - projectile.get("previous", projectile.position)
 		if velocity.length_squared() <= 0.000001:
 			velocity = projectile.get("velocity", Vector3.FORWARD)
@@ -142,6 +156,8 @@ func apply_state(data: Dictionary) -> void:
 			_projectile_age.erase(id)
 	_mines.sync_state(_items(data.get("mines", [])))
 	for pickup in _items(data.get("pickups", [])):
+		if not ViewCulling.contains(pickup.position, PICKUP_EXTENT):
+			continue
 		var model_name := "pickup_fuel" if str(pickup.kind) == "fuel" else "pickup_salvage"
 		var transform := pickup_transform(pickup, elapsed)
 		_place(model_name, transform.origin, 0.0, counts, transform.basis)
@@ -176,6 +192,10 @@ func _place(model_name: String, point: Vector3, yaw: float, counts: Dictionary, 
 		return
 	SourceModel.set_pool_instance(pool, index, Transform3D(Basis(Vector3.UP, yaw) * orientation, point), pose)
 	counts[model_name] = index + 1
+
+
+static func _enemy_extent(enemy: Dictionary) -> float:
+	return float(enemy.get("radius", DEFAULT_ACTOR_RADIUS)) + float(enemy.get("height", 0.0)) + float(enemy.get("lift_height", 0.0)) + GROUND_RELIEF
 
 
 func _enemy_model(enemy: Dictionary) -> String:

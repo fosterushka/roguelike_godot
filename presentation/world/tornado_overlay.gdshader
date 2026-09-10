@@ -18,7 +18,7 @@ shader_type canvas_item;
     vec2 point = FRAGCOORD.xy * 0.004;
     float grit = noise(point + vec2(uTime * 0.62, -uTime * 0.31));
     grit = grit * 0.64 + noise(point * 2.7 - uTime * 0.24) * 0.36;
-    float flecks = step(0.92, noise(floor(FRAGCOORD.xy * 0.12) + floor(uTime * 8.0)));
+    float flecks = step(0.92, hash(floor(FRAGCOORD.xy * 0.12) + floor(uTime * 8.0)));
     vec3 color = mix(vec3(0.22, 0.14, 0.075), vec3(0.68, 0.49, 0.27), grit);
     float alpha = uOpacity * (0.15 + grit * 0.34 + flecks * 0.18);
     COLOR = vec4(color, alpha);

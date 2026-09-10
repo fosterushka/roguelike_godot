@@ -37,6 +37,7 @@ void vertex(){
 void fragment(){
     vec2 p = vUv * 2.0 - 1.0;
     float edge = 1.0 - smoothstep(0.15, 1.0, dot(p, p));
+    if (edge * vEdge * (uFog * 0.23 + uRain * 0.045 + uStorm * 0.07) < 0.003) discard;
     vec2 flow = vUv * vec2(4.0, 2.0) + vec2(-uTime * 0.12, vSeed * 19.0);
     float cloud = weatherNoise(flow) * 0.65 + weatherNoise(flow * 2.8 + uTime * 0.07) * 0.35;
     float density = smoothstep(0.22, 0.8, cloud) * edge * vEdge;

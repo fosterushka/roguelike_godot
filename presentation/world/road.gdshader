@@ -7,7 +7,6 @@ float road_hash(vec2 point) {
 	return fract(sin(dot(point, vec2(127.1, 311.7))) * 43758.5453);
 }
 void fragment() {
-	vec4 sampled = texture(road_texture, UV);
 	float edge;
 	if (junction) {
 		edge = 1.0 - smoothstep(0.39, 0.5, length(UV - vec2(0.5)));
@@ -15,6 +14,8 @@ void fragment() {
 		float noise = road_hash(floor(UV * vec2(19.0, 7.0))) * 0.075;
 		edge = 1.0 - smoothstep(0.74 + noise, 1.0, abs(UV2.x));
 	}
+	if (edge < 0.035) { discard; }
+	vec4 sampled = texture(road_texture, UV);
 	ALBEDO = sampled.rgb * road_color.rgb;
 	ALPHA = sampled.a * edge;
 	if (ALPHA < 0.035) { discard; }

@@ -1,17 +1,23 @@
 extends ColorRect
 
-const VHS = preload("res://presentation/ui/jammer_vhs.gdshader")
+const INTERFERENCE = preload("res://presentation/ui/jammer_vhs.gdshader")
 const Weather = preload("res://modules/world/weather_rules.gd")
+const FADE_IN_SECONDS := 0.65
+const FADE_OUT_SECONDS := 1.0
+const EDGE_STRENGTH := 0.32
+const WET_FADE_IN_SECONDS := 1.8
+const WET_FADE_OUT_SECONDS := 6.0
 var intensity := 0.0
+var target_intensity := 0.0
 var wetness := 0.0
 var rain_target := 0.0
 
 func _ready() -> void:
-	name = "JammerVHS"
+	name = "JammerInterference"
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	material = ShaderMaterial.new()
-	material.shader = VHS
+	material.shader = INTERFERENCE
 	visible = false
 
 func update_state(state: Dictionary) -> void:
@@ -19,11 +25,11 @@ func update_state(state: Dictionary) -> void:
 	var strength := clampf(float(player.get("jammer_strength", 0.0)), 0, 1)
 	var jammed := bool(player.get("jammed", false))
 	# Even the outer edge of the active radius needs a readable signal warning.
-	intensity = maxf(strength, 0.32 if jammed else 0.0)
+	target_intensity = maxf(strength, EDGE_STRENGTH if jammed else 0.0)
 	if float(player.get("hp", 0)) <= 0:
+		target_intensity = 0.0
 		intensity = 0.0
 	_refresh_visibility()
-	material.set_shader_parameter("intensity", intensity)
 	material.set_shader_parameter("pulse", clampf(float(player.get("jammer_pulse", 0.0)), 0, 1))
 
 func update_weather(state: Dictionary) -> void:
@@ -42,15 +48,20 @@ func _process(delta: float) -> void:
 		advance(delta)
 
 func advance(delta: float) -> void:
-	wetness = move_toward(wetness, rain_target, maxf(0, delta) / (1.8 if rain_target > wetness else 6.0))
+	intensity = move_toward(intensity, target_intensity, maxf(0, delta) / (FADE_IN_SECONDS if target_intensity > intensity else FADE_OUT_SECONDS))
+	material.set_shader_parameter("intensity", smoothstep(0.0, 1.0, intensity))
+	wetness = move_toward(wetness, rain_target, maxf(0, delta) / (WET_FADE_IN_SECONDS if rain_target > wetness else WET_FADE_OUT_SECONDS))
 	material.set_shader_parameter("rain", wetness)
 	_refresh_visibility()
 
 func reset_weather() -> void:
+	intensity = 0
+	target_intensity = 0
+	material.set_shader_parameter("intensity", 0.0)
 	wetness = 0
 	rain_target = 0
 	material.set_shader_parameter("rain", 0.0)
 	_refresh_visibility()
 
 func _refresh_visibility() -> void:
-	visible = intensity > 0.001 or wetness > 0.001 or rain_target > 0.001
+	visible = target_intensity > 0.001 or intensity > 0.001 or wetness > 0.001 or rain_target > 0.001

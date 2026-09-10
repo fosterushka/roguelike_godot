@@ -1,6 +1,9 @@
 extends Node3D
 const Terrain = preload("res://modules/caravan/terrain_surface.gd")
 const Source = preload("res://presentation/combat/source_model.gd")
+const ViewCulling = preload("res://presentation/camera/view_culling.gd")
+# Signal dome plus the terrain relief the mine rests on.
+const MINE_EXTENT := 1.4 + Terrain.HUMMOCK_HEIGHT + Terrain.SWELL_HEIGHT
 var entries: Array[Dictionary] = []
 
 func _ready() -> void:
@@ -47,6 +50,9 @@ func sync_state(mines: Array) -> void:
 	var index := 0
 	for mine: Dictionary in mines:
 		if mine.get("dead", false) or index >= entries.size():
+			continue
+		# Off-screen mines keep their record; only the visual slot is left to a mine on camera.
+		if not ViewCulling.contains(mine.position, MINE_EXTENT):
 			continue
 		var entry := entries[index]
 		index += 1

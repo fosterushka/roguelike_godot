@@ -20,6 +20,8 @@ void vertex(){vUv=UV;}
 void fragment(){
     vec2 p = vUv * 2.0 - 1.0;
     float radius = length(p);
+    // Noise can move the edge inward by at most 0.125.
+    if (radius >= 1.125 || radius <= 0.035) discard;
     float angle = uTime * 0.9 - radius * 5.0;
     vec2 swirl = mat2(vec2(cos(angle), -sin(angle)), vec2(sin(angle), cos(angle))) * p;
     float broad = weatherNoise(swirl * 5.0 + 12.0);

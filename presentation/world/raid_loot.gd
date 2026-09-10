@@ -5,9 +5,12 @@ const LootState = preload("res://modules/meta/raid_loot_state.gd")
 const Models = preload("res://presentation/ui/item_loot_models.gd")
 const Motion = preload("res://presentation/world/pickup_motion.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
+const ViewCulling = preload("res://presentation/camera/view_culling.gd")
 const LABEL_HEIGHT := 2.6
 const LABEL_FONT_SIZE := 48
 const LABEL_PIXEL_SIZE := 0.016
+# Bobbing crate plus its floating name label.
+const CRATE_EXTENT := LABEL_HEIGHT + 1.0
 var state := LootState.new()
 # Compatibility surface for callers that read crate ids and positions. These
 # are presentation projections; state is the only owner of live loot values.
@@ -20,18 +23,28 @@ func _process(delta: float) -> void:
 
 func advance(delta: float) -> void:
 	_elapsed += maxf(0.0, delta)
+	ViewCulling.refresh(get_viewport().get_camera_3d() if is_inside_tree() else null)
 	for crate: Dictionary in crates:
-		_update_view(crate)
+		# Crates never move, so a skipped bob is already correct once the camera reaches them.
+		if ViewCulling.contains(crate.position, CRATE_EXTENT):
+			_update_view(crate)
 
 func _update_view(crate: Dictionary) -> void:
 	var pose := Motion.pose(crate.position, _elapsed, float(crate.phase))
 	crate.view.position = pose.origin
 	crate.model.basis = pose.basis
+	_update_label(crate)
+
+# The catalog lookup and the localized name only change when the stack or the language does.
+func _update_label(crate: Dictionary) -> void:
+	var signature := "%s|%d|%s" % [str(crate.item), int(crate.count), Locale.language]
+	if str(crate.get("label_signature", "")) == signature:
+		return
+	crate.label_signature = signature
 	var text := Catalog.item_name(str(crate.item), Locale.language)
 	if int(crate.count) > 1:
 		text += " ×%d" % int(crate.count)
-	if crate.label.text != text:
-		crate.label.text = text
+	crate.label.text = text
 
 func reset() -> void:
 	for crate: Dictionary in crates:

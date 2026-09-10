@@ -4,8 +4,11 @@ signal screen_impact(power: float)
 signal body_impact(pitch: float, roll: float)
 const ProjectileVisuals = preload("res://presentation/combat/projectile_visuals.gd")
 const BodySplash = preload("res://presentation/combat/fx/body_splash.gd")
+const ViewCulling = preload("res://presentation/camera/view_culling.gd")
 const SPARK_COUNT := 6
 const SPARK_LIFE := 0.22
+# Widest trail puff spawned around a shot.
+const TRAIL_EXTENT := 0.5
 const Ground = preload("res://presentation/world/ground_surface_view.gd")
 const Pool = preload("res://presentation/combat/fx/effect_pool.gd")
 const MathRules = preload("res://presentation/combat/fx/effect_math.gd")
@@ -291,7 +294,9 @@ func sync_state(state: Dictionary, delta: float) -> void:
 		alive[shot.id] = true
 		var timer: float = _trail_timers.get(shot.id, 0.0) - delta
 		if timer <= 0.0 and delta > 0.0:
-			_projectile_trail(shot)
+			# A trail spawned off camera expires before it can be seen; skip the particles.
+			if ViewCulling.contains(shot.position, TRAIL_EXTENT):
+				_projectile_trail(shot)
 			var enemy: bool = shot.team == "enemy"
 			timer = (0.11 if enemy else 0.09) if shot.kind == "grenade" else (0.14 if enemy else 0.085) if shot.kind == "sabot" else (0.16 if enemy else 0.095)
 		_trail_timers[shot.id] = timer
