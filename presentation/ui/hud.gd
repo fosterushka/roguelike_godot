@@ -438,17 +438,18 @@ func update_run(data: Dictionary, camera: Camera3D, selected: int) -> void:
 	var player: Dictionary = data.get("player", {})
 	for index in 3:
 		_hotbar_buttons[index].update_state(player, selected == index)
-	_target_label.text = ""
+	var target_text := ""
 	for enemy: Dictionary in data.get("enemies", []):
 		if enemy.get("id", -2) == data.get("focus_id", -1) or enemy.get("boss", false):
-			_target_label.text += "%s  %d/%d%s\n" % [Locale.text(str(enemy.get("kind", enemy.get("type", "ЦЕЛЬ")))).to_upper(), enemy.get("hp", 0), enemy.get("max_hp", 1), Locale.text(" · ФАЗА %d") % (int(enemy.get("phase", 0)) + 1) if enemy.get("boss", false) else ""]
+			target_text += "%s  %d/%d%s\n" % [Locale.text(str(enemy.get("kind", enemy.get("type", "ЦЕЛЬ")))).to_upper(), enemy.get("hp", 0), enemy.get("max_hp", 1), Locale.text(" · ФАЗА %d") % (int(enemy.get("phase", 0)) + 1) if enemy.get("boss", false) else ""]
 	for enemy: Dictionary in data.get("enemies", []):
 		if enemy.get("boss", false):
 			var parts: Array[String] = []
 			for component: Dictionary in enemy.get("components", []):
 				parts.append("%s %d/%d" % [Locale.text(str(component.get("kind", ""))), component.get("hp", 0), component.get("max_hp", 0)])
-			_target_label.text += " · ".join(parts)
-	_target_label.visible = not _target_label.text.is_empty()
+			target_text += " · ".join(parts)
+	_target_label.text = target_text
+	_target_label.visible = not target_text.is_empty()
 	_hack_label.visible = not _hack_label.text.is_empty()
 	radar.update_state(data, camera)
 

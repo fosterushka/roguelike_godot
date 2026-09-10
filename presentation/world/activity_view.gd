@@ -12,6 +12,7 @@ var _state: Dictionary = {}
 var _warmup := false
 var _visual_elapsed := 0.0
 var _since_state := 0.0
+var _route_seed := -1
 var _flare_light: OmniLight3D
 var _flare_smoke: Node3D
 
@@ -56,12 +57,17 @@ func apply_state(state: Dictionary) -> void:
 	_since_state = 0.0
 	if _warmup:
 		return
+	if int(state.get("seed", 0)) != _route_seed:
+		_route_seed = int(state.get("seed", 0))
+		for route in _routes:
+			if route.has_meta("route_cache"):
+				route.remove_meta("route_cache")
 	var healer_index := 0
 	var records: Array = state.get("activity", {}).get("records", [])
 	for index in 3:
 		_markers[index].visible = index < records.size()
-		_routes[index].multimesh.visible_instance_count = 0
 		if index >= records.size():
+			_routes[index].multimesh.visible_instance_count = 0
 			continue
 		var record: Dictionary = records[index]
 		_markers[index].position = _grounded(record.position) + Vector3.UP * 0.08
@@ -88,6 +94,11 @@ func apply_state(state: Dictionary) -> void:
 
 func _update_route(view: MultiMeshInstance3D, points: Array, color: Color) -> void:
 	view.multimesh.mesh.material.albedo_color = color
+	var cached: Dictionary = view.get_meta("route_cache", {})
+	if cached.get("points") == points:
+		if view.multimesh.visible_instance_count != cached.count:
+			view.multimesh.visible_instance_count = cached.count
+		return
 	var distance := 0.0
 	var total := ActivityRules.route_length(points)
 	var count := 0
@@ -100,6 +111,7 @@ func _update_route(view: MultiMeshInstance3D, points: Array, color: Color) -> vo
 		count += 1
 		distance += 8.0
 	view.multimesh.visible_instance_count = count
+	view.set_meta("route_cache", {"points": points.duplicate(true), "count": count})
 
 func _ring(inner: float, outer: float, color: Color) -> MeshInstance3D:
 	var mesh := TorusMesh.new()

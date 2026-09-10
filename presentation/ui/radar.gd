@@ -1,4 +1,5 @@
 extends Control
+const Profiler = preload("res://infrastructure/diagnostics/runtime_profiler.gd")
 
 const Geometry = preload("res://presentation/ui/map_geometry.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
@@ -156,6 +157,11 @@ func detected_hostiles() -> Array[Dictionary]:
 	return contacts
 
 func _draw() -> void:
+	var started := Profiler.begin()
+	_draw_map()
+	Profiler.finish(&"radar_draw", started)
+
+func _draw_map() -> void:
 	_map_rect = Rect2(8, 28, size.x - 16, minf(size.x - 16, size.y - 66))
 	_zoom_out.position.x = size.x - 56
 	_zoom_in.position.x = size.x - 28
@@ -246,8 +252,26 @@ func _draw() -> void:
 
 func _road_line(start: Vector3, end: Vector3) -> void:
 	var steps := maxi(1, ceili(start.distance_to(end) / (WORLD_SIZE / GRID * 0.5)))
-	for index in steps:
+	var visible_steps := _visible_road_steps(start, end, steps)
+	for index in range(visible_steps.x, visible_steps.y):
 		_line(start.lerp(end, index / float(steps)), start.lerp(end, (index + 1) / float(steps)), Color("b1704a"), 1.5)
+
+# Cull before subdividing roads across the entire world. Keep original sample
+# indices so exploration checks and partially revealed road ends stay identical.
+func _visible_road_steps(start: Vector3, end: Vector3, steps: int) -> Vector2i:
+	var first := _point(start)
+	var last := _point(end)
+	var clipped := Geometry.clip_line(first, last, _map_rect)
+	if clipped.is_empty():
+		return Vector2i.ZERO
+	var direction := last - first
+	var length_squared := direction.length_squared()
+	if length_squared == 0.0:
+		return Vector2i(0, steps)
+	var near := (clipped[0] - first).dot(direction) / length_squared
+	var far := (clipped[1] - first).dot(direction) / length_squared
+	# One adjacent sample absorbs floating point rounding at either map edge.
+	return Vector2i(maxi(0, floori(near * steps) - 1), mini(steps, ceili(far * steps) + 1))
 
 func _draw_boundary() -> void:
 	var radius := float(world_state.get("boundary", {}).get("radius", 1248.0))

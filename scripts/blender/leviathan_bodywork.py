@@ -10,12 +10,12 @@ import bpy
 ROOT = Path(__file__).resolve().parents[2]
 GEOMETRY = json.loads((ROOT/'data/leviathan_geometry.json').read_text())
 TRACK_SEGMENTS = 6
-TRACK_SHOE_SPACING = .32
+TRACK_SHOE_SPACING = .40
 ROAD_WHEELS = 4
 
 
 def install(api):
-    globals().update({key: api[key] for key in ('group','cube','cyl','strut','finish','join_into','hull','panel','vent')})
+    globals().update({key: api[key] for key in ('group','cube','cyl','disc','strut','finish','join_into','hull','panel','surface','vent')})
     globals()['panel'] = partial(api['panel'], bevel=False)
 
 
@@ -50,16 +50,16 @@ def drive(p,side):
     belt=bpy.data.objects.new('SiegeBelt',mesh);bpy.context.collection.objects.link(belt);belt.parent=p;finish(belt,'rubber')
     for i in range(ROAD_WHEELS):
         y=-half+i*2*half/(ROAD_WHEELS-1)
-        cyl(p,'RoadWheel',(x,y,z),radius*.84,width*.88,'dark',(0,math.pi/2,0),10)
+        cyl(p,'RoadWheel',(x,y,z),radius*.84,width*.88,'dark',(0,math.pi/2,0),8)
         face=x+side*(width*.5+.02)
-        cyl(p,'RoadWheelRim',(face,y,z),radius*.56,.035,'steel',(0,math.pi/2,0),10)
-        cyl(p,'AxleCap',(face+side*.025,y,z),radius*.23,.05,'shadow',(0,math.pi/2,0),8)
+        disc(p,'RoadWheelRim',(face,y,z),radius*.56,'steel',(0,side*math.pi/2,0),8)
+        disc(p,'AxleCap',(face+side*.025,y,z),radius*.23,'shadow',(0,side*math.pi/2,0),8)
     for i in range(n):
         a=points[i];b=points[(i+1)%n];length=math.dist(a,b)
         count=max(1,round(length/TRACK_SHOE_SPACING))
         for j in range(count):
             t=(j+.5)/count;y=a[0]+(b[0]-a[0])*t;zz=a[1]+(b[1]-a[1])*t
-            shoe=cube(p,'BeltCleat',(x,y,zz),(width*.98,length/count*.38,.06),'steel')
+            shoe=surface(p,'BeltCleat',(x,y,zz),(width*.98,length/count*.38,.06),'steel',2,-1)
             shoe.rotation_euler.x=math.atan2(b[1]-a[1],b[0]-a[0])
     # A tapered shoulder and overlapping skirt form one removable drive assembly.
     shoulder=hull(p,'TrackShoulder',[(-2.32,.45,1.05,1.28,.08),(-1.76,.55,1.05,1.56,.10),
@@ -68,7 +68,6 @@ def drive(p,side):
         y=-1.50+i*.96
         plate=panel(p,'SuspensionSkirt',(x+side*.44,y,1.13),(.12,.84,.55),'paint')
         plate.rotation_euler.y=side*.13
-        panel(p,'SkirtInset',(x+side*.52,y,1.22),(.025,.65,.07),'shadow')
     join_into(target,list(set(p.children)-before))
 
 
@@ -83,13 +82,13 @@ def cannon(p):
         cyl(p,'RecoilCollar',(x,-1.26,1.96),.22,.49,'shadow',vertices=10)
         shroud=hull(p,'GunShroud',[(-3.30,.12,1.85,2.08,.045),(-1.37,.19,1.79,2.14,.06)],'steel');shroud.location.x=x
         muzzle=hull(p,'MuzzleBrake',[(-3.63,.22,1.80,2.13,.06),(-3.22,.17,1.83,2.10,.05)],'shadow');muzzle.location.x=x
-        cube(p,'MuzzleOpening',(x,-3.64,1.965),(.27,.017,.17),'dark')
-        for offset in (-1,1):cube(p,'MuzzleSlot',(x+offset*.216,-3.45,1.97),(.015,.14,.08),'dark')
+        surface(p,'MuzzleOpening',(x,-3.64,1.965),(.27,.017,.17),'dark',1,-1)
+        for offset in (-1,1):surface(p,'MuzzleSlot',(x+offset*.216,-3.45,1.97),(.015,.14,.08),'dark',0,offset)
         strut(p,'RecoilPiston',(x+side*.23,-1.03,1.91),(x+side*.23,-1.92,1.91),.043,'cream')
         panel(p,'TurretCheek',(side*.92,-.32,2.10),(.12,.64,.30),'light',-.18)
     cyl(p,'CommanderHatch',(-.37,.10,2.31),.24,.055,'shadow',(0,0,0),10)
     cube(p,'GunnerSight',(.34,-.43,2.39),(.29,.24,.12),'dark',.02)
-    cube(p,'SightLens',(.34,-.558,2.40),(.19,.017,.045),'red')
+    surface(p,'SightLens',(.34,-.558,2.40),(.19,.017,.045),'red',1,-1)
     join_into(target,list(set(p.children)-before))
 
 
@@ -105,23 +104,10 @@ def missile_rack(p,variant):
         # Six readable cells per pod. A shallow rim and black centre, no deep tubes.
         for dx in (-.22,0,.22):
             for zz in (2.015,2.235):
-                # One annular face and a recessed black face per cell; no hidden tube walls.
-                vertices=[]
-                for radius,yy in ((.083,.298),(.063,.298),(.063,.324)):
-                    for i in range(8):
-                        a=i*math.tau/8
-                        vertices.append((x+dx+math.cos(a)*radius,yy,zz+math.sin(a)*radius))
-                mesh=bpy.data.meshes.new('LaunchSocket')
-                faces=[(i,(i+1)%8,(i+1)%8+8,i+8) for i in range(8)]
-                faces += [(i+8,(i+1)%8+8,(i+1)%8+16,i+16) for i in range(8)]
-                faces.append(tuple(range(16,24)))
-                mesh.from_pydata(vertices,[],faces);mesh.update()
-                obj=bpy.data.objects.new('LaunchSocket',mesh);bpy.context.collection.objects.link(obj);obj.parent=p;finish(obj,'steel')
-                uv=obj.data.uv_layers.active
-                for face in list(obj.data.polygons)[8:]:
-                    for li in face.loop_indices:uv.data[li].uv=(.375,.625)
+                # Flat rim and socket centre retain the six-cell pattern.
+                disc(p,'LaunchSocketRim',(x+dx,.298,zz),.083,'steel',vertices=8)
+                disc(p,'LaunchSocket',(x+dx,.297,zz),.063,'dark',vertices=8)
         panel(p,'CassetteStripe',(x,1.07,2.405),(.10,1.11,.025),'cream',.048)
-        for yy in (.70,1.30):panel(p,'PodSideRib',(x+side*.445,yy,2.12),(.026,.05,.35),'shadow')
         if variant=='armored':
             armor=hull(p,'LauncherArmor',[(.24,.47,2.38,2.47,.03),(1.86,.47,2.31,2.40,.03)],'light');armor.location.x=x
             panel(p,'LauncherSideArmor',(x+side*.47,1.06,2.12),(.07,1.30,.43),'paint')
@@ -138,7 +124,7 @@ def reactor(p):
         strut(p,'ReactorRetainer',(.49*math.cos(a),1.60+.49*math.sin(a),1.94),
               (.18*math.cos(a),1.60+.18*math.sin(a),1.94),.034,'dark')
     cube(p,'RearHeatExchanger',(0,2.22,1.22),(.90,.16,.47),'dark',.03)
-    for x in (-.33,-.11,.11,.33):cube(p,'HeatExchangerSlot',(x,2.315,1.22),(.09,.018,.29),'amber')
+    for x in (-.33,-.11,.11,.33):surface(p,'HeatExchangerSlot',(x,2.315,1.22),(.09,.018,.29),'amber',1,1)
     join_into(target,list(set(p.children)-before))
 
 
@@ -157,15 +143,13 @@ def build(variant='armored'):
         cube(p,'RunningLight',(side*1.40,-1.885,1.24),(.25,.022,.043),'cream')
         strut(p,'RecoveryShackle',(side*.73,-2.63,.54),(side*.73,-2.63,.74),.055,'steel')
         cube(p,'DeckGrille',(side*.76,1.94,1.46),(.46,.41,.035),'dark')
-        for yy in (1.81,1.94,2.07):cube(p,'RadiatorLouvre',(side*.76,yy,1.485),(.43,.045,.022),'steel')
+        for yy in (1.81,1.94,2.07):surface(p,'RadiatorLouvre',(side*.76,yy,1.485),(.43,.045,.022),'steel',2)
         cube(p,'RearTowPoint',(side*.93,2.39,.56),(.20,.12,.16),'steel')
         cube(p,'RearLight',(side*1.10,2.32,1.10),(.18,.025,.07),'red')
         strut(p,'DeckRail',(side*1.66,.50,1.67),(side*1.49,1.88,1.53),.028,'steel')
         if variant=='armored':
-            # Three fitted plates per shoulder follow the hull contour.
-            for yy in (-.92,-.25,.42):
-                plate=panel(p,'ShoulderArmor',(side*1.52,yy,1.50),(.33,.53,.105),'paint')
-                plate.rotation_euler.y=side*.22
-                panel(p,'ShoulderPlateInset',(side*1.54,yy,1.565),(.20,.39,.018),'shadow')
+            # One broad fitted plate keeps the armored shoulder silhouette.
+            plate=panel(p,'ShoulderArmor',(side*1.52,-.25,1.50),(.33,1.87,.105),'paint')
+            plate.rotation_euler.y=side*.22
     cannon(p);missile_rack(p,variant);reactor(p)
     return p

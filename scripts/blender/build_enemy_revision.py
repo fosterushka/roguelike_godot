@@ -12,7 +12,7 @@ ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'assets/models/enemies_revised'
 REVIEW=ROOT/'docs/enemy-vehicle-review'
 STYLE=json.loads((ROOT/'data/enemy_vehicle_styles.json').read_text())
-TRIANGLE_BUDGET=6000
+TRIANGLE_BUDGET=2400
 BOSS_TRIANGLE_BUDGET=json.loads((ROOT/'data/leviathan_geometry.json').read_text())['triangle_budget']
 
 def module(name):
@@ -23,22 +23,31 @@ api=module('build_military_enemies');api.mathutils=mathutils
 body=module('enemy_vehicle_bodywork')
 
 
+WHEEL_SEGMENTS = 12
+RIM_SEGMENTS = 8
+
+
 def wheel(p,name,x,y,z,r=.42,width=.22):
-    # Bevelled tyre shoulders, polygonal tread blocks and one visible outer hub.
-    tyre=api.cyl(p,name,(x,y,z),r,width,'rubber',(0,math.pi/2,0),16)
-    bevel=tyre.modifiers.new('TyreShoulder','BEVEL');bevel.width=r*.13;bevel.segments=1
-    bpy.context.view_layer.objects.active=tyre;bpy.ops.object.modifier_apply(modifier=bevel.name)
+    # A four-ring tyre keeps its rounded shoulder. Facet shades replace tiny
+    # tread cubes; visible rim discs replace stacked cylinders and lug holes.
+    rings=[(-width*.5,r*.87),(-width*.37,r),(width*.37,r),(width*.5,r*.87)]
+    vertices=[(xx,math.cos(i*math.tau/WHEEL_SEGMENTS)*rr,math.sin(i*math.tau/WHEEL_SEGMENTS)*rr) for xx,rr in rings for i in range(WHEEL_SEGMENTS)]
+    faces=[tuple(reversed(range(WHEEL_SEGMENTS)))]
+    for ring in range(len(rings)-1):
+        for i in range(WHEEL_SEGMENTS):
+            j=(i+1)%WHEEL_SEGMENTS
+            faces.append((ring*WHEEL_SEGMENTS+i,ring*WHEEL_SEGMENTS+j,(ring+1)*WHEEL_SEGMENTS+j,(ring+1)*WHEEL_SEGMENTS+i))
+    faces.append(tuple(range((len(rings)-1)*WHEEL_SEGMENTS,len(rings)*WHEEL_SEGMENTS)))
+    data=bpy.data.meshes.new(name);data.from_pydata(vertices,[],faces);data.update()
+    tyre=bpy.data.objects.new(name,data);bpy.context.collection.objects.link(tyre)
+    tyre.parent=p;tyre.location=(x,y,z);api.finish(tyre,'rubber')
+    uv=tyre.data.uv_layers.active
+    for face in list(tyre.data.polygons)[1+WHEEL_SEGMENTS:1+2*WHEEL_SEGMENTS:2]:
+        for loop in face.loop_indices:uv.data[loop].uv=(.375,.625)
     side=1 if x>0 else -1
     face=x+side*(width*.5+.006)
-    parts=[api.cyl(p,'Rim',(face,y,z),r*.61,.035,'steel',(0,math.pi/2,0),12),
-           api.cyl(p,'Hub',(face+side*.035,y,z),r*.24,.065,'shadow',(0,math.pi/2,0),8)]
-    for i in range(6):
-        a=i*math.tau/6
-        parts.append(api.cyl(p,'Recess',(face+side*.022,y+math.sin(a)*r*.43,z+math.cos(a)*r*.43),r*.073,.012,'dark',(0,math.pi/2,0),6))
-    for i in range(16):
-        a=i*math.tau/16
-        block=api.cube(p,'Tread',(x,y+math.sin(a)*r,z+math.cos(a)*r),(width*.74,r*.20,r*.065),'dark')
-        block.rotation_euler.x=-a;parts.append(block)
+    parts=[api.disc(p,'Rim',(face,y,z),r*.61,'steel',(0,side*math.pi/2,0),RIM_SEGMENTS),
+           api.disc(p,'Hub',(face+side*.006,y,z),r*.24,'shadow',(0,side*math.pi/2,0),RIM_SEGMENTS)]
     api.join_into(tyre,parts)
     return tyre
 

@@ -3,6 +3,8 @@ extends SceneTree
 const People = preload("res://presentation/combat/military_people.gd")
 const Source = preload("res://presentation/combat/source_model.gd")
 const WorldScale = preload("res://modules/world/world_scale.gd")
+const TRIANGLE_BUDGET := 600
+const HEAD_TRIANGLE_BUDGET := 150
 const LIBRARY := "res://assets/actors/military_people.glb"
 var checks := 0
 var failures := 0
@@ -17,12 +19,19 @@ func _run() -> void:
 		var parts := People.templates(kind)
 		check(parts.size() == 7, kind + " has seven articulated optimized parts")
 		var roles := {}
+		var triangles := 0
 		for part: Dictionary in parts:
+			triangles += part.mesh.get_faces().size() / 3
+			if part.rig.role == "head":
+				check(part.mesh.get_faces().size() / 3 <= HEAD_TRIANGLE_BUDGET, kind + " face details stay in texture, within head budget")
+				var head_uv: PackedVector2Array = part.mesh.surface_get_arrays(0)[Mesh.ARRAY_TEX_UV]
+				check(Array(head_uv).any(func(uv: Vector2): return uv.x > 0.5), kind + " maps the face atlas region")
 			roles[part.rig.role] = int(roles.get(part.rig.role, 0)) + 1
 			check(part.mesh != null and part.mesh.get_surface_count() > 0, kind + " part has authored mesh")
 			var arrays: Array = part.mesh.surface_get_arrays(0)
 			check(not (arrays[Mesh.ARRAY_NORMAL] as PackedVector3Array).is_empty(), kind + " part exports normals")
 			check(part.cast_shadow and part.instances == null and part.bindings.is_empty(), kind + " keeps SourceModel provider contract")
+		check(triangles <= TRIANGLE_BUDGET, kind + " stays within optimized infantry triangle budget")
 		check(parts[2].mesh == parts[3].mesh and parts[4].mesh == parts[5].mesh, kind + " reuses left and right limb meshes")
 		var material: Material = parts[0].mesh.surface_get_material(0)
 		check((material as StandardMaterial3D).albedo_texture != null and not (material as StandardMaterial3D).vertex_color_use_as_albedo, kind + " binds the authored palette texture instead of vertex-color white")

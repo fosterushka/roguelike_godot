@@ -397,7 +397,7 @@ func reset_effects() -> void:
 
 func _prepare_warmup() -> void:
 	# Dedicated previews never acquire a gameplay slot or consume visual/gameplay RNG.
-	for pool in [transient, fireballs, traces, smoke, rockets.pool, dust.pool]:
+	for pool in [transient, fireballs, traces, smoke, dust.pool]:
 		for key in pool.meshes:
 			if pool != transient and key != "quad":
 				continue
@@ -432,6 +432,7 @@ func set_warmup_visible(enabled: bool) -> void:
 	wrecks.set_warmup(enabled)
 	player_destruction.set_warmup(enabled)
 	hulls.set_warmup(enabled)
+	rockets.set_warmup(enabled, listener_position + Vector3.UP * 3)
 	for preview: Node3D in _warmup_nodes:
 		preview.visible = enabled
 

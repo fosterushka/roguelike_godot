@@ -66,6 +66,16 @@ def cyl(parent, name, loc, radius, depth, color="steel", rot=(math.pi/2,0,0), ve
     obj = bpy.context.object; obj.name = name; obj.parent = parent
     return finish(obj, color)
 
+def disc(parent, name, loc, radius, color="steel", rot=(math.pi/2,0,0), vertices=8):
+    """One visible cap; use for rims and recessed lenses, not solid cylinders."""
+    points=[(math.cos(i*math.tau/vertices)*radius,math.sin(i*math.tau/vertices)*radius,0) for i in range(vertices)]
+    mesh=bpy.data.meshes.new(name)
+    mesh.from_pydata(points,[],[tuple(range(vertices))]);mesh.update()
+    obj=bpy.data.objects.new(name,mesh);bpy.context.collection.objects.link(obj)
+    obj.parent=parent;obj.location=loc;obj.rotation_euler=rot
+    return finish(obj,color)
+
+
 def wedge(parent, name, loc, size, color="paint"):
     x,y,z = (v*.5 for v in size)
     verts=[(-x,-y,-z),(x,-y,-z),(x,y,-z),(-x,y,-z),(-x,-y,z),(x,-y,z*.48),(x,y,z*.48),(-x,y,z)]
@@ -302,7 +312,11 @@ def recalculate_normals(models):
         for item in parent.children:
             bm = bmesh.new()
             bm.from_mesh(item.data)
-            bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+            # Isolated UV caps/decals have an authored visible side. A planar
+            # island has no volume from which Blender can infer "outside".
+            solid_faces = [face for face in bm.faces if not all(edge.is_boundary for edge in face.edges)]
+            if solid_faces:
+                bmesh.ops.recalc_face_normals(bm, faces=solid_faces)
             bm.to_mesh(item.data)
             bm.free()
             item.data.update()

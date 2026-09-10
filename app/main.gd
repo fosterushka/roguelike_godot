@@ -273,8 +273,7 @@ func _input(event: InputEvent) -> void:
 		elif event.is_action_pressed("ability_three"):
 			selected_ability = 2
 		elif event.is_action_pressed("activate_ability"):
-			if not combat.activate_ability(selected_ability):
-				hud.set_status(Locale.text("Навык недоступен: проверьте модуль, ресурс и перезарядку"))
+			combat.activate_ability(selected_ability)
 		elif event.is_action_pressed("radar_zoom"):
 			hud.radar.cycle_zoom()
 		else:
@@ -487,6 +486,11 @@ func _setup_progression() -> void:
 	_sync_progression_stats()
 
 func _physics_process(delta: float) -> void:
+	var profile_started := Profiler.begin()
+	_step_physics(delta)
+	Profiler.finish(&"app_tick", profile_started)
+
+func _step_physics(delta: float) -> void:
 	if progression == null:
 		return
 	progression.step(session_flow.clock.simulation_delta if screen_state == "running" else delta)
@@ -503,8 +507,7 @@ func _physics_process(delta: float) -> void:
 	if _loot_poll >= CARGO_POLL_SECONDS:
 		_loot_poll = 0.0
 		_update_crew_hint()
-		if raid_loot.collect_near(vehicle.global_position, expedition):
-			hud.set_status(expedition.notice)
+		raid_loot.collect_near(vehicle.global_position, expedition)
 		_update_cargo()
 	_sync_progression_stats(false)
 	if int(combat.model.player.get("pending_upgrades", 0)) > 0:
@@ -631,7 +634,6 @@ func _on_combat_event(event: Dictionary) -> void:
 		raid_loot.on_event(event)
 		if event.get("kind", "") == "pickup" and event.get("pickup_kind", "") == "salvage" and not event.get("cargo_delivered", false):
 			expedition.collect_loot("salvage", 1)
-			hud.set_status(expedition.notice)
 		if event.get("kind", "") in ["pickup", "result"]:
 			_update_cargo()
 	if event.get("kind", "") == "overdrive_started":
@@ -641,8 +643,6 @@ func _on_combat_event(event: Dictionary) -> void:
 		camera.add_hit(clampf(float(event.damage) / 45.0, 0.2, 0.8), event.get("direction", Vector3.ZERO))
 	elif event.get("kind", "") == "ability" and int(event.get("slot", -1)) in [0, 1]:
 		_on_screen_impact(0.18 if int(event.slot) == 0 else 0.3)
-		if int(event.slot) == 0:
-			hud.show_world_banner(Locale.text("НИТРО ВКЛЮЧЕНО"), Locale.text("Давление котла сброшено"))
 	if progression != null and progression_feedback.progression != null:
 		progression_feedback.on_event(event)
 	if str(event.get("kind", "")) == "result":

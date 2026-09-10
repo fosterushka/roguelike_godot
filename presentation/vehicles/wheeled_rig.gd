@@ -1,6 +1,8 @@
 extends RefCounted
 
 const Suspension = preload("res://modules/caravan/wheel_suspension.gd")
+const DAMPER_RADIAL_SEGMENTS := 6
+
 static var _materials: Dictionary = {}
 static var _meshes: Dictionary = {}
 
@@ -70,7 +72,8 @@ static func _cylinder(parent: Node3D, label: String, radius: float, height: floa
 		mesh.top_radius = radius
 		mesh.bottom_radius = radius
 		mesh.height = height
-		mesh.radial_segments = 16
+		mesh.radial_segments = DAMPER_RADIAL_SEGMENTS
+		mesh.rings = 0
 		_meshes[key] = mesh
 	return _part(parent, label, _meshes[key], at, color, rotation_value, false)
 

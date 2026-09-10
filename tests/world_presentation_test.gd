@@ -121,6 +121,25 @@ func _run() -> void:
 	check(rain.elapsed == 0 and rain.drift == Vector2.ZERO and rain.layers.all(func(layer: Node3D) -> bool: return not layer.visible), "Weather restart clears time, drift and all layers")
 	var support := preload("res://presentation/world/activity_view.gd").new()
 	root.add_child(support)
+	var points: Array = [{"x": 0.0, "z": 0.0}, {"x": 0.0, "z": 64.0}]
+	var route_state := {"seed": 1, "activity": {"records": [{"type": "raiderSupplyConvoy", "state": "announced", "position": Vector3.ZERO, "route": points}]}}
+	support.apply_state(route_state)
+	var route: MultiMeshInstance3D = support._routes[0]
+	var cached: Dictionary = route.get_meta("route_cache")
+	check(route.multimesh.visible_instance_count == 8, "Route builds the expected ground dashes")
+	support.apply_state(route_state)
+	check(is_same(cached, route.get_meta("route_cache")), "Repeated world snapshot reuses unchanged route geometry")
+	support.apply_state({"seed": 1})
+	check(route.multimesh.visible_instance_count == 0, "Removed route becomes hidden")
+	support.apply_state(route_state)
+	check(route.multimesh.visible_instance_count == 8, "Cached route becomes visible again without rebuilding")
+	points[1].z = 128.0
+	support.apply_state(route_state)
+	check(route.multimesh.visible_instance_count == 16, "In-place route point changes rebuild geometry")
+	cached = route.get_meta("route_cache")
+	route_state.seed = 2
+	support.apply_state(route_state)
+	check(not is_same(cached, route.get_meta("route_cache")), "World replacement rebuilds route grounding")
 	var drop := {"position": Vector3(3, 0, 4), "height": 12.0, "landed": false, "age": 0.0, "yaw": 0.0}
 	var support_state := {"elapsed": 0.0, "activity": {"records": []}, "support": {"airdrops": [drop], "heal_carts": []}}
 	support.apply_state(support_state)

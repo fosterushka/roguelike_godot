@@ -1,4 +1,5 @@
 extends Node
+const Profiler = preload("res://infrastructure/diagnostics/runtime_profiler.gd")
 
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 const Clock = preload("res://modules/session/run_clock.gd")
@@ -59,7 +60,9 @@ func defer_result(event: Dictionary) -> bool:
 	return true
 
 func _physics_process(raw: float) -> void:
+	var profile_started := Profiler.begin()
 	advance(raw)
+	Profiler.finish(&"session_tick", profile_started)
 
 func advance(raw: float) -> void:
 	if not is_instance_valid(game) or not is_instance_valid(game.combat):

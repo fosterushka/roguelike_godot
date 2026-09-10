@@ -1,4 +1,5 @@
 extends Node3D
+const Profiler = preload("res://infrastructure/diagnostics/runtime_profiler.gd")
 
 signal state_changed(data: Dictionary)
 signal world_event(event: Dictionary)
@@ -327,6 +328,7 @@ func get_state() -> Dictionary:
 		"activity": activities.get_state(), "extraction": activities.get_extraction_state(), "support": support.get_state(), "foundries": foundries.get_state()}
 
 func _publish() -> void:
+	var profile_started := Profiler.begin()
 	arena.set_game_time(combat.model.elapsed)
 	var state := get_state()
 	state_changed.emit(state)
@@ -334,6 +336,7 @@ func _publish() -> void:
 		_weather_view.apply_state(state)
 	if is_instance_valid(_activity_view):
 		_activity_view.apply_state(state)
+	Profiler.finish(&"world_publish", profile_started)
 
 
 func set_warmup_visible(enabled: bool) -> void:

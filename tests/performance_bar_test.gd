@@ -61,6 +61,13 @@ func _run() -> void:
 	event.shift_pressed = true
 	bar._input(event)
 	check(bar.frames.samples.is_empty(), "Shift F3 resets history")
+	bar.frames.record(16.0)
+	bar.scenario = "ui_without_radar"
+	bar._refresh()
+	check("scenario ui_without_radar" in bar.label.text, "F3 names the active diagnostic scenario")
+	bar.scenario = ""
+	bar._refresh()
+	check(not "scenario" in bar.label.text, "Normal play leaves the scenario name out")
 	event.shift_pressed = false
 	bar._input(event)
 	check(not bar.visible and not Profiler.enabled, "F3 closes and disables profiling")

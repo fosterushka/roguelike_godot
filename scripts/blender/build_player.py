@@ -73,6 +73,7 @@ def look_at(camera, location, target):
 
 
 def main():
+    bpy.context.preferences.filepaths.save_version = 0
     OUT.mkdir(parents=True, exist_ok=True)
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
@@ -125,7 +126,7 @@ def main():
     GAME_OUT.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.export_scene.gltf(filepath=str(GAME_OUT), export_format="GLB",
         use_selection=True, export_materials="EXPORT", export_image_format="AUTO",
-        export_keep_originals=True, export_yup=True)
+        export_keep_originals=False, export_yup=True)
     look_at(camera, (8, -12, 7), (0, 0, 1.15))
     scene.render.filepath = str(OUT / "preview.png")
     bpy.ops.render.render(write_still=True)

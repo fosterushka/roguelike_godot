@@ -120,6 +120,7 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	_check(true, "Headless draw callbacks exercise roads, fog, boundary and extraction without engine errors")
+	_test_road_culling(radar)
 	radar.queue_free()
 	markers.queue_free()
 	camera.queue_free()
@@ -225,3 +226,34 @@ func _test_edge_hints(markers: Control, camera: Camera3D, data: Dictionary) -> v
 	top_blocker.queue_free()
 	markers.update_world({})
 	data.enemies.clear()
+
+func _test_road_culling(radar: Control) -> void:
+	var roads := [
+		[Vector3(-1500, 0, 0), Vector3(1500, 0, 0)],
+		[Vector3(-1500, 0, -1500), Vector3(1500, 0, 1500)],
+		[Vector3(-1500, 0, 1400), Vector3(1500, 0, 1400)],
+		[Vector3.ZERO, Vector3.ZERO],
+		[Vector3(-20, 0, 0), Vector3(20, 0, 0)]]
+	var visited := 0
+	var full := 0
+	for origin in [Vector3.ZERO, Vector3(800, 0, -600)]:
+		radar.state.player.position = origin
+		for heading in [0.0, PI * 0.25, PI * 0.5, PI]:
+			radar._heading = heading
+			for zoom in radar.ZOOM_RANGES:
+				radar.display_range = zoom
+				for road in roads:
+					var start: Vector3 = road[0]
+					var end: Vector3 = road[1]
+					var steps := maxi(1, ceili(start.distance_to(end) / (radar.WORLD_SIZE / radar.GRID * 0.5)))
+					var selected: Vector2i = radar._visible_road_steps(start, end, steps)
+					visited += selected.y - selected.x
+					full += steps
+					var preserves_visible := true
+					for index in steps:
+						var a: Vector2 = radar._point(start.lerp(end, index / float(steps)))
+						var b: Vector2 = radar._point(start.lerp(end, (index + 1) / float(steps)))
+						if not Geometry.clip_line(a, b, radar._map_rect.grow(-1)).is_empty():
+							preserves_visible = preserves_visible and index >= selected.x and index < selected.y
+					_check(preserves_visible, "Road culling preserves every visible original exploration sample")
+	_check(visited < full / 4, "Distant roads are culled before subdivision across zooms and headings")

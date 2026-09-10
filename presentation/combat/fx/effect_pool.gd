@@ -123,14 +123,18 @@ func advance(delta: float) -> void:
 			continue
 		entry.velocity *= maxf(0.0, 1.0 - entry.drag * delta)
 		entry.velocity.y -= delta * entry.gravity
-		entry.visual.position += entry.velocity * delta
-		entry.visual.rotation += entry.spin * delta
+		if entry.velocity != Vector3.ZERO:
+			entry.visual.position += entry.velocity * delta
+		if entry.spin != Vector3.ZERO:
+			entry.visual.rotation += entry.spin * delta
 		if entry.bounces > 0 and entry.visual.position.y < entry.floor_y and entry.velocity.y < 0.0:
 			entry.visual.position.y = entry.floor_y
 			entry.velocity *= Vector3(0.64, -0.34, 0.64)
 			entry.bounces -= 1
-		entry.visual.scale += Vector3.ONE * entry.grow * delta
-		entry.visual.scale *= maxf(0.01, 1.0 - delta * entry.shrink)
+		if entry.grow != 0.0:
+			entry.visual.scale += Vector3.ONE * entry.grow * delta
+		if entry.shrink != 0.0:
+			entry.visual.scale *= maxf(0.01, 1.0 - delta * entry.shrink)
 		if entry.fade:
 			var ratio := clampf(entry.life / maxf(0.001, entry.max_life * entry.fade_tail), 0.0, 1.0)
 			for part: MeshInstance3D in entry.parts:

@@ -8,6 +8,8 @@ const VehicleView = preload("res://presentation/vehicles/vehicle_view.gd")
 const CrewView = preload("res://presentation/crew/crew_view.gd")
 const Seats = preload("res://presentation/crew/crew_seats.gd")
 
+const WAGON_TRIANGLE_BUDGET := 2600
+
 var checks := 0
 var failures := 0
 
@@ -20,6 +22,10 @@ func _run() -> void:
 		var wagon := Rig.build_trailer(type)
 		check(wagon.name == "SteeringWheelTrailer" and str(wagon.get_meta("wagon_type")) == type, "Wagon factory preserves runtime identity: " + type)
 		check(str(wagon.get_meta("model_path", "")) == "res://assets/vehicles/military_wagon_%s.glb" % type and wagon.get_meta("model", null) != null, "Wagon uses its authored GLB adapter: " + type)
+		var triangles := 0
+		for mesh_node: MeshInstance3D in _mesh_nodes(wagon):
+			triangles += mesh_node.mesh.get_faces().size() / 3
+		check(triangles <= WAGON_TRIANGLE_BUDGET, "Wagon armor stays within geometry budget: " + type)
 		var wagon_bounds := _bounds(wagon)
 		check(absf(wagon_bounds.position.y) < 0.015 and wagon_bounds.end.y < 4.0 and wagon_bounds.size.x > 2.8 and wagon_bounds.size.z > 3.2, "Wagon body is ground-aligned and keeps its chassis footprint with role-specific upper bodywork: " + type)
 		check(wagon.get_meta("wheels", []).size() == 4 and wagon.get_meta("springs", []).size() == 4, "Wagon retains four animated terrain-contact wheels: " + type)

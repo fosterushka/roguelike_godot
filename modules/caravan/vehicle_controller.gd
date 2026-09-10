@@ -1,4 +1,5 @@
 extends CharacterBody3D
+const Profiler = preload("res://infrastructure/diagnostics/runtime_profiler.gd")
 
 signal telemetry_changed(data: Dictionary)
 signal physics_pose_advanced(delta: float)
@@ -47,6 +48,11 @@ func _ready() -> void:
 	reset_vehicle()
 
 func _physics_process(delta: float) -> void:
+	var profile_started := Profiler.begin()
+	_step_physics(delta)
+	Profiler.finish(&"vehicle_tick", profile_started)
+
+func _step_physics(delta: float) -> void:
 	if clock_delta.is_valid():
 		delta = float(clock_delta.call())
 	if delta <= 0.0:

@@ -1,5 +1,8 @@
 extends RefCounted
 
+const ROCKET_EXPANSION := 2.45
+const ROCKET_FADE_IN_RATIO := 0.12
+
 static func fireball(life: float, duration: float = 0.52) -> Dictionary:
 	var progress := clampf(1.0 - life / maxf(0.001, duration), 0.0, 1.0)
 	var expansion := 1.0 - pow(1.0 - progress, 3.0)
@@ -7,7 +10,7 @@ static func fireball(life: float, duration: float = 0.52) -> Dictionary:
 
 static func rocket(age: float, life: float, scale_value: float, opacity: float) -> Dictionary:
 	var ratio := clampf(age / maxf(0.0001, life), 0.0, 1.0)
-	return {"opacity": opacity * minf(1.0, ratio / 0.12) * (1.0 - ratio * ratio), "scale": scale_value * (1.0 + ratio * 2.45), "ratio": ratio}
+	return {"opacity": opacity * minf(1.0, ratio / ROCKET_FADE_IN_RATIO) * (1.0 - ratio * ratio), "scale": scale_value * (1.0 + ratio * ROCKET_EXPANSION), "ratio": ratio}
 
 static func sample_segment(start: Vector3, end: Vector3, carry: float, delta: float, maximum: int = 192) -> Dictionary:
 	var distance := start.distance_to(end)

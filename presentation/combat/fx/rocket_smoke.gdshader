@@ -5,9 +5,11 @@ render_mode unshaded,cull_disabled,depth_draw_never;
   uniform vec3 uDarkColor : source_color = vec3(0.7255,0.749,0.7412);
   uniform float uTime = 0.0;
   
-  uniform float vOpacity = 1.0;
-  uniform float vAge = 0.0;
-  uniform float vSeed = 0.5;
+  varying float vOpacity;
+  varying float vAge;
+  varying float vSeed;
+  uniform float expansion;
+  uniform float fade_in_ratio;
 
   float hash(vec2 point) {
     return fract(sin(dot(point, vec2(127.1, 311.7))) * 43758.5453123);
@@ -46,5 +48,25 @@ render_mode unshaded,cull_disabled,depth_draw_never;
     ALBEDO = color; ALPHA = alpha;
   }
 
-uniform float rotation_value = 0.0;
-void vertex(){ float angle=rotation_value+vAge*mix(-0.34,0.34,fract(vSeed*7.31)); VERTEX.xy=mat2(vec2(cos(angle),-sin(angle)),vec2(sin(angle),cos(angle)))*VERTEX.xy; MODELVIEW_MATRIX=VIEW_MATRIX*mat4(INV_VIEW_MATRIX[0],INV_VIEW_MATRIX[1],INV_VIEW_MATRIX[2],MODEL_MATRIX[3]); MODELVIEW_MATRIX[0].xyz*=length(MODEL_MATRIX[0].xyz); MODELVIEW_MATRIX[1].xyz*=length(MODEL_MATRIX[1].xyz); }
+// INSTANCE_CUSTOM: birth time, lifetime, seed, opacity.
+// COLOR: world drift xyz and initial rotation. All values are uploaded at spawn.
+void vertex() {
+  vAge = max(0.0, uTime - INSTANCE_CUSTOM.x);
+  float life = max(0.0001, INSTANCE_CUSTOM.y);
+  float ratio = clamp(vAge / life, 0.0, 1.0);
+  vSeed = INSTANCE_CUSTOM.z;
+  vOpacity = INSTANCE_CUSTOM.w * min(1.0, ratio / fade_in_ratio) * (1.0 - ratio * ratio);
+  float phase = vSeed * 19.1;
+  vec3 drift = COLOR.rgb * vAge;
+  // Integrated lateral swirl is independent of frame rate.
+  drift.x += (cos(phase) - cos(phase + vAge * 2.2)) * (0.045 / 2.2);
+  drift.z += (sin((phase + vAge * 2.2) * 0.83) - sin(phase * 0.83)) * (0.045 / (2.2 * 0.83));
+  float angle = COLOR.a + vAge * mix(-0.34, 0.34, fract(vSeed * 7.31));
+  VERTEX.xy = mat2(vec2(cos(angle), -sin(angle)), vec2(sin(angle), cos(angle))) * VERTEX.xy;
+  VERTEX.xy *= 1.0 + ratio * expansion;
+  if (vAge >= life) { VERTEX = vec3(0.0); }
+  vec4 origin = MODEL_MATRIX[3] + vec4(drift, 0.0);
+  MODELVIEW_MATRIX = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], origin);
+  MODELVIEW_MATRIX[0].xyz *= length(MODEL_MATRIX[0].xyz);
+  MODELVIEW_MATRIX[1].xyz *= length(MODEL_MATRIX[1].xyz);
+}

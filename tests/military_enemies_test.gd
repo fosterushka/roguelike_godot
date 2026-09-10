@@ -3,6 +3,7 @@ extends SceneTree
 const Enemies = preload("res://presentation/combat/military_enemies.gd")
 const SourceAnimation = preload("res://presentation/combat/source_animation.gd")
 const SourceModel = preload("res://presentation/combat/source_model.gd")
+const REVISED_TRIANGLE_BUDGET := 2400
 const PATH := "res://assets/actors/military_enemies.glb"
 const MODELS := ["bike", "buggy", "drone", "kamikaze", "raider", "jammerTruck", "repairCrawler", "minelayer", "boss", "wreck_bike", "wreck_buggy", "wreck_jammerTruck", "wreck_repairCrawler", "wreck_minelayer"]
 const MIN_WIDTH := {"bike": 0.8, "buggy": 2.2, "drone": 2.2, "kamikaze": 2.2, "raider": 5.0, "jammerTruck": 2.5, "repairCrawler": 6.0, "minelayer": 2.5, "boss": 10.0}
@@ -71,8 +72,11 @@ func _run() -> void:
 			var roles := []
 			for part: Dictionary in parts:
 				triangles += part.mesh.get_faces().size() / 3
-				for binding: Dictionary in part.bindings: roles.append(binding.role)
-			check(not parts.is_empty() and triangles < (Enemies.BOSS_TRIANGLE_BUDGET if model_name == "boss" else Enemies.TRIANGLE_BUDGET), model_name + variant + " imports inside triangle budget")
+				for binding: Dictionary in part.bindings:
+					roles.append(binding.role)
+					if binding.role == "wheel":
+						check(_wheel_caps_outward(part.mesh), model_name + variant + " flat wheel caps face outside")
+			check(not parts.is_empty() and triangles < (Enemies.BOSS_TRIANGLE_BUDGET if model_name == "boss" else REVISED_TRIANGLE_BUDGET), model_name + variant + " imports inside triangle budget")
 			check(parts.size() <= (6 if model_name == "boss" else 7), model_name + variant + " keeps batched static geometry")
 			if model_name in ["buggy", "raider", "jammerTruck", "minelayer"]:
 				check(roles.count("wheel") == 4, model_name + variant + " retains four wheel pivots")
@@ -156,3 +160,16 @@ func _outward_winding(mesh: Mesh) -> bool:
 			if absf(geometric.dot(authored)) <= 0.00001:
 				return false
 	return true
+
+func _wheel_caps_outward(mesh: Mesh) -> bool:
+	var cap_vertices := 0
+	for surface in mesh.get_surface_count():
+		var arrays: Array = mesh.surface_get_arrays(surface)
+		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+		for index in vertices.size():
+			if absf(normals[index].x) > 0.99:
+				cap_vertices += 1
+				if normals[index].x * vertices[index].x <= 0.0:
+					return false
+	return cap_vertices > 0

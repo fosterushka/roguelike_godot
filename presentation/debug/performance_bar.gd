@@ -24,6 +24,8 @@ var sampled_frames := 0
 var sections: Dictionary = {}
 var last_summary: Dictionary = {}
 var generation := -1
+# Names the active diagnostic scenario while the panel stays visible. Empty in normal play.
+var scenario := ""
 
 func _ready() -> void:
 	layer = 100
@@ -129,12 +131,12 @@ func _refresh() -> void:
 	var debug_memory := "Godot %.0f MiB   peak %.0f" % [_monitor(Performance.MEMORY_STATIC) / MIB, _monitor(Performance.MEMORY_STATIC_MAX) / MIB] if OS.is_debug_build() else "Godot n/a (release)"
 	var orphan := str(int(_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT))) if OS.is_debug_build() else "n/a"
 	var rows: Array[String] = [
-		"F3 DEBUG | Shift+F3 reset | last %d frames / %.1fs | %s" % [s.count, s.seconds, str(game.screen_state) if is_instance_valid(game) else "capture"],
+		"F3 DEBUG | Shift+F3 reset | last %d frames / %.1fs | %s%s" % [s.count, s.seconds, str(game.screen_state) if is_instance_valid(game) else "capture", "" if scenario.is_empty() else " | scenario " + scenario],
 		"FPS  current %.1f   min %.1f   max %.1f   avg %.1f   1%% low %.1f   0.1%% low %s" % [Frames.MS_PER_SECOND / s.current_ms, s.min_fps, s.max_fps, s.average_fps, s.low_1, low],
 		"Frame ms  current %.2f   min %.2f   max %.2f   avg %.2f | process %.2f ms   physics %.2f ms" % [s.current_ms, s.min_ms, s.max_ms, s.average_ms, _monitor(Performance.TIME_PROCESS) * Frames.MS_PER_SECOND, _monitor(Performance.TIME_PHYSICS_PROCESS) * Frames.MS_PER_SECOND],
 		"CPU process %s (OS, 100%% = 1 core) | RAM RSS %s | %s | VRAM %.0f MiB" % [cpu, rss, debug_memory, _monitor(Performance.RENDER_VIDEO_MEM_USED) / MIB],
-		"Draw calls %d   primitives %d | nodes %d   objects %d   resources %d   orphan %s" % [_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), _monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME), _monitor(Performance.OBJECT_NODE_COUNT), _monitor(Performance.OBJECT_COUNT), _monitor(Performance.OBJECT_RESOURCE_COUNT), orphan],
-		"Main viewport render: CPU %s ms   GPU %s ms | physics bodies %d   collision pairs %d" % ["%.2f" % render_cpu_ms if render_cpu_ms > 0 else "n/a", "%.2f" % gpu_ms if gpu_ms > 0 else "n/a", _monitor(Performance.PHYSICS_3D_ACTIVE_OBJECTS), _monitor(Performance.PHYSICS_3D_COLLISION_PAIRS)],
+		"Rendered objects %d   draw calls %d   primitives %d | allocated nodes %d   objects %d   resources %d   orphan %s" % [_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME), _monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), _monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME), _monitor(Performance.OBJECT_NODE_COUNT), _monitor(Performance.OBJECT_COUNT), _monitor(Performance.OBJECT_RESOURCE_COUNT), orphan],
+		"Render %dx%d at %.0f%%: CPU %s ms   GPU %s ms | physics bodies %d   collision pairs %d" % [get_window().size.x, get_window().size.y, get_viewport().scaling_3d_scale * 100.0, "%.2f" % render_cpu_ms if render_cpu_ms > 0 else "n/a", "%.2f" % gpu_ms if gpu_ms > 0 else "n/a", _monitor(Performance.PHYSICS_3D_ACTIVE_OBJECTS), _monitor(Performance.PHYSICS_3D_COLLISION_PAIRS)],
 		_actor_text(),
 		"ms/frame (inclusive): " + _section_text(["ai", "weapons", "projectiles", "snapshot", "hud"]),
 		_section_text(["simulation", "publish", "cargo", "combat_view", "fx"]) + " | graph: 16.7 ms line; scale >=50 ms"

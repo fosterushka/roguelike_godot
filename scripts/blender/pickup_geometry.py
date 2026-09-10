@@ -22,6 +22,7 @@ class MeshBuilder:
         self.vertices = []
         self.faces = []
         self.colors = []
+        self.face_uvs = {}
 
     def polygon(self, points, color, outward=None):
         if outward is not None:
@@ -70,14 +71,18 @@ class MeshBuilder:
         mesh.materials.append(material)
         uv = mesh.uv_layers.new(name="PaletteUV")
         names = list(PALETTE)
+        palette_u_scale = material.get("palette_u_scale", 1.0)
         for polygon, color in zip(mesh.polygons, self.colors):
             cell = names.index(color)
             point = ((cell % 4 + .5)/4, (cell // 4 + .5)/4)
-            for loop in polygon.loop_indices:
-                uv.data[loop].uv = point
+            for corner, loop in enumerate(polygon.loop_indices):
+                uv.data[loop].uv = self.face_uvs[polygon.index][corner] if polygon.index in self.face_uvs else (point[0] * palette_u_scale, point[1])
         bm = bmesh.new()
         bm.from_mesh(mesh)
-        bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+        # Keep explicit outward winding on isolated UV patches and wheel caps.
+        solid_faces = [face for face in bm.faces if not all(edge.is_boundary for edge in face.edges)]
+        if solid_faces:
+            bmesh.ops.recalc_face_normals(bm, faces=solid_faces)
         bmesh.ops.triangulate(bm, faces=list(bm.faces))
         bm.to_mesh(mesh)
         bm.free()
@@ -254,7 +259,7 @@ def wheel_mesh(material):
     count = 12
     points = []
     # A low-poly tire with broad shoulders; only 60 vertices for its main shell.
-    rings = [(-.32, .53), (-.28, .65), (0, .705), (.28, .65), (.32, .53)]
+    rings = [(-.32, .53), (-.24, .705), (.24, .705), (.32, .53)]
     for x, radius in rings:
         for index in range(count):
             angle = 2*math.pi*index/count
@@ -265,23 +270,14 @@ def wheel_mesh(material):
             j = (i+1) % count
             faces.append((ring*count+i, ring*count+j, (ring+1)*count+j, (ring+1)*count+i))
             shades[len(faces)-1] = "tread" if ring in (1, 2) and i % 2 else "rubber"
-    faces.extend([tuple(reversed(range(count))), tuple(range(4*count, 5*count))])
+    faces.extend([tuple(reversed(range(count))), tuple(range((len(rings)-1)*count, len(rings)*count))])
     builder.solid(points, faces, "rubber", shades)
-    # Both outer faces are detailed, so one linked mesh serves left and right.
+    # Flat rim/hub faces share one wheel mesh on both sides; no lug geometry.
+    rim_sides = 8
     for side in (-1, 1):
-        rings = []
-        rim_sides = 8
-        for x, radius in ((side*.326, .40), (side*.348, .32)):
-            rings.append([(x, math.cos(i*2*math.pi/rim_sides)*radius, math.sin(i*2*math.pi/rim_sides)*radius)
-                          for i in range(rim_sides)])
-        builder.loft(rings, "steel")
-        builder.polygon([(side*.351, math.cos(i*2*math.pi/rim_sides)*.135,
-                          math.sin(i*2*math.pi/rim_sides)*.135) for i in range(rim_sides)], "accent", (side, 0, 0))
-        for i in range(6):
-            angle = i*2*math.pi/6
-            y, z = math.cos(angle)*.235, math.sin(angle)*.235
-            builder.polygon([(side*.354, y-.035, z-.035), (side*.354, y+.035, z-.035),
-                             (side*.354, y+.035, z+.035), (side*.354, y-.035, z+.035)], "trim", (side, 0, 0))
+        for depth, radius, color in ((.348,.40,"steel"),(.351,.135,"accent")):
+            builder.polygon([(side*depth, math.cos(i*math.tau/rim_sides)*radius,
+                              math.sin(i*math.tau/rim_sides)*radius) for i in range(rim_sides)], color, (side,0,0))
     return builder.finish("PickupSharedWheelMesh", material)
 
 

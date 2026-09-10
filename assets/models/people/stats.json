@@ -1,0 +1,54 @@
+{
+  "MODEL_RIFLEMAN": {
+    "triangles": 536,
+    "parts": 7
+  },
+  "MODEL_AK": {
+    "triangles": 572,
+    "parts": 7
+  },
+  "MODEL_BAZOOKA": {
+    "triangles": 536,
+    "parts": 7
+  },
+  "MODEL_BOMBER": {
+    "triangles": 512,
+    "parts": 7
+  },
+  "MODEL_SEATED": {
+    "triangles": 540,
+    "parts": 22
+  },
+  "MODEL_CREW_MECHANIC": {
+    "triangles": 84,
+    "parts": 1
+  },
+  "MODEL_CREW_SHOOTER": {
+    "triangles": 60,
+    "parts": 1
+  },
+  "MODEL_CREW_LOADER": {
+    "triangles": 24,
+    "parts": 1
+  },
+  "MODEL_CREW_LOOTER": {
+    "triangles": 80,
+    "parts": 1
+  },
+  "MODEL_CREW_FUEL": {
+    "triangles": 60,
+    "parts": 1
+  },
+  "MODEL_CREW_ANTI_TANK": {
+    "triangles": 124,
+    "parts": 1
+  },
+  "MODEL_CREW_ANTI_AIR": {
+    "triangles": 60,
+    "parts": 1
+  },
+  "MODEL_CREW_CIVILIAN": {
+    "triangles": 56,
+    "parts": 1
+  }
+}

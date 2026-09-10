@@ -196,20 +196,22 @@ static func create_pool(model_name: String, capacity: int) -> Dictionary:
 		visual.multimesh = multimesh
 		visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if part.cast_shadow else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		root.add_child(visual)
-		batches.append({"mesh": multimesh, "base": part.transform, "animation": part.animation, "bindings": part.bindings, "rig": part.rig})
+		batches.append({"mesh": multimesh, "base": part.transform, "animation": part.animation, "bindings": part.bindings, "rig": part.rig, "static": part.rig.is_empty() and part.bindings.is_empty()})
 	return {"root": root, "batches": batches, "capacity": capacity}
 
 
 static func set_pool_instance(pool: Dictionary, index: int, transform: Transform3D, pose: Dictionary = {}) -> void:
 	for batch in pool.batches:
-		batch.mesh.set_instance_transform(index, transform * SourceAnimation.transform_for(batch, pose))
+		batch.mesh.set_instance_transform(index, transform * (batch.base if batch.static else SourceAnimation.transform_for(batch, pose)))
 		if index >= batch.mesh.visible_instance_count:
 			batch.mesh.visible_instance_count = index + 1
 
 
 static func set_pool_visible_count(pool: Dictionary, count: int) -> void:
 	for batch in pool.batches:
-		batch.mesh.visible_instance_count = clampi(count, 0, int(pool.capacity))
+		var visible_count := clampi(count, 0, int(pool.capacity))
+		if batch.mesh.visible_instance_count != visible_count:
+			batch.mesh.visible_instance_count = visible_count
 
 
 static func hide_pool_instance(pool: Dictionary, index: int) -> void:

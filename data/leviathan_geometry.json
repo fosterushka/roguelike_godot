@@ -1,6 +1,6 @@
 {
   "coordinate_system": "Blender: X right, Y rear, Z up; scaled by enemy_vehicle_styles.models.boss.scale",
-  "triangle_budget": 4500,
+  "triangle_budget": 2700,
   "components": {
     "missilePod": {
       "anchor": [

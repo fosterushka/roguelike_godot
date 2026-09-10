@@ -7,9 +7,12 @@ import math
 import bpy
 from mathutils import Vector
 
+TRACK_SEGMENTS = 6
+TRACK_SHOE_SPACING = .24
+
 
 def install(api):
-    globals().update({key: api[key] for key in ('group','cube','cyl','strut','wheel','finish','join_into')})
+    globals().update({key: api[key] for key in ('group','cube','cyl','disc','strut','wheel','finish','join_into')})
 
 
 def hull(p,name,rings,color='paint'):
@@ -26,14 +29,40 @@ def hull(p,name,rings,color='paint'):
     return finish(obj,color)
 
 
-def panel(p,name,loc,size,color='paint',angle=0,bevel=True):
-    obj=cube(p,name,loc,size,color,min(size)*.2 if bevel else 0);obj.rotation_euler.x=angle;return obj
+def surface(p,name,loc,size,color,axis,sign=1):
+    """One outward UV face for markings, inset panels and track ribs."""
+    tangent = [i for i in range(3) if i != axis]
+    vertices = []
+    for u, v in ((-1,-1),(1,-1),(1,1),(-1,1)):
+        point = [0.0, 0.0, 0.0]
+        point[axis] = sign * size[axis] * .5
+        point[tangent[0]] = u * size[tangent[0]] * .5
+        point[tangent[1]] = v * size[tangent[1]] * .5
+        vertices.append(point)
+    normal = (Vector(vertices[1])-Vector(vertices[0])).cross(Vector(vertices[2])-Vector(vertices[0]))
+    face = (0,1,2,3) if normal[axis] * sign > 0 else (3,2,1,0)
+    data = bpy.data.meshes.new(name)
+    data.from_pydata(vertices, [], [face]); data.update()
+    obj = bpy.data.objects.new(name, data)
+    bpy.context.collection.objects.link(obj); obj.parent = p; obj.location = loc
+    return finish(obj, color)
+
+
+def panel(p,name,loc,size,color='paint',angle=0,bevel=False):
+    if color == 'glass':
+        axis = min(range(3), key=lambda i: size[i])
+        sign = (1 if loc[0] > 0 else -1) if axis == 0 else -1
+        obj=surface(p,name,loc,size,color,axis,sign)
+    else:
+        obj=cube(p,name,loc,size,color,min(size)*.2 if bevel else 0)
+    obj.rotation_euler.x=angle
+    return obj
 
 
 def vent(p,loc,width=.5,count=5):
     x,y,z=loc
-    cube(p,'RecessedCoolingBox',loc,(width,.42,.06),'dark',.018)
-    for i in range(count): cube(p,'CoolingFin',(x,y-.16+i*.32/(count-1),z+.04),(width*.92,.032,.035),'steel')
+    surface(p,'RecessedCoolingBox',loc,(width,.42,.06),'dark',2)
+    for i in range(count): surface(p,'CoolingFin',(x,y-.16+i*.32/(count-1),z+.04),(width*.92,.032,.035),'steel',2)
 
 
 def seat(p,x,y,z):
@@ -121,13 +150,13 @@ def raider():
     return p
 
 
-def track(p,name,x,half_length,radius,width,road_count=5):
+def track(p,name,x,half_length,radius,width,road_count=4):
     """Continuous capsule-shaped belt with exposed road wheels and grousers."""
     z=radius+.035
     points=[]
     for end,start in ((half_length,-math.pi/2),(-half_length,math.pi/2)):
-        for i in range(9):
-            angle=start+i*math.pi/8
+        for i in range(TRACK_SEGMENTS+1):
+            angle=start+i*math.pi/TRACK_SEGMENTS
             points.append((end+math.cos(angle)*radius,z+math.sin(angle)*radius))
     # Extruded closed tread surface, interior is hollow so wheels read clearly.
     vertices=[]
@@ -141,14 +170,15 @@ def track(p,name,x,half_length,radius,width,road_count=5):
     for index in range(road_count):
         y=-half_length+index*2*half_length/(road_count-1)
         # Cheap track wheels use three coaxial cylinders, no hidden roadwheel lug hardware.
-        parts.append(cyl(p,'TrackRoadWheel',(x,y,z),radius*.81,width*.91,'shadow',(0,math.pi/2,0),12))
-        for side in (-1,1):parts.append(cyl(p,'TrackHub',(x+side*width*.48,y,z),radius*.34,.035,'steel',(0,math.pi/2,0),10))
+        parts.append(cyl(p,'TrackRoadWheel',(x,y,z),radius*.81,width*.91,'shadow',(0,math.pi/2,0),8))
+        side=1 if x>0 else -1
+        parts.append(disc(p,'TrackHub',(x+side*width*.48,y,z),radius*.34,'steel',(0,side*math.pi/2,0),8))
     for i in range(n):
         a=points[i];b=points[(i+1)%n]
-        distance=math.dist(a,b);count=max(1,round(distance/.17))
+        distance=math.dist(a,b);count=max(1,round(distance/TRACK_SHOE_SPACING))
         for j in range(count):
             fraction=(j+.5)/count;y=a[0]+(b[0]-a[0])*fraction;zz=a[1]+(b[1]-a[1])*fraction
-            shoe=cube(p,'TreadShoe',(x,y,zz),(width*1.08,distance/count*.67,.048),'steel')
+            shoe=surface(p,'TreadShoe',(x,y,zz),(width*1.08,distance/count*.67,.048),'steel',2,-1)
             shoe.rotation_euler.x=math.atan2(b[1]-a[1],b[0]-a[0]);parts.append(shoe)
     join_into(belt,parts);return belt
 
@@ -164,8 +194,7 @@ def crawler():
         panel(p,'TrackSkirt',(side*1.02,.21,.95),(.2,2.02,.14),'light')
         cube(p,'ServiceLocker',(side*.59,.74,1.23),(.43,.94,.55),'paint',.045)
         for y in (.40,.71,1.02):
-            cube(p,'ToolDrawer',(side*.819,y,1.27),(.024,.25,.24),'shadow',.01)
-            cube(p,'DrawerHandle',(side*.84,y,1.28),(.035,.12,.025),'cream')
+            surface(p,'ToolDrawer',(side*.819,y,1.27),(.024,.25,.24),'shadow',0,side)
         cube(p,'Worklamp',(side*.54,-1.15,1.04),(.18,.08,.15),'cream',.02)
     vent(p,(0,.65,1.33),.49)
     cyl(p,'CraneRace',(0,1.00,1.43),.24,.20,'steel',(0,0,0),12)
@@ -312,7 +341,7 @@ def utility_truck(name, feature):
     if feature=='jammer':
         cube(p,'Transceiver',(0,.80,1.04),(.98,.84,.59),'shadow',.04)
         for side in (-1,1):
-            for y in (.51,.65,.79,.93,1.07):cube(p,'HeatSink',(side*.52,y,1.05),(.08,.035,.48),'steel')
+            for y in (.51,.65,.79,.93,1.07):surface(p,'HeatSink',(side*.52,y,1.05),(.08,.035,.48),'steel',0,side)
         cyl(p,'Mast',(0,.80,1.71),.075,.88,'steel',(0,0,0),10)
         head=cube(p,'JammerHead',(0,.80,2.16),(.21,.21,.15),'steel')
         pieces=[]
@@ -373,9 +402,6 @@ def variant_details(p, variant):
         else:
             length={'raider':1.12,'jammerTruck':1.46,'minelayer':1.46,'repairCrawler':1.30,'boss':2.8}[name]
             for side in (-1,1):
-                for index in range(3):
-                    yy=.20+(index+.5)*length/3
-                    panel(p,'AppliqueArmor',(side*(half+.14),yy,z+.27),(.15,length/3-.07,.43),'light')
-                    cube(p,'PlateFastener',(side*(half+.225),yy,z+.38),(.02,.075,.075),'steel')
+                panel(p,'AppliqueArmor',(side*(half+.14),.20+length*.5,z+.27),(.15,length-.07,.43),'light')
             panel(p,'HoodArmor',(0,front+.34,z+.08),(half*1.5,.47,.09),'paint',-.10)
     return p

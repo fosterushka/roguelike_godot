@@ -3,6 +3,7 @@ extends SceneTree
 const Rig = preload("res://presentation/vehicles/wheeled_rig.gd")
 const Suspension = preload("res://modules/caravan/wheel_suspension.gd")
 const View = preload("res://presentation/vehicles/vehicle_view.gd")
+const DAMPER_TRIANGLE_BUDGET := 24
 const PICKUP_PATH := "res://assets/vehicles/military_pickup.glb"
 
 var checks := 0
@@ -28,6 +29,9 @@ func _run() -> void:
 	check(str(rig.get_meta("model_path", "")) == PICKUP_PATH and rig.get_meta("model", null) != null, "Player factory records the authored pickup model")
 	check(not rig.has_node("Cabin") and not rig.has_node("RearEquipmentDeck"), "Player factory no longer builds placeholder cabin and cargo boxes")
 	check(_mesh_nodes(rig).size() == 9, "Runtime pickup keeps five authored meshes and four articulated dampers")
+	for spring: Node3D in rig.get_meta("springs"):
+		var damper := spring.get_node("SuspensionDamper") as MeshInstance3D
+		check(damper.mesh.get_faces().size() / 3 <= DAMPER_TRIANGLE_BUDGET, "Shared suspension mesh has no invisible axial subdivisions")
 	var wheels: Array = rig.get_meta("wheels", [])
 	check(wheels.size() == 4, "Authored pickup keeps four wheel pivots for vehicle animation")
 	var wheel_meshes: Array = []

@@ -71,6 +71,35 @@ func _run() -> void:
 				check(actual_part.transform.origin.distance_to(expected_transform.origin) < 0.00001 and actual_part.basis.x.distance_to(expected_transform.basis.x) < 0.00001 and actual_part.basis.y.distance_to(expected_transform.basis.y) < 0.00001, "Source detailed debris part matrix")
 				check(actual_part.material_override.albedo_color.to_html(false) == expected.parts[part_index].color, "Source detailed debris material color")
 	effects.reset_effects()
+	var trail = effects.rockets
+	trail._spawn(Vector3(3, 2, 4), 0.2)
+	check(trail.active_count() == 1, "GPU trail allocates one particle")
+	var batch: MultiMesh = trail._batch.multimesh
+	var particle := batch.get_instance_custom_data(0)
+	# Headless dummy RenderingServer does not retain custom MultiMesh data.
+	if DisplayServer.get_name() != "headless":
+		near(particle.r, -0.2, "GPU birth time retains sub-frame emission age")
+		check(particle.g > 0.2 and particle.a > 0.0, "GPU lifetime and opacity are uploaded at birth")
+	var transform := batch.get_instance_transform(0)
+	trail.advance(0.25)
+	check(batch.get_instance_transform(0) == transform and batch.get_instance_custom_data(0) == particle, "Advancing smoke changes neither CPU transforms nor per-particle shader data")
+	near(trail._material.get_shader_parameter("uTime"), 0.25, "One shared clock drives GPU smoke")
+	trail.advance(0.0)
+	near(trail.elapsed, 0.25, "Pause freezes GPU smoke clock")
+	var before_preview: int = trail.random.state
+	trail.set_warmup(true, Vector3.UP)
+	check(trail.active_count() == 1 and trail.random.state == before_preview, "Warmup has a separate GPU instance and does not consume live slots")
+	trail.set_warmup(false, Vector3.UP)
+	trail.advance(3.0)
+	check(trail.active_count() == 0 and batch.visible_instance_count == 0, "Expired GPU particles stop drawing")
+	for index in trail.CAPACITY + 5:
+		trail._spawn(Vector3(index, 0, 0))
+	check(trail.active_count() == trail.CAPACITY and batch.visible_instance_count == trail.CAPACITY, "GPU smoke ring remains bounded when overwritten")
+	trail.reset()
+	check(trail.active_count() == 0 and batch.visible_instance_count == 0, "GPU reset clears old smoke")
+	trail._spawn(Vector3.ZERO)
+	check(trail.active_count() == 1 and batch.visible_instance_count == 1, "New run cannot reveal stale GPU particles")
+	trail.reset()
 	var random_before: int = effects.random.state
 	var smoke_random_before: int = effects.rockets.random.state
 	effects.set_warmup_visible(true)
@@ -100,7 +129,7 @@ func _run() -> void:
 	effects.reset_effects()
 	effects.on_event({"kind": "death", "type": "buggy", "cause": "tornado"})
 	check(effects.fireballs.active_count() == 1 and effects.transient.active_count() > 0, "Source tornado death keeps ordinary visual destruction without rewards")
-	check(effects.rockets.emitters.is_empty() and effects.rockets.pool.active_count() == 0, "Reset clears all trail emitters and particles")
+	check(effects.rockets.emitters.is_empty() and effects.rockets.active_count() == 0, "Reset clears all trail emitters and particles")
 	effects.reset_effects()
 	for index in 12:
 		effects.wrecks.spawn({"id": index, "type": "bike", "enemy_kind": "bike", "position": Vector3(index, 0, 0), "heading": 0.4})

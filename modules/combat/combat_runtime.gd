@@ -50,6 +50,11 @@ func finish_run(won: bool, reason: String = "") -> bool:
 	return true
 
 func _physics_process(delta: float) -> void:
+	var started := Profiler.begin()
+	_step_physics(delta)
+	Profiler.finish(&"combat_tick", started)
+
+func _step_physics(delta: float) -> void:
 	if clock_delta.is_valid():
 		delta = float(clock_delta.call())
 	if delta <= 0.0:
@@ -58,7 +63,9 @@ func _physics_process(delta: float) -> void:
 		return
 	_sync_vehicle_to_model()
 	if support_step.is_valid():
+		var support_started := Profiler.begin()
 		support_step.call(delta)
+		Profiler.finish(&"support_tick", support_started)
 	var profile_started := Profiler.begin()
 	model.step(delta)
 	Profiler.finish(&"simulation", profile_started)

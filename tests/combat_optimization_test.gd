@@ -31,6 +31,30 @@ func check(value: bool, message: String) -> void:
 		push_error(message)
 
 func _run() -> void:
+	var grid = preload("res://modules/world/spatial_grid.gd").new()
+	var obstacle := {"id": "near", "position": Vector3.ZERO, "radius": 2.0}
+	grid.insert(obstacle)
+	var nearby: Array = grid.nearby(Vector3.ZERO, 3.0)
+	nearby.clear()
+	check(grid.nearby(Vector3.ZERO, 3.0) == [obstacle], "Caller edits cannot poison cached obstacle candidates")
+	obstacle.radius = 3.0
+	check(grid.nearby(Vector3.ZERO, 3.0)[0].radius == 3.0, "Cached candidates retain live record references")
+	grid.remove(obstacle)
+	check(grid.nearby(Vector3.ZERO, 3.0).is_empty(), "Removal invalidates obstacle query cache")
+	obstacle.position = Vector3(60, 0, 0)
+	obstacle.radius = 65.0
+	grid.insert(obstacle)
+	check(grid.nearby(Vector3.ZERO, 3.0) == [obstacle], "Insertion and a larger maximum radius invalidate cached empty regions")
+	for index in grid.MAX_CACHED_REGIONS + 20:
+		var point := Vector3(index * grid.CELL_SIZE, 0, -index * grid.CELL_SIZE)
+		var actual: Array = grid.nearby(point, 3.0)
+		var expected: Array = []
+		var reach: float = 3.0 + grid.maximum_radius
+		for x in range(floori((point.x - reach) / grid.CELL_SIZE), floori((point.x + reach) / grid.CELL_SIZE) + 1):
+			for z in range(floori((point.z - reach) / grid.CELL_SIZE), floori((point.z + reach) / grid.CELL_SIZE) + 1):
+				expected.append_array(grid.buckets.get(Vector2i(x, z), []))
+		check(actual == expected, "Bounded region cache preserves candidate order at cell boundaries")
+	check(grid._regions.size() <= grid.MAX_CACHED_REGIONS, "Obstacle cache remains bounded during travel")
 	var model := Model.new()
 	var progression := Progression.new("/private/tmp/combat-optimization-%d.json" % Time.get_ticks_usec())
 	progression.setup(model)

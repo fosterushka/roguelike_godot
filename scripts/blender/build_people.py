@@ -7,6 +7,8 @@ Godot receives the same axis convention through the GLB exporter.
 from pathlib import Path
 import sys
 import math
+import json
+import shutil
 
 import bpy
 from mathutils import Euler, Matrix, Vector
@@ -29,20 +31,47 @@ RIG = {
 }
 
 
+# One atlas/material for infantry, walking NPCs and seated crew.
+ATLAS_CELL = 32
+ATLAS_WIDTH = ATLAS_CELL * 8
+ATLAS_HEIGHT = ATLAS_CELL * 4
+PALETTE_U_SCALE = 0.5
+FACE_MIN_Y = -.165
+FACE_MAX_Y = .17
+FACE_WIDTH = .31
+
+
 def palette_material():
-    image = bpy.data.images.new("people_palette.png", 32, 32)
-    for index, hex_color in enumerate(PALETTE.values()):
-        color = tuple(int(hex_color[i:i + 2], 16) / 255 for i in (0, 2, 4)) + (1.0,)
+    image = bpy.data.images.new("people_palette.png", ATLAS_WIDTH, ATLAS_HEIGHT)
+    pixels = [0.0] * (ATLAS_WIDTH * ATLAS_HEIGHT * 4)
+    def rect(x0, y0, x1, y1, color):
+        value = PALETTE[color]
+        rgba = [int(value[i:i + 2], 16) / 255 for i in (0, 2, 4)] + [1.0]
+        for y in range(y0, y1):
+            for x in range(x0, x1):
+                offset = (y * ATLAS_WIDTH + x) * 4
+                pixels[offset:offset + 4] = rgba
+    for index, color in enumerate(PALETTE):
         row, column = divmod(index, 4)
-        for y in range(row * 8, row * 8 + 8):
-            for x in range(column * 8, column * 8 + 8):
-                image.pixels[(y * 32 + x) * 4:(y * 32 + x + 1) * 4] = color
+        rect(column * ATLAS_CELL, row * ATLAS_CELL, (column + 1) * ATLAS_CELL, (row + 1) * ATLAS_CELL, color)
+    # Goggles, bridge, nose shade and mouth are painted on the existing face.
+    rect(128, 0, 256, 128, "accent")
+    rect(139, 38, 245, 75, "trim")
+    rect(144, 44, 187, 69, "glass")
+    rect(197, 44, 240, 69, "glass")
+    rect(146, 58, 183, 65, "glass_light")
+    rect(199, 58, 236, 65, "glass_light")
+    rect(187, 28, 197, 42, "paint_shadow")
+    rect(167, 13, 217, 18, "paint_shadow")
+    image.pixels.foreach_set(pixels)
     image.filepath_raw = str(OUT / "palette.png")
     image.file_format = "PNG"
     image.save()
+    shutil.copyfile(OUT / "palette.png", GAME_OUT.with_name("military_people_palette.png"))
     image.pack()
     image.filepath = "//palette.png"
     material = bpy.data.materials.new("MilitaryPeoplePalette")
+    material["palette_u_scale"] = PALETTE_U_SCALE
     material.use_nodes = True
     bsdf = material.node_tree.nodes.get("Principled BSDF")
     bsdf.inputs["Roughness"].default_value = 0.88
@@ -62,42 +91,46 @@ def mesh(name, build, material):
     return builder.finish(name, material)
 
 
-def tailored(builder, center, levels, color):
+def tailored(builder, center, levels, color, chamfer=True):
     """Eight-sided tailored volumes, instead of rectangular placeholder anatomy."""
     cx, cy, cz = center
     rings=[]
     for y, width, depth in levels:
         bevel=min(width,depth)*.22
         outline=[(-width/2+bevel,-depth/2),(width/2-bevel,-depth/2),(width/2,-depth/2+bevel),(width/2,depth/2-bevel),(width/2-bevel,depth/2),(-width/2+bevel,depth/2),(-width/2,depth/2-bevel),(-width/2,-depth/2+bevel)]
+        if not chamfer:
+            outline=[(-width/2,-depth/2),(width/2,-depth/2),(width/2,depth/2),(-width/2,depth/2)]
         rings.append([(cx+x,cy+y,cz+z) for x,z in outline])
     builder.loft(rings,color)
 
 
+def front_patch(builder, center, size, color):
+    """Flush armor color on one visible face; no hidden box walls."""
+    x,y,z=center
+    w,h,depth=(value*.5 for value in size)
+    builder.polygon([(x-w,y-h,z+depth),(x+w,y-h,z+depth),
+                     (x+w,y+h,z+depth),(x-w,y+h,z+depth)],color,(0,0,1))
+
+
 def limb_meshes(material):
     def leg(builder):
-        tailored(builder,(0,0,0),[(-.46,.14,.16),(-.28,.18,.18),(-.13,.205,.21),(.015,.19,.21)],"paint_shadow")
-        builder.box((0, -0.25, .112), (.19, .16, .055), "trim")
-        tailored(builder,(0,0,.035),[(-.55,.22,.32),(-.46,.21,.31),(-.39,.17,.22)],"rubber")
-        for y in (-.43,-.46,-.49): builder.box((0,y,.185),(.15,.015,.015),"steel")
+        tailored(builder,(0,0,0),[(-.46,.14,.16),(-.13,.205,.21),(.015,.19,.21)],"paint_shadow", chamfer=False)
+        front_patch(builder,(0, -0.25, .112), (.19, .16, .055), "trim")
+        tailored(builder,(0,0,.035),[(-.55,.22,.32),(-.46,.21,.31),(-.39,.17,.22)],"rubber", chamfer=False)
         builder.box((0, -0.555, .018), (.235, .045, .34), "dark")
-        builder.box((0, -0.025, .0), (.205, .08, .205), "paint_light")
     def arm(builder):
-        tailored(builder,(0,0,0),[(-.44,.125,.14),(-.27,.15,.17),(-.17,.17,.18),(.015,.185,.19)],"paint")
-        builder.box((0, -0.12, .095), (.175, .15, .035), "paint_light")
-        tailored(builder,(0,-.47,0),[(-.07,.11,.13),(.05,.135,.15)],"trim")
-        builder.box((0,-.25,-.091),(.16,.11,.045),"trim")
-        builder.box((0, -0.03, .0), (.19, .07, .19), "paint_light")
+        tailored(builder,(0,0,0),[(-.44,.125,.14),(-.17,.17,.18),(.015,.185,.19)],"paint", chamfer=False)
+        front_patch(builder,(0, -0.12, .095), (.175, .15, .035), "paint_light")
+        tailored(builder,(0,-.47,0),[(-.07,.11,.13),(.05,.135,.15)],"trim", chamfer=False)
     def head(builder):
         tailored(builder,(0,0,0),[(-.165,.19,.23),(-.11,.28,.28),(.07,.31,.30),(.17,.28,.27)],"accent")
-        builder.box((0,-.066,.177),(.07,.09,.055),"accent")
-        builder.box((0,-.127,.152),(.15,.013,.016),"paint_shadow")
-        for side in (-1,1):
-            builder.box((side*.166,.016,0),(.048,.15,.12),"trim")
-            builder.box((side*.167,-.098,.067),(.022,.17,.035),"paint_shadow")
-        builder.box((0, -.035, .182), (.25, .10, .026), "glass")
-        for side in (-1, 1):
-            builder.box((side * .075, -.035, .202), (.10, .075, .022), "glass_light")
-        builder.box((0, -.035, .195), (.035, .09, .032), "trim")
+        # +Z face edges in the tailored eight-sided head; UVs share one drawing.
+        for face_index in (5, 13, 21):
+            builder.face_uvs[face_index] = [
+                (PALETTE_U_SCALE + (builder.vertices[i][0] / FACE_WIDTH + .5) * PALETTE_U_SCALE,
+                 (builder.vertices[i][1] - FACE_MIN_Y) / (FACE_MAX_Y - FACE_MIN_Y))
+                for i in builder.faces[face_index]
+            ]
         builder.box((0, -.18, -.02), (.13, .05, .13), "accent")
         rings = []
         for y, radius in ((.09, .215), (.23, .205), (.29, .14)):
@@ -110,20 +143,13 @@ def limb_meshes(material):
 def torso_mesh(kind, material):
     def build(builder):
         color = "paint" if kind in ("rifleman", "ak", "bazooka") else "paint_shadow"
-        tailored(builder,(0,0,0),[(-.35,.45,.30),(-.18,.49,.33),(.20,.56,.35),(.35,.42,.29)],color)
-        tailored(builder,(0,.13,.183),[(-.22,.36,.065),(.13,.40,.07),(.21,.28,.055)],"trim")
+        tailored(builder,(0,0,0),[(-.35,.45,.30),(-.18,.49,.33),(.20,.56,.35),(.35,.42,.29)],color, chamfer=False)
+        tailored(builder,(0,.13,.183),[(-.22,.36,.065),(.13,.40,.07),(.21,.28,.055)],"trim", chamfer=False)
         for side in (-1,1):
-            builder.box((side*.19,.11,.191),(.055,.43,.036),"accent")
-        builder.box((0,-.345,.175),(.075,.053,.028),"steel")
-        builder.box((0, -.19, .19), (.48, .40, .075), "trim")
+            front_patch(builder,(side*.19,.11,.191),(.055,.43,.036),"accent")
         builder.box((0, -.42, .02), (.58, .06, .34), "paint_light")
         builder.box((0, .24, -.20), (.44, .22, .10), "bed")
-        builder.box((0, -.24, .245), (.43, .07, .045), "paint_light")
-        for x in (-.14,0,.14):
-            builder.box((x,.035,.28),(.12,.031,.025),"paint_light")
-            builder.box((x,-.067,.278),(.025,.04,.019),"steel")
-        for side in (-1, 0, 1):
-            builder.box((side * .14, -.06, .245), (.115, .16, .055), "bed")
+        builder.box((0, -.06, .245), (.395, .16, .055), "bed")
         builder.box((-.31, .06, .08), (.11, .28, .17), "steel")
         builder.box((-.31, .19, .19), (.12, .045, .06), "accent")
         for side in (-1, 1):
@@ -212,13 +238,13 @@ def add_crew_assets(collection, material, shared):
         obj.location=(position[0],-position[2],position[1]); obj["seat_role_uniform"]=uniform
         return obj
     def volume(size, color):
-        return lambda b: tailored(b,(0,0,0),[(-size[1]/2,size[0]*.91,size[2]*.91),(size[1]*.30,size[0],size[2]),(size[1]/2,size[0]*.87,size[2]*.86)],color)
+        return lambda b: tailored(b,(0,0,0),[(-size[1]/2,size[0]*.91,size[2]*.91),(size[1]*.30,size[0],size[2]),(size[1]/2,size[0]*.87,size[2]*.86)],color, chamfer=False)
     part("Pelvis",volume((.38,.20,.30),"paint"),(0,.42,0),True)
     part("Torso",volume((.48,.64,.30),"paint"),(0,.83,-.03),True)
     # The head is the same authored helmet, goggles and face used on infantry.
     head=bpy.data.objects.new("Head",shared[2]); collection.objects.link(head); head.parent=seated; head.location=(0,-.01,1.29); head.scale=(.90,.90,.90)
-    part("VestPlate",lambda b: tailored(b,(0,0,0),[(-.2,.31,.06),(.11,.41,.07),(.2,.28,.055)],"trim"),(0,.88,.14))
-    part("VestPouches",lambda b: [b.box((x,0,0),(.105,.14,.08),"bed") for x in (-.14,0,.14)],(0,.76,.21))
+    part("VestPlate",lambda b: tailored(b,(0,0,0),[(-.2,.31,.06),(.11,.41,.07),(.2,.28,.055)],"trim", chamfer=False),(0,.88,.14))
+    part("VestPouches",lambda b: b.box((0,0,0),(.385,.14,.08),"bed"),(0,.76,.21))
     part("PickupBenchCushion",volume((.62,.14,.58),"bed"),(0,.25,0))
     for side in (-1,1):
         suffix="" if side<0 else "Right"
@@ -242,14 +268,12 @@ def add_crew_assets(collection, material, shared):
                     b.box((x,-.35,.26),(.06,.21,.06),"steel")
                     b.box((x,-.24,.26),(.09,.075,.045),"steel")
                 b.box((.32,-.17,.0),(.17,.32,.22),"bed")
-                b.box((.34,-.1,.125),(.08,.03,.026),"amber")
             elif role=="shooter":
                 for x in (-.25,-.08,.09,.26): b.box((x,-.12,.285),(.12,.22,.10),"paint_shadow")
                 b.box((0,.0,-.245),(.37,.45,.19),"paint")
             elif role=="loader":
                 b.box((0,0,-.28),(.42,.48,.23),"steel")
-                for y in (-.16,0,.16): b.box((0,y,-.411),(.39,.03,.021),"accent")
-                for x in (-.2,-.1,0,.1,.2): b.box((x,.17,.27),(.055,.19,.065),"amber")
+                b.box((0,.17,.27),(.455,.19,.065),"amber")
             elif role=="looter":
                 tailored(b,(0,0,-.32),[(-.36,.37,.25),(.2,.46,.30),(.36,.33,.25)],"accent")
                 for x in (-.14,.14): b.box((x,0,-.481),(.045,.65,.027),"trim")
@@ -325,6 +349,8 @@ def main():
     shared = limb_meshes(material)
     roots = [add_model(collection, kind, shared, material) for kind in ("rifleman", "ak", "bazooka", "bomber")]
     crew_roots = add_crew_assets(collection, material, shared)
+    stats = {root.name: {"triangles": sum(len(p.vertices)-2 for child in root.children for p in child.data.polygons), "parts": len(root.children)} for root in roots + crew_roots}
+    (OUT / "stats.json").write_text(json.dumps(stats, indent=2) + "\n")
     for crew_root in crew_roots: crew_root.hide_render = True
     for index, root in enumerate(roots): root.location.x = (index - 1.5) * 1.45
     add_preview(scene)

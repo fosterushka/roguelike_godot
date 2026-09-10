@@ -1,10 +1,13 @@
 extends RefCounted
 
 const CELL_SIZE := 32.0
+const MAX_CACHED_REGIONS := 128
 var buckets: Dictionary = {}
 var maximum_radius := 0.0
+var _regions: Dictionary = {}
 
 func remove(record: Dictionary) -> void:
+	_regions.clear()
 	var point: Vector3 = record.position
 	var key := Vector2i(floori(point.x / CELL_SIZE), floori(point.z / CELL_SIZE))
 	if buckets.has(key):
@@ -13,6 +16,7 @@ func remove(record: Dictionary) -> void:
 			buckets.erase(key)
 
 func insert(record: Dictionary) -> void:
+	_regions.clear()
 	var point: Vector3 = record.position
 	var key := Vector2i(floori(point.x / CELL_SIZE), floori(point.z / CELL_SIZE))
 	if not buckets.has(key):
@@ -21,12 +25,20 @@ func insert(record: Dictionary) -> void:
 	maximum_radius = maxf(maximum_radius, float(record.radius))
 
 func nearby(point: Vector3, radius: float) -> Array:
-	var result: Array = []
 	var reach := radius + maximum_radius
-	for x in range(floori((point.x - reach) / CELL_SIZE), floori((point.x + reach) / CELL_SIZE) + 1):
-		for z in range(floori((point.z - reach) / CELL_SIZE), floori((point.z + reach) / CELL_SIZE) + 1):
-			result.append_array(buckets.get(Vector2i(x, z), []))
-	return result
+	var first := Vector2i(floori((point.x - reach) / CELL_SIZE), floori((point.z - reach) / CELL_SIZE))
+	var last := Vector2i(floori((point.x + reach) / CELL_SIZE), floori((point.z + reach) / CELL_SIZE))
+	var region := Rect2i(first, last - first + Vector2i.ONE)
+	if not _regions.has(region):
+		if _regions.size() >= MAX_CACHED_REGIONS:
+			_regions.clear()
+		var result: Array = []
+		for x in range(first.x, last.x + 1):
+			for z in range(first.y, last.y + 1):
+				result.append_array(buckets.get(Vector2i(x, z), []))
+		_regions[region] = result
+	# Callers append dynamic obstacles; never expose the cached array itself.
+	return _regions[region].duplicate()
 
 static func distance_xz(a: Vector3, b: Vector3) -> float:
 	return Vector2(a.x - b.x, a.z - b.z).length()
