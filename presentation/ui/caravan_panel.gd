@@ -1,5 +1,7 @@
 extends ColorRect
 
+const Fieldwork = preload("res://presentation/ui/fieldwork_tokens.gd")
+
 signal action_requested(kind: String, id: String, target: String)
 signal closed
 const Styles = preload("res://presentation/ui/ui_styles.gd")
@@ -31,7 +33,7 @@ static func words(ru: String, en: String) -> String:
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	color = Color("141f22")
+	color = Fieldwork.BG
 	var margins := MarginContainer.new()
 	margins.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
@@ -97,12 +99,12 @@ func _refresh() -> void:
 		button.disabled = tab == id
 		if button.disabled:
 			var selected_style := StyleBoxFlat.new()
-			selected_style.bg_color = Color("263333")
-			selected_style.border_color = Color("e6ac58")
+			selected_style.bg_color = Fieldwork.PANEL
+			selected_style.border_color = Fieldwork.ACCENT
 			selected_style.border_width_bottom = 2
 			selected_style.content_margin_left = 12
 			button.add_theme_stylebox_override("disabled", selected_style)
-			button.add_theme_color_override("font_disabled_color", Color("f0eada"))
+			button.add_theme_color_override("font_disabled_color", Fieldwork.TEXT)
 		button.pressed.connect(func() -> void: tab = id; _refresh())
 		tabs.add_child(button)
 	var instruction := words("Купите прицеп → он прицепится к пикапу → выберите ОБОРУДОВАНИЕ.", "Buy a trailer → it attaches to your pickup → choose EQUIP.")
@@ -133,7 +135,7 @@ func _refresh() -> void:
 func _row(title: String, description: String, parent: Node = null, model_kind := "", model_id := "") -> VBoxContainer:
 	var panel := PanelContainer.new()
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("263333")
+	style.bg_color = Fieldwork.PANEL
 	style.border_color = Color("68716a")
 	style.border_width_bottom = 1
 	style.content_margin_left = 12

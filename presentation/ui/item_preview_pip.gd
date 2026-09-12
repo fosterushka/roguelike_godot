@@ -1,5 +1,7 @@
 extends "res://presentation/ui/item_model_preview.gd"
 
+const Fieldwork = preload("res://presentation/ui/fieldwork_tokens.gd")
+
 ## One non-interactive overlay per panel. It follows the hovered/focused source
 ## and dismisses itself when that source scrolls out of the visible viewport.
 var _source: Control
@@ -18,7 +20,7 @@ func _ready() -> void:
 	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color("101713", 0.0)
-	style.border_color = Color("e6ac58")
+	style.border_color = Fieldwork.ACCENT
 	style.set_border_width_all(1)
 	style.content_margin_left = 8
 	style.content_margin_right = 8

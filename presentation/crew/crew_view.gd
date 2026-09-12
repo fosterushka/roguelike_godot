@@ -51,6 +51,10 @@ func update_reactions(reactions: Array) -> void:
 		bubble.show_message(reaction.text[0 if Locale.language == "ru" else 1])
 		reaction_views.append({"speech": bubble, "actor": reaction.actor})
 
+func set_interaction_ui_visible(value: bool) -> void:
+	if speech_layer:
+		speech_layer.visible = value
+
 func set_vehicle(vehicle: Node3D) -> void:
 	_clear_pickup_benches()
 	_vehicle = vehicle

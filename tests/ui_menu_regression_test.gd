@@ -164,6 +164,9 @@ func _choice_checks(hud: CanvasLayer) -> void:
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("/private/tmp/level-up-cards.png")
 	_click(second.get_global_rect().get_center())
-	_check(chosen == ["core:armor"], "Clicking the whole card emits its original upgrade ID once")
+	_check(chosen.is_empty(), "Selecting a card does not apply the upgrade")
+	await process_frame
+	_click(menu._confirm_choice.get_global_rect().get_center())
+	_check(chosen == ["core:armor"], "Confirmation applies the selected upgrade exactly once")
 	hud.show_menu("MENU", "", [{"label": "Continue", "action": "resume"}])
 	_check(menu._rows.vertical and menu._choice_controls.is_empty(), "Ordinary menus retain vertical rows after the upgrade screen")

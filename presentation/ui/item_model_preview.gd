@@ -157,7 +157,7 @@ func _refit_after_resize() -> void:
 	if not _ready_for_preview or viewport == null:
 		return
 	var target_size := Vector2i(maxi(1, roundi(size.x)), maxi(1, roundi(size.y)))
-	if viewport.size != target_size:
+	if not stretch and viewport.size != target_size:
 		viewport.size = target_size
 	if is_instance_valid(_model):
 		_fit_camera()

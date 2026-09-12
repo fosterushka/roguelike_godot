@@ -1,5 +1,7 @@
 extends ColorRect
 
+const Fieldwork = preload("res://presentation/ui/fieldwork_tokens.gd")
+
 signal action_requested(kind: String, id: String)
 signal closed
 signal shake_changed(value: float)
@@ -24,6 +26,7 @@ var _scroll: ScrollContainer
 var _rendered_tab := ""
 var mission_board: VBoxContainer
 var item_preview_pip
+var _trade_mode := "buy"
 var _trader_id := "mechanic"
 
 static func words(ru: String, en: String) -> String:
@@ -32,7 +35,7 @@ static func words(ru: String, en: String) -> String:
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	color = Color("141f22")
+	color = Fieldwork.BG
 	var margin := MarginContainer.new()
 	_margin = margin
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -117,7 +120,7 @@ func refresh() -> void:
 		Icons.apply(button, _tab_icon(key))
 		button.disabled = key == tab
 		if button.disabled:
-			button.add_theme_color_override("font_disabled_color", Color("f0eada"))
+			button.add_theme_color_override("font_disabled_color", Fieldwork.TEXT)
 		button.pressed.connect(func() -> void: tab = key; refresh())
 		tabs.add_child(button)
 	notice.text = words("Въезжайте в отмеченную зону эвакуации и нажмите E. Защищайтесь внутри 20 секунд. Гибель и выход теряют груз.", "Drive into a marked extraction zone and press E. Defend inside for 20 seconds. Death or abandoning loses cargo.") if raid else words("Хранилище: всё сохранённое. Запас: вещи для следующего рейда.", "Vault stores your loot. Stash holds supplies packed for the next raid.")
@@ -134,7 +137,8 @@ func refresh() -> void:
 	body.get_parent().visible = tab != "quests"
 	mission_board.visible = tab == "quests"
 	match tab:
-		"stash", "loadout", "backpack": _inventory(tab)
+		"stash", "loadout": _supplies()
+		"backpack": _inventory(tab)
 		"trade": _trade()
 		"quests": _quests()
 		"upgrades": _upgrades()
@@ -146,8 +150,8 @@ func item_name(id: String) -> String:
 func _row(title: String, detail: String, actions: Array, icon_key: String = "stash", model_kind := "", model_id := "") -> void:
 	var panel := PanelContainer.new()
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("263333")
-	style.border_color = Color("64716a")
+	style.bg_color = Fieldwork.PANEL
+	style.border_color = Fieldwork.CONTROL
 	style.border_width_bottom = 1
 	style.content_margin_left = 10
 	style.content_margin_right = 10
@@ -162,7 +166,7 @@ func _row(title: String, detail: String, actions: Array, icon_key: String = "sta
 	if not model_id.is_empty():
 		var model_preview := ModelPreview.new()
 		model_preview.name = "ModelThumbnail"
-		model_preview.custom_minimum_size = Vector2(62, 48)
+		model_preview.custom_minimum_size = Vector2(32, 40)
 		model_preview.set_preview(model_kind, model_id)
 		line.add_child(model_preview)
 		model_preview.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -178,7 +182,7 @@ func _row(title: String, detail: String, actions: Array, icon_key: String = "sta
 	var labels := VBoxContainer.new()
 	labels.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	line.add_child(labels)
-	var title_label := Styles.label(title, 16)
+	var title_label := Styles.label(title, 14)
 	title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	labels.add_child(title_label)
 	var description := Styles.label(detail, 14)
@@ -186,7 +190,7 @@ func _row(title: String, detail: String, actions: Array, icon_key: String = "sta
 	labels.add_child(description)
 	for entry: Dictionary in actions:
 		var button := Styles.button(str(entry.label))
-		button.custom_minimum_size = Vector2(145, 34)
+		button.custom_minimum_size = Vector2(80, 36)
 		button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		Icons.apply(button, str(entry.get("icon", "trade" if entry.kind in ["buy", "sell"] else icon_key)), 18)
 		button.disabled = bool(entry.get("disabled", false))
@@ -197,9 +201,28 @@ func _row(title: String, detail: String, actions: Array, icon_key: String = "sta
 			button.focus_exited.connect(item_preview_pip.hide_preview)
 		line.add_child(button)
 
+func _supplies() -> void:
+	var outer := body
+	var columns := HBoxContainer.new()
+	columns.add_theme_constant_override("separation", 16)
+	outer.add_child(columns)
+	for container: String in ["stash", "loadout"]:
+		var surface := PanelContainer.new()
+		surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		surface.add_theme_stylebox_override("panel", Styles.panel_style())
+		columns.add_child(surface)
+		var list := VBoxContainer.new()
+		list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		list.add_theme_constant_override("separation", 8)
+		surface.add_child(list)
+		body = list
+		body.add_child(Styles.label(words("Склад базы", "Base storage") if container == "stash" else words("В следующий рейд", "Next raid"), 20))
+		_inventory(container)
+	body = outer
+
 func _inventory(container: String) -> void:
 	var items: Dictionary = state.get(container, {})
-	if container != "stash":
+	if container == "backpack":
 		body.add_child(Styles.label(words("Груз: %d / %d", "Cargo: %d / %d") % [state.get("used", 0) if container == "backpack" else state.get("used", 0), state.get("capacity", 12)], 18))
 	if items.is_empty():
 		body.add_child(Styles.label(words("Здесь пока пусто.", "Nothing here yet."), 18))
@@ -208,9 +231,9 @@ func _inventory(container: String) -> void:
 		var usable: bool = id in ["repair_kit", "fuel_cell", "weapon_parts"]
 		var actions: Array = []
 		if container == "stash" and usable:
-			actions.append({"kind": "equip", "id": id, "label": words("ВЗЯТЬ", "PACK")})
+			actions.append({"kind": "equip", "id": id, "label": words("В рейд →", "Pack →")})
 		elif container == "loadout":
-			actions.append({"kind": "unequip", "id": id, "label": words("В ХРАНИЛИЩЕ", "TO VAULT")})
+			actions.append({"kind": "unequip", "id": id, "label": words("← На базу", "← Store")})
 		elif container == "backpack":
 			if usable:
 				actions.append({"kind": "consume", "id": id, "label": words("ПРИМЕНИТЬ", "USE")})
@@ -219,6 +242,13 @@ func _inventory(container: String) -> void:
 
 func _trade() -> void:
 	_trade_selector()
+	var modes := HBoxContainer.new()
+	body.add_child(modes)
+	for mode: String in ["buy", "sell"]:
+		var button := Styles.button(words("Купить", "Buy") if mode == "buy" else words("Продать", "Sell"))
+		Styles.selected(button, mode == _trade_mode)
+		button.pressed.connect(func() -> void: _trade_mode = mode; refresh())
+		modes.add_child(button)
 	for id: String in state.get("items", {}):
 		if _trader_for(id) != _trader_id:
 			continue
@@ -226,9 +256,10 @@ func _trade() -> void:
 		var buy := int(item.get("buy", item.get("buy_price", 0)))
 		var sell := int(item.get("sell", item.get("sell_price", 0)))
 		var actions: Array = []
-		if buy > 0:
+		if buy > 0 and _trade_mode == "buy":
 			actions.append({"kind": "buy", "id": id, "label": words("КУПИТЬ %d", "BUY %d") % buy, "disabled": int(state.credits) < buy})
-		actions.append({"kind": "sell", "id": id, "label": words("ПРОДАТЬ %d", "SELL %d") % sell, "disabled": int(state.get("stash", {}).get(id, 0)) == 0})
+		if _trade_mode == "sell":
+			actions.append({"kind": "sell", "id": id, "label": words("ПРОДАТЬ %d", "SELL %d") % sell, "disabled": int(state.get("stash", {}).get(id, 0)) == 0})
 		_row(item_name(id) + " · " + (words("На складе: %d", "In vault: %d") % state.get("stash", {}).get(id, 0)), Locale.text(str(item.get("description", ""))), actions, _item_icon(id), "loot", id)
 
 func _trade_selector() -> void:
@@ -243,15 +274,18 @@ func _trade_selector() -> void:
 		var button := Styles.button("")
 		button.set_meta("trader_id", str(trader.id))
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.custom_minimum_size = Vector2(0, 120)
+		button.custom_minimum_size = Vector2(0, 80)
 		button.tooltip_text = str(trader.detail)
 		button.disabled = _trader_id == str(trader.id)
 		var row := HBoxContainer.new()
+		row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		row.offset_left = 6
+		row.offset_right = -6
 		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		button.add_child(row)
 		var portrait := TextureRect.new()
 		portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		portrait.custom_minimum_size = Vector2(80, 106)
+		portrait.custom_minimum_size = Vector2(44, 64)
 		portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		var path := str(trader.portrait)
@@ -266,8 +300,8 @@ func _trade_selector() -> void:
 		words_column.add_child(Styles.label(str(trader.label), 13))
 		words_column.add_child(Styles.label(str(trader.detail), 11))
 		if _trader_id == str(trader.id):
-			button.custom_minimum_size = Vector2(0, 154)
-			portrait.custom_minimum_size = Vector2(112, 140)
+			button.custom_minimum_size = Vector2(0, 80)
+			portrait.custom_minimum_size = Vector2(44, 64)
 			words_column.add_child(Styles.label(words("ВЫБРАН", "SELECTED"), 11))
 		row.add_child(words_column)
 		button.pressed.connect(func() -> void: _trader_id = str(trader.id); item_preview_pip.hide_preview(); refresh())

@@ -359,6 +359,8 @@ func _set_screen(value: String) -> void:
 	if is_instance_valid(hideout_hub) and hideout_hub.visible and value != "expedition":
 		hideout_hub.detach()
 	screen_state = value
+	if is_instance_valid(crew_runtime):
+		crew_runtime.set_interaction_ui_visible(value == "running")
 	if is_instance_valid(caravan_flow.encounter_panel) and value != "encounter":
 		caravan_flow.encounter_panel.hide()
 		if is_instance_valid(crew_runtime):
@@ -573,6 +575,11 @@ func _menu_action(action: String, id: String) -> void:
 			if _options_return == "pause":
 				_set_screen("pause")
 				hud.set_paused(true)
+			elif _options_return == "expedition":
+				hud.hide_menus()
+				_set_screen("expedition")
+				hideout_hub.attach(hud.armory, expedition_panel, caravan_panel)
+				hideout_hub.select_tab(hideout_hub.previous_tab)
 			elif _options_return_page == "singleplayer":
 				_show_singleplayer_menu()
 			else:
@@ -758,6 +765,7 @@ func _setup_expedition_ui() -> void:
 	hideout_hub = preload("res://presentation/ui/hideout_hub.gd").new()
 	hud.get_node("Screen").add_child(hideout_hub)
 	hideout_hub.closed.connect(_close_expedition)
+	hideout_hub.deploy_requested.connect(restart_run)
 	hideout_hub.garage_requested.connect(_open_caravan)
 	hideout_hub.tab_selected.connect(_select_hideout_tab)
 	expedition_panel.shake_changed.connect(func(value: float) -> void: settings_controller.change("cameraShake", value))
@@ -766,10 +774,7 @@ func _setup_expedition_ui() -> void:
 	var cargo := preload("res://presentation/ui/ui_styles.gd").button(ExpeditionPanel.words("ГРУЗ [I]", "CARGO [I]"))
 	preload("res://presentation/ui/ui_icons.gd").apply(cargo, "stash")
 	cargo.custom_minimum_size = Vector2(0, 28)
-	hud._coins_label.get_parent().add_child(cargo)
-	hud._stats_panel.offset_top -= 38
-	hud._objective_label.offset_top -= 44
-	hud._objective_label.offset_bottom -= 38
+	hud.add_quick_action(cargo)
 	cargo.pressed.connect(_open_expedition)
 	_cargo_label = cargo
 
@@ -787,10 +792,14 @@ func _open_expedition() -> void:
 		hideout_hub.select_tab("armory")
 
 func _select_hideout_tab(tab: String) -> void:
-	hideout_hub.update_account(expedition.snapshot())
+	if tab == "settings":
+		_show_options("expedition")
+		return
+	hideout_hub.update_account(expedition.snapshot(), int(combat.model.player.coins))
 	if tab == "armory":
 		_show_armory()
 	elif tab == "garage":
+		caravan_panel.tab = hideout_hub.caravan_page
 		caravan_flow.refresh()
 	else:
 		expedition_panel.show_state(expedition.snapshot(), tab)
@@ -820,7 +829,7 @@ func _expedition_action(kind: String, id: String) -> void:
 		expedition.action(kind, id)
 	expedition_panel.show_state(expedition.snapshot())
 	if hideout_hub.visible:
-		hideout_hub.update_account(expedition.snapshot())
+		hideout_hub.update_account(expedition.snapshot(), int(combat.model.player.coins))
 	_update_mission_hint()
 	_update_cargo()
 

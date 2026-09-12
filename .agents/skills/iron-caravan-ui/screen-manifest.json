@@ -1,0 +1,434 @@
+[
+  {
+    "id": "00-design-system",
+    "title": "IRON CARAVAN · FIELDWORK / Дизайн-система",
+    "width": 1280,
+    "height": 800,
+    "status": "specification",
+    "png": "screens/00-design-system.png",
+    "svg": "source/svg/00-design-system.svg"
+  },
+  {
+    "id": "01-main-menu",
+    "title": "Главное меню",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/01-main-menu.png",
+    "svg": "source/svg/01-main-menu.svg"
+  },
+  {
+    "id": "02-caravan",
+    "title": "Караван · Обзор",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed",
+    "png": "screens/02-caravan.png",
+    "svg": "source/svg/02-caravan.svg"
+  },
+  {
+    "id": "03-armory",
+    "title": "Оружейная · Установленное оружие",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/03-armory.png",
+    "svg": "source/svg/03-armory.svg"
+  },
+  {
+    "id": "03-armory-960",
+    "title": "Оружейная · Установленное оружие",
+    "width": 960,
+    "height": 600,
+    "status": "redesign",
+    "png": "screens/03-armory-960.png",
+    "svg": "source/svg/03-armory-960.svg"
+  },
+  {
+    "id": "03b-armory-catalog",
+    "title": "Оружейная · Дополнительный каталог",
+    "width": 1280,
+    "height": 800,
+    "status": "partly-proposed",
+    "png": "screens/03b-armory-catalog.png",
+    "svg": "source/svg/03b-armory-catalog.svg"
+  },
+  {
+    "id": "04-armory-empty-mount",
+    "title": "Оружейная · Свободное крепление",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/04-armory-empty-mount.png",
+    "svg": "source/svg/04-armory-empty-mount.svg"
+  },
+  {
+    "id": "05-garage",
+    "title": "Гараж",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed",
+    "png": "screens/05-garage.png",
+    "svg": "source/svg/05-garage.svg"
+  },
+  {
+    "id": "06-crew",
+    "title": "Караван · Экипаж",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed",
+    "png": "screens/06-crew.png",
+    "svg": "source/svg/06-crew.svg"
+  },
+  {
+    "id": "07-supplies",
+    "title": "Запасы · Склад базы и припасы",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/07-supplies.png",
+    "svg": "source/svg/07-supplies.svg"
+  },
+  {
+    "id": "07-supplies-960",
+    "title": "Запасы · Склад базы и припасы",
+    "width": 960,
+    "height": 600,
+    "status": "redesign",
+    "png": "screens/07-supplies-960.png",
+    "svg": "source/svg/07-supplies-960.svg"
+  },
+  {
+    "id": "07b-supplies-packed",
+    "title": "Запасы · Припасы упакованы",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/07b-supplies-packed.png",
+    "svg": "source/svg/07b-supplies-packed.svg"
+  },
+  {
+    "id": "07c-supply-detail",
+    "title": "Запасы · Описание расходника",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/07c-supply-detail.png",
+    "svg": "source/svg/07c-supply-detail.svg"
+  },
+  {
+    "id": "08-trade",
+    "title": "Торговля",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/08-trade.png",
+    "svg": "source/svg/08-trade.svg"
+  },
+  {
+    "id": "08b-trade-sell",
+    "title": "Торговля · Продажа",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/08b-trade-sell.png",
+    "svg": "source/svg/08b-trade-sell.svg"
+  },
+  {
+    "id": "09-base",
+    "title": "База",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed",
+    "png": "screens/09-base.png",
+    "svg": "source/svg/09-base.svg"
+  },
+  {
+    "id": "10-tasks",
+    "title": "Задания",
+    "width": 1280,
+    "height": 800,
+    "status": "partly-proposed",
+    "png": "screens/10-tasks.png",
+    "svg": "source/svg/10-tasks.svg"
+  },
+  {
+    "id": "11-settings-video",
+    "title": "Настройки · Изображение",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/11-settings-video.png",
+    "svg": "source/svg/11-settings-video.svg"
+  },
+  {
+    "id": "12-settings-audio",
+    "title": "Настройки · Звук",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed",
+    "png": "screens/12-settings-audio.png",
+    "svg": "source/svg/12-settings-audio.svg"
+  },
+  {
+    "id": "13-settings-controls",
+    "title": "Настройки · Управление",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed",
+    "png": "screens/13-settings-controls.png",
+    "svg": "source/svg/13-settings-controls.svg"
+  },
+  {
+    "id": "14-settings-interface",
+    "title": "Настройки · Интерфейс",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed",
+    "png": "screens/14-settings-interface.png",
+    "svg": "source/svg/14-settings-interface.svg"
+  },
+  {
+    "id": "15-raid-hud",
+    "title": "Рейд · Компактный HUD",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/15-raid-hud.png",
+    "svg": "source/svg/15-raid-hud.svg"
+  },
+  {
+    "id": "15-raid-hud-1920",
+    "title": "Рейд · HUD на 1920 × 1080",
+    "width": 1920,
+    "height": 1080,
+    "status": "redesign",
+    "png": "screens/15-raid-hud-1920.png",
+    "svg": "source/svg/15-raid-hud-1920.svg"
+  },
+  {
+    "id": "15-raid-hud-960",
+    "title": "Рейд · HUD на 960 × 600",
+    "width": 960,
+    "height": 600,
+    "status": "redesign",
+    "png": "screens/15-raid-hud-960.png",
+    "svg": "source/svg/15-raid-hud-960.svg"
+  },
+  {
+    "id": "16-raid-objectives",
+    "title": "Рейд · Новая волна и задание",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/16-raid-objectives.png",
+    "svg": "source/svg/16-raid-objectives.svg"
+  },
+  {
+    "id": "17-raid-cargo",
+    "title": "Рейд · Груз и припасы",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/17-raid-cargo.png",
+    "svg": "source/svg/17-raid-cargo.svg"
+  },
+  {
+    "id": "17b-raid-consumables",
+    "title": "Рейд · Использование припасов",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/17b-raid-consumables.png",
+    "svg": "source/svg/17b-raid-consumables.svg"
+  },
+  {
+    "id": "18-field-armory",
+    "title": "Рейд · Полевая оружейная",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/18-field-armory.png",
+    "svg": "source/svg/18-field-armory.svg"
+  },
+  {
+    "id": "19-raid-crew",
+    "title": "Рейд · Экипаж",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/19-raid-crew.png",
+    "svg": "source/svg/19-raid-crew.svg"
+  },
+  {
+    "id": "19b-raid-crew-hired",
+    "title": "Рейд · Механик нанят",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed-state",
+    "png": "screens/19b-raid-crew-hired.png",
+    "svg": "source/svg/19b-raid-crew-hired.svg"
+  },
+  {
+    "id": "20-pause",
+    "title": "Пауза",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/20-pause.png",
+    "svg": "source/svg/20-pause.svg"
+  },
+  {
+    "id": "21-level-up",
+    "title": "Новый уровень",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/21-level-up.png",
+    "svg": "source/svg/21-level-up.svg"
+  },
+  {
+    "id": "21-level-up-960",
+    "title": "Новый уровень",
+    "width": 960,
+    "height": 600,
+    "status": "redesign",
+    "png": "screens/21-level-up-960.png",
+    "svg": "source/svg/21-level-up-960.svg"
+  },
+  {
+    "id": "22-recruitment",
+    "title": "Найм механика",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/22-recruitment.png",
+    "svg": "source/svg/22-recruitment.svg"
+  },
+  {
+    "id": "22-recruitment-960",
+    "title": "Найм механика",
+    "width": 960,
+    "height": 600,
+    "status": "redesign",
+    "png": "screens/22-recruitment-960.png",
+    "svg": "source/svg/22-recruitment-960.svg"
+  },
+  {
+    "id": "23-recruitment-refusal",
+    "title": "Встреча · Отказ",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/23-recruitment-refusal.png",
+    "svg": "source/svg/23-recruitment-refusal.svg"
+  },
+  {
+    "id": "24-recruitment-blocked",
+    "title": "Найм механика · Нет рабочего места",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/24-recruitment-blocked.png",
+    "svg": "source/svg/24-recruitment-blocked.svg"
+  },
+  {
+    "id": "25-map",
+    "title": "Рейд · Карта",
+    "width": 1280,
+    "height": 800,
+    "status": "partly-proposed",
+    "png": "screens/25-map.png",
+    "svg": "source/svg/25-map.svg"
+  },
+  {
+    "id": "26-extraction",
+    "title": "Эвакуация · Итоги",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed",
+    "png": "screens/26-extraction.png",
+    "svg": "source/svg/26-extraction.svg"
+  },
+  {
+    "id": "27-confirm-exit",
+    "title": "Завершить рейд?",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed",
+    "png": "screens/27-confirm-exit.png",
+    "svg": "source/svg/27-confirm-exit.svg"
+  },
+  {
+    "id": "27-confirm-new",
+    "title": "Начать новую экспедицию?",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed",
+    "png": "screens/27-confirm-new.png",
+    "svg": "source/svg/27-confirm-new.svg"
+  },
+  {
+    "id": "27-confirm-quit",
+    "title": "Выйти из игры?",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed",
+    "png": "screens/27-confirm-quit.png",
+    "svg": "source/svg/27-confirm-quit.svg"
+  },
+  {
+    "id": "28-feedback",
+    "title": "Состояния компонентов",
+    "width": 1280,
+    "height": 800,
+    "status": "specification",
+    "png": "screens/28-feedback.png",
+    "svg": "source/svg/28-feedback.svg"
+  },
+  {
+    "id": "29-deploy",
+    "title": "Перед выездом",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed",
+    "png": "screens/29-deploy.png",
+    "svg": "source/svg/29-deploy.svg"
+  },
+  {
+    "id": "30-display-confirm",
+    "title": "Оставить новый режим?",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed",
+    "png": "screens/30-display-confirm.png",
+    "svg": "source/svg/30-display-confirm.svg"
+  },
+  {
+    "id": "31-raid-warning",
+    "title": "Рейд · Мало топлива",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/31-raid-warning.png",
+    "svg": "source/svg/31-raid-warning.svg"
+  },
+  {
+    "id": "32-raid-combo",
+    "title": "Рейд · Активное комбо",
+    "width": 1280,
+    "height": 800,
+    "status": "proposed-state",
+    "png": "screens/32-raid-combo.png",
+    "svg": "source/svg/32-raid-combo.svg"
+  },
+  {
+    "id": "33-world-interaction",
+    "title": "Встреча · Приглашение к разговору",
+    "width": 1280,
+    "height": 800,
+    "status": "redesign",
+    "png": "screens/33-world-interaction.png",
+    "svg": "source/svg/33-world-interaction.svg"
+  }
+]

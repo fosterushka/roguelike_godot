@@ -1,11 +1,13 @@
 extends ColorRect
 
+const Fieldwork = preload("res://presentation/ui/fieldwork_tokens.gd")
+
 signal closed
 signal language_requested(language: String)
 const Catalog = preload("res://modules/settings/settings_catalog.gd")
 const Styles = preload("res://presentation/ui/ui_styles.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
-const PANEL_WIDTH := 560.0
+const PANEL_WIDTH := 1000.0
 const PANEL_HEIGHT := 650.0
 const MARGIN := 24.0
 const CONTROL_NAMES := {
@@ -23,7 +25,7 @@ var current_tab := 0
 var _column: VBoxContainer
 var _body: VBoxContainer
 var _scroll: ScrollContainer
-var _tabs: HBoxContainer
+var _tabs: VBoxContainer
 var _heading: Label
 var _back: Button
 var _status: Label
@@ -34,34 +36,51 @@ func words(ru: String, en: String) -> String:
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	color = Color("121b1f")
+	color = Fieldwork.BG
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for side in ["left", "right"]:
+		margin.add_theme_constant_override("margin_" + side, 32)
+	for side in ["top", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 24)
+	add_child(margin)
 	_column = VBoxContainer.new()
-	_column.add_theme_constant_override("separation", 12)
-	center.add_child(_column)
+	_column.add_theme_constant_override("separation", 24)
+	margin.add_child(_column)
+	var header := HBoxContainer.new()
+	_column.add_child(header)
 	_heading = Styles.label("", 28)
-	_heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_column.add_child(_heading)
-	_tabs = HBoxContainer.new()
-	_tabs.add_theme_constant_override("separation", 2)
-	_column.add_child(_tabs)
+	_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(_heading)
+	_back = Styles.button("")
+	_back.custom_minimum_size = Vector2(116, 36)
+	Styles.ghost(_back)
+	preload("res://presentation/ui/ui_icons.gd").apply(_back, "back", 18)
+	_back.pressed.connect(func() -> void: _binding = ""; closed.emit())
+	header.add_child(_back)
+	_column.add_child(HSeparator.new())
+	var workspace := HBoxContainer.new()
+	workspace.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	workspace.add_theme_constant_override("separation", 40)
+	_column.add_child(workspace)
+	_tabs = VBoxContainer.new()
+	_tabs.custom_minimum_size.x = 180
+	_tabs.add_theme_constant_override("separation", 8)
+	workspace.add_child(_tabs)
 	_scroll = ScrollContainer.new()
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_column.add_child(_scroll)
+	workspace.add_child(_scroll)
 	_body = VBoxContainer.new()
 	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_body.add_theme_constant_override("separation", 12)
+	_body.add_theme_constant_override("separation", 8)
 	_scroll.add_child(_body)
-	_status = Styles.label("", 13)
+	_column.add_child(HSeparator.new())
+	_status = Styles.label("", 12)
+	Styles.muted(_status)
+	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_column.add_child(_status)
-	_back = Styles.button("")
-	_back.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_back.pressed.connect(func() -> void: _binding = ""; closed.emit())
-	_column.add_child(_back)
 	resized.connect(_fit)
 	_fit()
 	visible = false
@@ -69,8 +88,7 @@ func _ready() -> void:
 func _fit() -> void:
 	if _column == null:
 		return
-	_column.custom_minimum_size.x = minf(PANEL_WIDTH, size.x - MARGIN * 2)
-	_scroll.custom_minimum_size = Vector2(_column.custom_minimum_size.x, maxf(160.0, minf(PANEL_HEIGHT, size.y - MARGIN * 2) - 180.0))
+	_scroll.custom_minimum_size.x = minf(792, size.x - 284)
 
 func display(settings_controller: RefCounted) -> void:
 	controller = settings_controller
@@ -79,49 +97,65 @@ func display(settings_controller: RefCounted) -> void:
 
 func rebuild() -> void:
 	_binding = ""
-	_heading.text = words("НАСТРОЙКИ", "SETTINGS")
-	_back.text = words("НАЗАД", "BACK")
+	_heading.text = words("Настройки", "Settings")
+	_back.text = words("Назад", "Back")
 	_status.text = words("Изменения применяются и сохраняются сразу.", "Changes apply and save immediately.")
 	for container in [_tabs, _body]:
 		for child in container.get_children():
 			container.remove_child(child)
 			child.queue_free()
-	var captions := [words("Видео", "Video"), words("Звук", "Audio"), words("Управление", "Controls")]
+	var captions := [words("Изображение", "Display"), words("Звук", "Audio"), words("Управление", "Controls")]
 	for index in captions.size():
 		var tab := Styles.button(captions[index])
 		tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		tab.alignment = HORIZONTAL_ALIGNMENT_CENTER
+		tab.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		Styles.tab(tab, index == current_tab)
+		tab.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		tab.custom_minimum_size.y = 38
+		preload("res://presentation/ui/ui_icons.gd").apply(tab, ["monitor", "sound", "keyboard"][index], 18)
 		tab.toggle_mode = true
 		tab.button_pressed = index == current_tab
 		tab.pressed.connect(func() -> void: current_tab = index; _scroll.scroll_vertical = 0; rebuild())
 		_tabs.add_child(tab)
+	_body.add_child(Styles.label(captions[current_tab], 24))
+	var subtitle := Styles.label([words("Параметры экрана и производительности.", "Display and performance settings."), words("Громкость и звуки игры.", "Game sound and volume."), words("Клавиши и управление камерой.", "Key bindings and camera controls.")][current_tab], 14)
+	Styles.muted(subtitle)
+	_body.add_child(subtitle)
+	var spacer := Control.new()
+	spacer.custom_minimum_size.y = 16
+	_body.add_child(spacer)
 	match current_tab:
 		0: _video()
 		1: _audio()
 		2: _controls()
 
-func _field(caption: String) -> VBoxContainer:
-	var column := VBoxContainer.new()
+func _field(caption: String) -> HBoxContainer:
+	_body.add_child(HSeparator.new())
+	var column := HBoxContainer.new()
+	column.custom_minimum_size.y = 40
 	column.add_theme_constant_override("separation", 4)
 	var label := Styles.label(caption, 14)
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(label)
 	_body.add_child(column)
 	return column
 
 func _toggle(key: String, caption: String) -> void:
-	var button := Styles.button(caption)
+	var button := Styles.button("")
+	button.custom_minimum_size.x = 100
 	button.toggle_mode = true
 	button.button_pressed = controller.values()[key]
-	button.text = caption + (words("  [ВКЛ]", "  [ON]") if button.button_pressed else words("  [ВЫКЛ]", "  [OFF]"))
+	button.text = (words("  [ВКЛ]", "  [ON]") if button.button_pressed else words("  [ВЫКЛ]", "  [OFF]"))
 	button.toggled.connect(func(value: bool) -> void:
-		button.text = caption + (words("  [ВКЛ]", "  [ON]") if value else words("  [ВЫКЛ]", "  [OFF]"))
+		button.text = (words("  [ВКЛ]", "  [ON]") if value else words("  [ВЫКЛ]", "  [OFF]"))
 		controller.change(key, value)
 		if key in ["laptop", "fullscreen"]: rebuild())
-	_body.add_child(button)
+	_field(caption).add_child(button)
 
 func _select(key: String, caption: String, items: Array, disabled: bool = false) -> void:
 	var select := OptionButton.new()
-	select.custom_minimum_size.y = 34
+	select.custom_minimum_size = Vector2(240, 36)
 	for item: String in items:
 		select.add_item(item)
 	select.selected = int(controller.values()[key])
@@ -135,6 +169,7 @@ func _select(key: String, caption: String, items: Array, disabled: bool = false)
 func _slider(key: String, caption: String) -> void:
 	var column := _field(caption)
 	var row := HBoxContainer.new()
+	row.custom_minimum_size.x = 240
 	column.add_child(row)
 	var slider := HSlider.new()
 	slider.min_value = 0

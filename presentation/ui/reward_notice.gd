@@ -1,5 +1,7 @@
 extends PanelContainer
 
+const Fieldwork = preload("res://presentation/ui/fieldwork_tokens.gd")
+
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 var remaining := 0.0
 var reward: Dictionary = {}
@@ -25,7 +27,7 @@ func _ready() -> void:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.add_theme_font_size_override("font_size", 14)
-	label.add_theme_color_override("font_color", Color("eee9db"))
+	label.add_theme_color_override("font_color", Fieldwork.TEXT)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(label)
 	hide()

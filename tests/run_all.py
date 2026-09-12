@@ -11,6 +11,7 @@ import tempfile
 import time
 
 TESTS = [
+    'fieldwork_ui_test.gd',
     'settings_test.gd',
     'ui_audio_test.gd',
     'performance_bar_test.gd', 'combat_optimization_test.gd',

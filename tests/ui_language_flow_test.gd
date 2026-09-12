@@ -21,8 +21,8 @@ func _run() -> void:
 	for row in game.hud.run_menu._rows.get_children():
 		if row is Button:
 			actions.append(row.get_meta("action_id", ""))
-	_check(actions == ["singleplayer", "multiplayer", "options", "quit"], "Main menu exposes singleplayer, disabled multiplayer, options and quit")
-	_check((game.hud.run_menu._rows.get_child(1) as Button).disabled, "Multiplayer is visibly disabled in offline build")
+	_check(actions == ["singleplayer", "options", "quit"], "Main menu exposes offline actions without a fake multiplayer button")
+	_check(game.hud.run_menu._offline_note.visible and game.hud.run_menu._offline_note.text.contains("MULTIPLAYER"), "Multiplayer is informational text in the offline build")
 	game._menu_action("singleplayer", "")
 	_check(_actions(game.hud.run_menu) == ["raid", "vault", "menu"], "Singleplayer menu exposes raid, vault and back")
 	game._menu_action("vault", "")
@@ -41,7 +41,7 @@ func _run() -> void:
 	var menu_bounds: Rect2 = game.hud.run_menu._scroll.get_global_rect()
 	for button: Control in game.hud.run_menu._rows.get_children():
 		if button is Button:
-			_check(button.size.y >= 40 and menu_bounds.encloses(button.get_global_rect()), "Main menu action has visible unclipped hit area: " + str(button.get_meta("action_id")))
+			_check(button.size.y >= 40 and menu_bounds.encloses(button.get_global_rect()) and game.hud.run_menu.get_global_rect().encloses(button.get_global_rect()), "Main menu action has visible unclipped hit area: " + str(button.get_meta("action_id")))
 	game._set_language("ru")
 	_check(game.hud.run_menu._description.text.begins_with("Одиночная экспедиция"), "Main menu language switches to Russian")
 	await game.restart_run()
@@ -59,10 +59,10 @@ func _run() -> void:
 	root.push_input(event)
 	_check(game.combat.model.generation == generation and game.screen_state == "running", "Pressing R during gameplay does not restart")
 	game._toggle_armory()
-	_check(game.hud.armory.query.placeholder_text == "Поиск по названию или описанию", "Armory search uses Russian")
+	_check(game.hud.armory.query.placeholder_text == "Поиск оружия", "Armory search uses Russian")
 	_check(game.hud.armory.details.text.contains("Турель M4") and game.hud.armory.details.text.contains("Точный автоматический"), "Armory selected module name and description are localized")
 	game._set_language("en")
-	_check(game.hud.armory.details.text.contains("M4 Turret") and game.hud.armory.query.placeholder_text == "Search name or description", "Open armory switches back to English")
+	_check(game.hud.armory.details.text.contains("M4 Turret") and game.hud.armory.query.placeholder_text == "Search weapons", "Open armory switches back to English")
 	game._show_choices()
 	_check(not game.hud.run_menu._language_button.visible, "Upgrade screen never offers language settings")
 	game._on_combat_event({"kind": "result", "won": false, "wave": 3, "kills": 12, "elapsed": 42})

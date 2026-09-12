@@ -3,8 +3,8 @@ extends Label
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 
 func _ready() -> void:
-	position = Vector2(12, 64)
-	size = Vector2(250, 160)
+	position = Vector2(16, 16)
+	size = Vector2(250, 80)
 	get_viewport().size_changed.connect(_layout)
 	_layout()
 	autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -24,14 +24,14 @@ func update_missions(rows: Array) -> void:
 	if rows.is_empty():
 		return
 	var ru := Locale.language == "ru"
-	var lines: Array[String] = ["ЗАДАНИЯ [I] · СОХРАНЯЮТСЯ ПРИ ЭВАКУАЦИИ" if ru else "MISSIONS [I] · EXTRACT TO SAVE PROGRESS"]
-	for row: Dictionary in rows.slice(0, 3):
+	var lines: Array[String] = ["Задание" if ru else "Objective"]
+	for row: Dictionary in rows.slice(0, 1):
 		var title := str(row.get("name", row.get("title", row.id))) if ru else str(row.get("name_en", row.get("title", row.id)))
 		var progress: Array[String] = []
 		for objective: Dictionary in row.get("objectives", []):
 			var current := float(objective.get("progress", objective.get("current", 0))) + float(objective.get("raid_progress", 0))
 			progress.append("%d/%d" % [mini(floori(current), int(objective.target)), int(objective.target)])
 		lines.append(title + "  " + " · ".join(progress))
-	if rows.size() > 3:
-		lines.append(("Ещё %d в журнале [I]" if ru else "%d more in journal [I]") % (rows.size() - 3))
+	if rows.size() > 1:
+		lines.append(("Ещё %d в журнале [I]" if ru else "%d more in journal [I]") % (rows.size() - 1))
 	text = "\n".join(lines)

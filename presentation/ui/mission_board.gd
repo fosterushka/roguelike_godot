@@ -1,5 +1,7 @@
 extends VBoxContainer
 
+const Fieldwork = preload("res://presentation/ui/fieldwork_tokens.gd")
+
 signal action_requested(kind: String, id: String)
 
 const Styles = preload("res://presentation/ui/ui_styles.gd")
@@ -30,6 +32,8 @@ var page_label: Label
 var previous: Button
 var next: Button
 var scroll: ScrollContainer
+var _inspector: VBoxContainer
+var _selected_id := ""
 var rows: VBoxContainer
 var _language := ""
 
@@ -84,19 +88,31 @@ func _ready() -> void:
 		control.add_theme_font_size_override("font_size", 14)
 		var style := StyleBoxFlat.new()
 		style.bg_color = Color("233030")
-		style.border_color = Color("64716a")
+		style.border_color = Fieldwork.CONTROL
 		style.set_border_width_all(1)
 		style.content_margin_left = 10
 		style.content_margin_right = 10
 		control.add_theme_stylebox_override("normal", style)
+	var workspace := HBoxContainer.new()
+	workspace.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	workspace.add_theme_constant_override("separation", 16)
+	add_child(workspace)
 	scroll = ScrollContainer.new()
+	scroll.custom_minimum_size.x = 280
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	add_child(scroll)
+	workspace.add_child(scroll)
 	rows = VBoxContainer.new()
 	rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rows.add_theme_constant_override("separation", 8)
 	scroll.add_child(rows)
+	var inspection := ScrollContainer.new()
+	inspection.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	inspection.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	workspace.add_child(inspection)
+	_inspector = VBoxContainer.new()
+	_inspector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	inspection.add_child(_inspector)
 	resized.connect(_on_resize)
 
 func show_state(value: Dictionary) -> void:
@@ -174,9 +190,18 @@ func _update_rows() -> void:
 	visible_ids.clear()
 	for index in range(page * page_size, mini(filtered.size(), (page + 1) * page_size)):
 		visible_ids.append(str(filtered[index].id))
-		_add_mission(filtered[index])
+		var quest: Dictionary = filtered[index]
+		var button := Styles.button(_localized(quest, "name", str(quest.id)))
+		button.set_meta("mission_id", str(quest.id))
+		button.custom_minimum_size = Vector2(0, 56)
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		button.pressed.connect(func() -> void: _selected_id = str(quest.id); _show_selected())
+		rows.add_child(button)
 	if filtered.is_empty():
 		rows.add_child(Styles.label(words("Заданий по этим условиям нет. Измените поиск или фильтр.", "No matching tasks. Change your search or filters."), 16))
+	if not visible_ids.has(_selected_id):
+		_selected_id = visible_ids[0] if not visible_ids.is_empty() else ""
+	_show_selected()
 	scroll.scroll_vertical = 0
 
 static func _status_rank(status: String) -> int:
@@ -187,27 +212,39 @@ func _localized(quest: Dictionary, field: String, fallback := "") -> String:
 		return str(quest[field + "_en"])
 	return Locale.text(str(quest.get(field, fallback)))
 
-func _text(parent: Node, text: String, font_size: int, color := Color("eee9db")) -> Label:
+func _text(parent: Node, text: String, font_size: int, color := Fieldwork.TEXT) -> Label:
 	var label := Styles.label(text, font_size)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.add_theme_color_override("font_color", color)
 	parent.add_child(label)
 	return label
 
+func _show_selected() -> void:
+	for child in _inspector.get_children():
+		_inspector.remove_child(child)
+		child.queue_free()
+	for child in rows.get_children():
+		if child is Button:
+			Styles.selected(child, str(child.get_meta("mission_id", "")) == _selected_id)
+	for quest: Dictionary in filtered:
+		if str(quest.id) == _selected_id:
+			_add_mission(quest)
+			break
+
 func _add_mission(quest: Dictionary) -> void:
 	var panel := PanelContainer.new()
 	panel.set_meta("mission_id", str(quest.id))
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("263333")
-	style.border_color = Color("64716a")
+	style.bg_color = Fieldwork.PANEL
+	style.border_color = Fieldwork.CONTROL
 	style.border_width_bottom = 1
 	style.content_margin_left = 14
 	style.content_margin_right = 14
 	style.content_margin_top = 10
 	style.content_margin_bottom = 10
 	panel.add_theme_stylebox_override("panel", style)
-	rows.add_child(panel)
-	var line := HBoxContainer.new()
+	_inspector.add_child(panel)
+	var line := VBoxContainer.new()
 	line.add_theme_constant_override("separation", 12)
 	panel.add_child(line)
 	var content := VBoxContainer.new()
@@ -222,7 +259,7 @@ func _add_mission(quest: Dictionary) -> void:
 	_text(content, _localized(quest, "description"), 14)
 	var objectives: Array = quest.get("objectives", [])
 	if objectives.is_empty():
-		_text(content, words("Прогресс: %d / %d", "Progress: %d / %d") % [quest.get("progress", 0), quest.get("target", 1)], 14, Color("edc575"))
+		_text(content, words("Прогресс: %d / %d", "Progress: %d / %d") % [quest.get("progress", 0), quest.get("target", 1)], 14, Fieldwork.ACCENT)
 	else:
 		for objective: Dictionary in objectives:
 			var current := float(objective.get("current", objective.get("progress", 0)))
@@ -230,7 +267,7 @@ func _add_mission(quest: Dictionary) -> void:
 			var progress := "%s: %s / %s" % [_metric(str(objective.metric)), _number(current), _number(float(objective.target))]
 			if pending > 0:
 				progress += words("  (+%s в рейде)", "  (+%s in raid)") % _number(pending)
-			_text(content, progress, 14, Color("edc575"))
+			_text(content, progress, 14, Fieldwork.ACCENT)
 	for condition: Dictionary in quest.get("conditions", []):
 		var symbol := "≥" if condition.get("op", "min") == "min" else "≤"
 		var detail := "%s %s %s" % [_metric(str(condition.metric)), symbol, _number(float(condition.value))]
@@ -254,7 +291,7 @@ func _add_mission(quest: Dictionary) -> void:
 	if status in ["ready", "completed"]:
 		_action(actions, "claim", str(quest.id), words("ЗАБРАТЬ", "CLAIM"), raid or not bool(quest.get("can_claim", false)))
 	elif status == "active":
-		_text(actions, words("В РАБОТЕ", "IN PROGRESS"), 13, Color("edc575"))
+		_text(actions, words("В РАБОТЕ", "IN PROGRESS"), 13, Fieldwork.ACCENT)
 	elif status == "claimed":
 		_text(actions, words("ВЫПОЛНЕНО", "DONE"), 13, Color("99bfa8"))
 	else:

@@ -30,13 +30,10 @@ func setup(owner: Node3D) -> void:
 	game._crew_button = Styles.button(words("ЭКИПАЖ [J]", "CREW [J]"))
 	preload("res://presentation/ui/ui_icons.gd").apply(game._crew_button, "crew")
 	game._crew_button.custom_minimum_size = Vector2(0, 26)
-	game.hud._coins_label.get_parent().add_child(game._crew_button)
-	game.hud._stats_panel.offset_top -= 34
-	game.hud._objective_label.offset_top -= 34
-	game.hud._objective_label.offset_bottom -= 34
+	game.hud.add_quick_action(game._crew_button)
 	game._crew_button.pressed.connect(open)
 	game._crew_hint = Styles.label("", 12)
-	game._crew_hint.position = Vector2(16, 58)
+	game._crew_hint.position = Vector2(16, 202)
 	game._crew_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	game._crew_hint.add_theme_color_override("font_shadow_color", Color.BLACK)
 	game._crew_hint.add_theme_constant_override("shadow_offset_x", 1)
@@ -163,7 +160,7 @@ func update_hint() -> void:
 	if outside > 0:
 		status += words(" · Снаружи: %d", " · Outside: %d") % outside
 	game._crew_hint.text = hint + ("\n" if not hint.is_empty() else "") + status if not game.expedition.caravan.crew.is_empty() or not hint.is_empty() else ""
-	game._crew_hint.visible = not game._crew_hint.text.is_empty()
+	game._crew_hint.visible = game.screen_state == "running" and not game._crew_hint.text.is_empty()
 	game._crew_button.text = words("ЭКИПАЖ [J]", "CREW [J]")
 
 func _on_event(event: Dictionary) -> void:
@@ -190,6 +187,7 @@ func _open_encounter(person: Dictionary) -> void:
 	game.vehicle.motion.yaw_velocity = 0
 	game.vehicle.velocity = Vector3.ZERO
 	game.combat.model.player.speed = 0
+	game._crew_hint.hide()
 	encounter_panel.show_person(person, game.expedition.caravan)
 
 func decide_encounter(action: String) -> void:

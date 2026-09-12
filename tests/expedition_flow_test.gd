@@ -83,7 +83,7 @@ func _run() -> void:
 	check(game.screen_state == "expedition" and game.hideout_hub.visible and game.hud.armory.visible, "Menu opens unified hideout on Armory")
 	var panel = game.expedition_panel
 	check(game.hud.armory.get_parent() == panel.get_parent(), "Armory and storage share one content module")
-	check(game.hideout_hub.resources.text == ("CREDITS %d · LV 1" % initial_credits) and game.hideout_hub.resources.is_visible_in_tree(), "Armory shows persistent account credits and level")
+	check(game.hideout_hub.resources.text == str(initial_credits) and game.hideout_hub.resources.is_visible_in_tree(), "Armory shows persistent account credits and level")
 	_press(game.hideout_hub, "hub_action", "garage")
 	check(game.screen_state == "expedition" and game.hideout_hub.visible and game.caravan_panel.visible, "Visible hub Garage button opens management")
 	_press(game.hideout_hub, "hub_tab", "armory")
@@ -95,9 +95,9 @@ func _run() -> void:
 	_tab(panel, "trade")
 	_press(panel, "expedition_action", "buy:repair_kit")
 	check(game.expedition.snapshot().credits == initial_credits - 60 and game.expedition.snapshot().stash.repair_kit == 3, "Trader purchase charges account credits and stores the purchased kit")
-	check(game.hideout_hub.resources.text == ("CREDITS %d · LV 1" % (initial_credits - 60)), "Trader purchase immediately refreshes header balance")
+	check(game.hideout_hub.resources.text == str(initial_credits - 60), "Trader purchase immediately refreshes header balance")
 	_tab(panel, "stash")
-	check(game.hideout_hub.resources.text == ("CREDITS %d · LV 1" % (initial_credits - 60)), "Account balance remains visible across tabs")
+	check(game.hideout_hub.resources.text == str(initial_credits - 60), "Account balance remains visible across tabs")
 	_press(panel, "expedition_action", "equip:repair_kit")
 	check(game.expedition.snapshot().loadout.repair_kit == 1 and game.expedition.snapshot().stash.repair_kit == 2, "Pack button moves a real item out of the vault")
 	_tab(panel, "quests")
@@ -106,7 +106,7 @@ func _run() -> void:
 	_tab(panel, "upgrades")
 	_press(panel, "expedition_action", "upgrade:armor")
 	check(game.expedition.snapshot().credits == initial_credits - 260, "Permanent armor upgrade uses account credits")
-	check(game.hideout_hub.resources.text == ("CREDITS %d · LV 1" % (initial_credits - 260)), "Base upgrade immediately refreshes header balance")
+	check(game.hideout_hub.resources.text == str(initial_credits - 260), "Base upgrade immediately refreshes header balance")
 	_press(game.hideout_hub, "hub_action", "garage")
 	_press(game.hideout_hub, "hub_tab", "upgrades")
 	check(game.hideout_hub.tab == "upgrades" and panel.visible, "Garage Back preserves the selected Base tab")
@@ -227,6 +227,8 @@ func _run() -> void:
 	_tab(panel, "trade")
 	_press(panel, "trader_id", "scavenger")
 	credits_before = game.expedition.snapshot().credits
+	panel._trade_mode = "sell"
+	panel.refresh()
 	_press(panel, "expedition_action", "sell:relic")
 	check(game.expedition.snapshot().credits == credits_before + 125 and not game.expedition.snapshot().stash.has("relic"), "Trader sells extracted relic for account credits")
 	_tab(panel, "stash")

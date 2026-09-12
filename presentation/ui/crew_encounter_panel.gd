@@ -16,11 +16,16 @@ var panel: PanelContainer
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	color = Color(0.02, 0.03, 0.04, 0.78)
-	var center := CenterContainer.new()
+	color = Color(0.02, 0.03, 0.04, 0.35)
+	var center := MarginContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center.add_theme_constant_override("margin_right", 32)
+	center.add_theme_constant_override("margin_top", 48)
+	center.add_theme_constant_override("margin_bottom", 48)
 	add_child(center)
 	panel = PanelContainer.new()
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_END
+	panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var box := StyleBoxFlat.new()
 	box.bg_color = Color("#202c2e")
 	box.border_color = Color("#8e9b83")
@@ -36,16 +41,17 @@ func _ready() -> void:
 	panel.add_child(column)
 	title = Styles.label("", 23)
 	column.add_child(title)
-	story = Styles.label("", 18)
+	story = Styles.label("", 14)
 	story.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(story)
 	detail = Styles.label("", 15)
 	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(detail)
-	var actions := HBoxContainer.new()
+	var actions := VBoxContainer.new()
 	actions.add_theme_constant_override("separation", 12)
 	column.add_child(actions)
 	hire = Styles.button("")
+	Styles.primary(hire)
 	hire.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hire.pressed.connect(func(): decided.emit("hire"))
 	actions.add_child(hire)
@@ -62,7 +68,7 @@ func _ready() -> void:
 
 func _resize() -> void:
 	if is_instance_valid(panel):
-		panel.custom_minimum_size.x = clampf(size.x - 32, 280, 560)
+		panel.custom_minimum_size.x = clampf(size.x - 64, 280, 380)
 
 static func words(ru: String, en: String) -> String:
 	return ru if Locale.language == "ru" else en

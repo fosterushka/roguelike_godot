@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+const Fieldwork = preload("res://presentation/ui/fieldwork_tokens.gd")
+
 const Icons = preload("res://presentation/ui/ui_icons.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 const Fuel = preload("res://modules/caravan/vehicle_fuel.gd")
@@ -33,6 +35,7 @@ var _hack_label: Label
 var _run_label: Label
 var _abilities_label: Label
 var _hotbar_buttons: Array[Button] = []
+var _quick_actions: HBoxContainer
 var _hotbar: HBoxContainer
 var _stats_panel: PanelContainer
 var _coins_label: Label
@@ -45,10 +48,10 @@ var _gameplay: Control
 var _gameplay_active := false
 var _last_telemetry: Dictionary = {}
 
-const INK := Color("eee9db")
-const MUTED := Color("b8b7aa")
-const AMBER := Color("e6ac58")
-const STRIP := Color(0.055, 0.065, 0.065, 0.92)
+const INK := Fieldwork.TEXT
+const MUTED := Fieldwork.MUTED
+const AMBER := Fieldwork.ACCENT
+const STRIP := Fieldwork.BG
 
 var _speed_label: Label
 var _health_label: Label
@@ -78,6 +81,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var screen := Control.new()
 	screen.name = "Screen"
+	screen.theme = preload("res://presentation/ui/ui_styles.gd").theme()
 	screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	screen.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(screen)
@@ -124,7 +128,7 @@ func _ready() -> void:
 
 func update_telemetry(data: Dictionary) -> void:
 	_last_telemetry = data
-	_speed_label.text = Locale.text("СКОРОСТЬ") + "  " + Locale.text("%03d км/ч") % roundi(absf(float(data.get("speed", 0.0))) * Fuel.KPH_PER_MPS)
+	_speed_label.text = Locale.text("СКОРОСТЬ") + "  " + Locale.text("%03d км/ч").replace("%03d", "%d") % roundi(absf(float(data.get("speed", 0.0))) * Fuel.KPH_PER_MPS)
 	_update_meter(_health_label, _health_bar, Locale.text("КОРПУС"), float(data.get("health", 0.0)), float(data.get("max_health", 100.0)))
 	_update_meter(_fuel_label, _fuel_bar, Locale.text("ТОПЛИВО"), float(data.get("fuel", 0.0)), float(data.get("max_fuel", 100.0)))
 
@@ -162,7 +166,7 @@ func _build_telemetry(screen: Control) -> void:
 	_stats_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	_stats_panel.offset_left = 12
 	_stats_panel.offset_right = 232
-	_stats_panel.offset_top = -222
+	_stats_panel.offset_top = -178
 	_stats_panel.offset_bottom = -12
 	_stats_panel.add_theme_stylebox_override("panel", _panel_style())
 	_stats_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -187,20 +191,25 @@ func _build_telemetry(screen: Control) -> void:
 	_coins_label.add_theme_stylebox_override("normal", scrap_backing)
 	_player_stats_label = _label("", 11, MUTED)
 	column.add_child(_player_stats_label)
-	var actions := HBoxContainer.new()
-	actions.add_theme_constant_override("separation", 6)
-	column.add_child(actions)
-	var armory_button := _button(Locale.text("АРСЕНАЛ"), 76)
-	armory_button.tooltip_text = Locale.text("АРСЕНАЛ [B]")
+	_quick_actions = HBoxContainer.new()
+	_quick_actions.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	_quick_actions.offset_left = -220
+	_quick_actions.offset_right = 220
+	_quick_actions.offset_top = -44
+	_quick_actions.offset_bottom = -8
+	_quick_actions.add_theme_constant_override("separation", 6)
+	screen.add_child(_quick_actions)
+	var armory_button := _button(Locale.text("АРСЕНАЛ [B]"), 120)
 	armory_button.pressed.connect(func() -> void: armory_requested.emit())
-	Icons.apply(armory_button, "armory", 18)
-	armory_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	actions.add_child(armory_button)
-	var pause_button := _button(Locale.text("ПАУЗА"), 76)
+	add_quick_action(armory_button)
+	var pause_button := _button(Locale.text("ПАУЗА"), 80)
+	pause_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	pause_button.offset_left = -100
+	pause_button.offset_right = -16
+	pause_button.offset_top = 16
+	pause_button.offset_bottom = 52
 	pause_button.pressed.connect(func() -> void: pause_requested.emit())
-	Icons.apply(pause_button, "settings", 18)
-	pause_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	actions.add_child(pause_button)
+	screen.add_child(pause_button)
 	update_telemetry({"health": 100.0, "fuel": 100.0})
 
 
@@ -256,7 +265,7 @@ func _build_pause(screen: Control) -> void:
 
 func _build_loading(screen: Control) -> void:
 	_loading_overlay = ColorRect.new()
-	_loading_overlay.color = Color("111717")
+	_loading_overlay.color = Fieldwork.BG
 	_loading_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	screen.add_child(_loading_overlay)
 	var center := CenterContainer.new()
@@ -304,7 +313,7 @@ func _meter(parent: BoxContainer, icon_key: String) -> Array:
 	var background := StyleBoxFlat.new()
 	background.bg_color = Color("3b4240")
 	var fill := StyleBoxFlat.new()
-	fill.bg_color = AMBER
+	fill.bg_color = Fieldwork.SUCCESS if icon_key == "health" else Fieldwork.MUTED
 	bar.add_theme_stylebox_override("background", background)
 	bar.add_theme_stylebox_override("fill", fill)
 	column.add_child(bar)
@@ -313,7 +322,7 @@ func _meter(parent: BoxContainer, icon_key: String) -> Array:
 
 func _update_meter(label: Label, bar: ProgressBar, caption: String, value: float, maximum: float) -> void:
 	var ratio := clampf(value / maxf(maximum, 0.001), 0.0, 1.0)
-	label.text = "%s  %d%%" % [caption, roundi(ratio * 100.0)]
+	label.text = "%s  %d / %d" % [caption, roundi(value), roundi(maximum)]
 	bar.value = ratio * 100.0
 
 
@@ -329,38 +338,23 @@ func _panel_style() -> StyleBoxFlat:
 	return style
 
 
+func add_quick_action(button: Button) -> void:
+	button.custom_minimum_size.y = Fieldwork.BUTTON_HEIGHT
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_quick_actions.add_child(button)
+
 func _button(text: String, width: float) -> Button:
-	var button := Button.new()
-	button.text = Locale.text(text)
-	button.custom_minimum_size = Vector2(width, 32)
-	button.add_theme_font_size_override("font_size", 12)
-	button.add_theme_color_override("font_color", INK)
-	var normal := StyleBoxFlat.new()
-	normal.bg_color = Color("303734")
-	normal.border_color = Color("706247")
-	normal.set_border_width_all(1)
-	var hover := normal.duplicate() as StyleBoxFlat
-	hover.bg_color = Color("4b4738")
-	hover.border_color = AMBER
-	var pressed := hover.duplicate() as StyleBoxFlat
-	pressed.bg_color = Color("685238")
-	var focus := StyleBoxFlat.new()
-	focus.bg_color = Color.TRANSPARENT
-	focus.border_color = AMBER
-	focus.set_border_width_all(2)
-	button.add_theme_stylebox_override("normal", normal)
-	button.add_theme_stylebox_override("hover", hover)
-	button.add_theme_stylebox_override("pressed", pressed)
-	button.add_theme_stylebox_override("focus", focus)
+	var button := preload("res://presentation/ui/ui_styles.gd").button(text)
+	button.custom_minimum_size = Vector2(width, Fieldwork.BUTTON_HEIGHT)
 	return button
 
 func _build_run_info(screen: Control) -> void:
 	_objective_label = _label("", 12, MUTED)
-	_objective_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	_objective_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	_objective_label.offset_left = 12
 	_objective_label.offset_right = 310
-	_objective_label.offset_top = -332
-	_objective_label.offset_bottom = -244
+	_objective_label.offset_top = 116
+	_objective_label.offset_bottom = 194
 	_objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	screen.add_child(_objective_label)
 	_hack_label = _label("", 12, AMBER)
@@ -396,8 +390,8 @@ func _build_run_info(screen: Control) -> void:
 	_hotbar.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	_hotbar.offset_left = -165
 	_hotbar.offset_right = 165
-	_hotbar.offset_top = -66
-	_hotbar.offset_bottom = -12
+	_hotbar.offset_top = -104
+	_hotbar.offset_bottom = -50
 	_hotbar.add_theme_constant_override("separation", 6)
 	screen.add_child(_hotbar)
 	for index in 3:
@@ -519,8 +513,8 @@ func show_armory(state: Dictionary, player: Dictionary) -> void:
 func _build_world_banner(screen: Control) -> void:
 	_world_banner = PanelContainer.new()
 	_world_banner.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	_world_banner.offset_left = -280
-	_world_banner.offset_right = 280
+	_world_banner.offset_left = -200
+	_world_banner.offset_right = 200
 	_world_banner.offset_top = 54
 	_world_banner.offset_bottom = 112
 	_world_banner.add_theme_stylebox_override("panel", _panel_style())

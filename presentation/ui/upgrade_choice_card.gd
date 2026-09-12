@@ -1,5 +1,7 @@
 extends Control
 
+const Fieldwork = preload("res://presentation/ui/fieldwork_tokens.gd")
+
 signal selected(id: String)
 
 const Styles = preload("res://presentation/ui/ui_styles.gd")
@@ -7,7 +9,7 @@ const Locale = preload("res://presentation/ui/ui_locale.gd")
 const CARD_HEIGHT := 250.0
 const HOVER_LIFT := 8.0
 const HOVER_DURATION := 0.14
-const CONTENT_MARGIN := 14.0
+const CONTENT_MARGIN := 20.0
 var button: Button
 var _motion: Tween
 
@@ -40,6 +42,8 @@ func configure(row: Dictionary) -> void:
 	content.offset_top = CONTENT_MARGIN
 	content.offset_bottom = -CONTENT_MARGIN
 	content.add_theme_constant_override("separation", 12)
+	var emblem := preload("res://presentation/ui/ui_icons.gd").view({"core:motor": "bolt", "core:armor": "shield", "core:fuel": "fuel"}.get(str(row.get("id", "")), "gun"), 26)
+	content.add_child(emblem)
 	var title := Styles.label(str(row.get("label", "")), 18)
 	title.name = "Title"
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -50,7 +54,7 @@ func configure(row: Dictionary) -> void:
 	detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content.add_child(detail)
 	var hint := Styles.label("ВЫБРАТЬ" if Locale.language == "ru" else "SELECT", 12)
-	hint.modulate = Color("cfab69")
+	hint.modulate = Fieldwork.ACCENT
 	content.add_child(hint)
 
 func _raise(raised: bool) -> void:

@@ -1,9 +1,11 @@
 extends Button
 
+const Fieldwork = preload("res://presentation/ui/fieldwork_tokens.gd")
+
 const Icons = preload("res://presentation/ui/ui_icons.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
-const INK := Color("eee9db")
-const AMBER := Color("e6ac58")
+const INK := Fieldwork.TEXT
+const AMBER := Fieldwork.ACCENT
 const MUTED := Color("979b92")
 const NAMES := ["НИТРО", "ТАРАН", "РЕМОНТ"]
 var slot := 0
@@ -19,7 +21,7 @@ func _ready() -> void:
 	custom_minimum_size = Vector2(106, 54)
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_normal = StyleBoxFlat.new()
-	_normal.bg_color = Color("18201b")
+	_normal.bg_color = Fieldwork.BG
 	_normal.border_color = Color("525b4d")
 	_normal.set_border_width_all(1)
 	var hover := _normal.duplicate() as StyleBoxFlat
@@ -36,12 +38,12 @@ func _ready() -> void:
 		add_theme_stylebox_override(state, hover)
 	add_theme_stylebox_override("focus", focus)
 	_heading = _label(Vector2(8, 5), 11)
-	_status_label = _label(Vector2(31, 29), 10)
-	_status_label.size = Vector2(70, 18)
+	_status_label = _label(Vector2(6, 29), 12)
+	_status_label.size = Vector2(98, 18)
 	_status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_status_label.clip_text = true
-	var action_icon := Icons.view(["fuel", "ammo", "repair"][slot], 20)
-	action_icon.position = Vector2(6, 27)
+	var action_icon := Icons.view(["fuel", "ammo", "repair"][slot], 14)
+	action_icon.position = Vector2(84, 7)
 	add_child(action_icon)
 
 func _label(origin: Vector2, font_size: int) -> Label:
@@ -60,7 +62,7 @@ func update_state(player: Dictionary, selected: bool) -> void:
 	status = Locale.text("ГОТОВО")
 	disabled = false
 	if slot == 1 and not player.get("has_bumper", false):
-		status = Locale.text("НУЖЕН БАМПЕР")
+		status = "Нет тарана" if Locale.language == "ru" else "No ram"
 		disabled = true
 	elif cooldown > 0.0:
 		status = "%.1fs" % cooldown
@@ -75,12 +77,12 @@ func update_state(player: Dictionary, selected: bool) -> void:
 	_status_label.text = status
 	_status_label.add_theme_color_override("font_color", MUTED if disabled else AMBER)
 	_selected = selected
-	_normal.border_color = Color("ffdf8a") if selected else Color("525b4d")
-	_normal.bg_color = Color("67471d") if selected else Color("18201b")
-	_normal.set_border_width_all(3 if selected else 1)
+	_normal.border_color = Fieldwork.ACCENT if selected else Color("525b4d")
+	_normal.bg_color = Fieldwork.ACCENTBG if selected else Fieldwork.BG
+	_normal.set_border_width_all(1)
 	_hover.bg_color = Color("795522") if selected else Color("303829")
-	_hover.border_color = Color("ffdf8a") if selected else AMBER
-	_hover.set_border_width_all(3 if selected else 1)
+	_hover.border_color = Fieldwork.ACCENT if selected else AMBER
+	_hover.set_border_width_all(1)
 	_heading.add_theme_color_override("font_color", INK if selected or not disabled else MUTED)
 	var descriptions := ["Краткое ускорение", "Удар по врагам впереди", "Ремонт корпуса за 15 лома"]
 	tooltip_text = Locale.text(descriptions[slot]) + " · " + status

@@ -1,5 +1,7 @@
 extends ColorRect
 
+const Fieldwork = preload("res://presentation/ui/fieldwork_tokens.gd")
+
 const Icons = preload("res://presentation/ui/ui_icons.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
 
@@ -14,7 +16,7 @@ var preview: SubViewportContainer
 var query: LineEdit
 var filter: OptionButton
 var cards: GridContainer
-var details: Label
+var details: RichTextLabel
 var summary: Label
 var save_status: Label
 var close_button: Button
@@ -37,11 +39,17 @@ var _catalog_heading: Label
 var _embedded := false
 var _header: HBoxContainer
 var _margin: MarginContainer
+var _inspector: VBoxContainer
+var _inspector_actions: VBoxContainer
+var _module_actions: Dictionary = {}
+var _column: VBoxContainer
+var _inspector_surface: PanelContainer
+var _catalog_column: VBoxContainer
 var item_preview_pip
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	color = Color(0.015, 0.02, 0.016, 0.94)
+	color = Fieldwork.BG
 	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/game_catalogs.json"))
 	_catalog = parsed if parsed is Dictionary else {}
 	var margin := MarginContainer.new()
@@ -53,6 +61,7 @@ func _ready() -> void:
 	item_preview_pip = PreviewPip.new()
 	add_child(item_preview_pip)
 	var column := VBoxContainer.new()
+	_column = column
 	column.add_theme_constant_override("separation", 6)
 	margin.add_child(column)
 	var header := HBoxContainer.new()
@@ -75,10 +84,10 @@ func _ready() -> void:
 	column.add_child(summary)
 	_body = HBoxContainer.new()
 	_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_body.add_theme_constant_override("separation", 12)
+	_body.add_theme_constant_override("separation", 16)
 	column.add_child(_body)
 	_sidebar = VBoxContainer.new()
-	_sidebar.custom_minimum_size.x = 380
+	_sidebar.custom_minimum_size.x = 260
 	_sidebar.add_theme_constant_override("separation", 6)
 	_body.add_child(_sidebar)
 	preview = Preview.new()
@@ -88,6 +97,8 @@ func _ready() -> void:
 	var preview_tools := HBoxContainer.new()
 	_sidebar.add_child(preview_tools)
 	var inspect_hint := Styles.label(Locale.text("Тяните: вращение · Колесо: масштаб"), 11)
+	inspect_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	Styles.muted(inspect_hint)
 	inspect_hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	preview_tools.add_child(inspect_hint)
 	reset_view_button = Styles.button(Locale.text("Сброс вида"))
@@ -115,12 +126,19 @@ func _ready() -> void:
 	_protocol_summary = Styles.label("", 12)
 	_protocol_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_sidebar_text.add_child(_protocol_summary)
-	details = Styles.label("", 12)
+	details = RichTextLabel.new()
+	details.bbcode_enabled = true
+	details.fit_content = true
+	details.scroll_active = false
+	details.add_theme_font_size_override("normal_font_size", 13)
+	details.add_theme_font_override("bold_font", Styles.font(true))
+	details.add_theme_color_override("default_color", Fieldwork.MUTED)
 	details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	details.custom_minimum_size.x = 0
 	details.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_sidebar_text.add_child(details)
 	var catalog_column := VBoxContainer.new()
+	_catalog_column = catalog_column
 	catalog_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_body.add_child(catalog_column)
 	_catalog_heading = Styles.label("", 15)
@@ -131,7 +149,8 @@ func _ready() -> void:
 	catalog_column.add_child(search_row)
 	query = LineEdit.new()
 	query.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	query.placeholder_text = Locale.text("Поиск по названию или описанию")
+	query.placeholder_text = "Поиск оружия" if Locale.language == "ru" else "Search weapons"
+	query.right_icon = Icons.texture("search")
 	query.custom_minimum_size.y = 34
 	query.text_changed.connect(func(_text: String) -> void: rebuild_cards())
 	search_row.add_child(query)
@@ -139,7 +158,7 @@ func _ready() -> void:
 	for caption in [Locale.text("Все системы"), Locale.text("Оружие"), Locale.text("Поддержка"), Locale.text("Установлено")]:
 		filter.add_item(caption)
 	filter.item_selected.connect(func(_index: int) -> void: rebuild_cards())
-	filter.custom_minimum_size = Vector2(132, 34)
+	filter.custom_minimum_size = Vector2(116, 36)
 	filter.add_theme_font_size_override("font_size", 12)
 	search_row.add_child(filter)
 	_catalog_scroll = ScrollContainer.new()
@@ -148,18 +167,37 @@ func _ready() -> void:
 	catalog_column.add_child(_catalog_scroll)
 	_catalog_scroll.resized.connect(_layout)
 	cards = GridContainer.new()
-	cards.columns = 2
+	cards.columns = 1
 	cards.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	cards.add_theme_constant_override("h_separation", 10)
-	cards.add_theme_constant_override("v_separation", 10)
+	cards.add_theme_constant_override("v_separation", 7)
 	_catalog_scroll.add_child(cards)
 	_catalog_scroll.get_v_scroll_bar().value_changed.connect(func(_value: float) -> void: item_preview_pip.hide_preview())
+	_inspector_surface = PanelContainer.new()
+	_inspector_surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_inspector_surface.add_theme_stylebox_override("panel", Styles.panel_style())
+	_body.add_child(_inspector_surface)
+	_inspector = VBoxContainer.new()
+	_inspector.add_theme_constant_override("separation", 12)
+	_inspector_surface.add_child(_inspector)
+	var inspector_scroll := ScrollContainer.new()
+	inspector_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	inspector_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_inspector.add_child(inspector_scroll)
+	details.reparent(inspector_scroll)
+	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	details.add_theme_font_size_override("font_size", 14)
+	details.size_flags_vertical = Control.SIZE_FILL
+	_inspector_actions = VBoxContainer.new()
+	_inspector_actions.add_theme_constant_override("separation", 8)
+	_inspector.add_child(_inspector_actions)
 	save_status = Styles.label("", 12)
 	column.add_child(save_status)
 	resized.connect(_layout)
 	visible = false
 
 func display(shop: Dictionary, player: Dictionary) -> void:
+	query.placeholder_text = "Поиск оружия" if Locale.language == "ru" else "Search weapons"
 	var was_visible := visible
 	_shop = shop
 	_player = player
@@ -182,7 +220,7 @@ func display(shop: Dictionary, player: Dictionary) -> void:
 	visible = true
 	if not was_visible:
 		if _embedded:
-			query.grab_focus()
+			close_button.release_focus()
 		else:
 			close_button.grab_focus()
 	mount_selector.set_build(player)
@@ -203,11 +241,23 @@ func hide_panel() -> void:
 		item_preview_pip.hide_preview()
 
 func _layout() -> void:
-	if _sidebar:
-		_sidebar.custom_minimum_size.x = clampf(size.x * 0.39, 350, 490)
-		preview.custom_minimum_size.y = 156 if size.y < 700 else 196
-	if cards and _catalog_scroll:
-		cards.columns = maxi(2, int((_catalog_scroll.size.x - 12) / 182.0))
+	if not _inspector:
+		return
+	var compact := size.x < Fieldwork.ARMORY_COMPACT_WIDTH
+	_sidebar.visible = not compact
+	_sidebar.custom_minimum_size.x = 292
+	_catalog_column.custom_minimum_size.x = (size.x - 16) * 0.45 if compact else 300
+	_catalog_column.size_flags_horizontal = Control.SIZE_FILL
+	_inspector_surface.custom_minimum_size.x = 0
+	preview.custom_minimum_size.y = 156 if compact else 218
+	if compact and mount_selector.get_parent() != _column:
+		mount_selector.reparent(_column)
+		_column.move_child(mount_selector, 2)
+	elif not compact and mount_selector.get_parent() != _sidebar:
+		mount_selector.reparent(_sidebar)
+		_sidebar.move_child(mount_selector, 0)
+
+	cards.columns = 1
 
 func matching_types() -> Array[String]:
 	var result: Array[String] = []
@@ -235,6 +285,10 @@ func rebuild_cards() -> void:
 	if item_preview_pip:
 		item_preview_pip.hide_preview()
 	_tile_panels.clear()
+	_module_actions.clear()
+	for child in _inspector_actions.get_children():
+		_inspector_actions.remove_child(child)
+		child.queue_free()
 	for child in cards.get_children():
 		cards.remove_child(child)
 		child.queue_free()
@@ -263,47 +317,64 @@ func rebuild_cards() -> void:
 				if row.id == "module:" + type:
 					_action(card, row, ("ДОБАВИТЬ" if Locale.language == "ru" else "ADD") if installed and definition.has("projectile") else Locale.text("УСТАНОВЛЕНО") if installed else Locale.text("УСТАНОВИТЬ"))
 	_rebuild_attachments()
+	if cards.get_child_count() == 0:
+		var empty := Styles.label("Нет результатов. Измените поиск или фильтр." if Locale.language == "ru" else "No results. Change the search or filter.", 14)
+		empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		cards.add_child(empty)
+	_show_actions()
 
 func _card(type: String, title: String, description: String) -> VBoxContainer:
 	var panel := PanelContainer.new()
 	panel.set_meta("module_type", type)
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("202820")
-	style.border_color = Color("e6ac58") if type == _selected else Color("46523f")
+	style.bg_color = Fieldwork.RAISED if type == _selected else Fieldwork.PANEL
+	style.set_corner_radius_all(4)
+	style.border_color = Fieldwork.ACCENT if type == _selected else Fieldwork.LINE
 	style.set_border_width_all(1)
 	for side in ["left", "right", "top", "bottom"]:
-		style.set("content_margin_" + side, 6)
+		style.set("content_margin_" + side, 1)
 	panel.add_theme_stylebox_override("panel", style)
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	cards.add_child(panel)
 	_tile_panels[type] = panel
 	var column := VBoxContainer.new()
-	column.custom_minimum_size.x = 164
+	column.custom_minimum_size.x = 180
 	column.add_theme_constant_override("separation", 4)
 	panel.add_child(column)
 	var inspect := Styles.button("")
 	inspect.name = "Inspect"
-	inspect.custom_minimum_size = Vector2(0, 64)
-	inspect.tooltip_text = Locale.text(title) + "\n" + Locale.text(description)
+	inspect.custom_minimum_size = Vector2(0, 56)
+
 	inspect.pressed.connect(func() -> void: select_module(type))
-	inspect.mouse_entered.connect(func() -> void: item_preview_pip.show_for(inspect, "attachment" if type.begins_with("attachment:") else "module", type.trim_prefix("attachment:"), Locale.text(title)))
-	inspect.mouse_exited.connect(item_preview_pip.hide_preview)
-	inspect.focus_entered.connect(func() -> void: item_preview_pip.show_for(inspect, "attachment" if type.begins_with("attachment:") else "module", type.trim_prefix("attachment:"), Locale.text(title)))
-	inspect.focus_exited.connect(item_preview_pip.hide_preview)
 	column.add_child(inspect)
-	var model_preview := ModelPreview.new()
-	model_preview.name = "ModelThumbnail"
-	model_preview.position = Vector2(7, 6)
-	model_preview.size = Vector2(58, 52)
-	model_preview.set_preview("attachment" if type.begins_with("attachment:") else "module", type.trim_prefix("attachment:"))
-	inspect.add_child(model_preview)
-	var heading := Styles.label(title, 13)
+	Styles.ghost(inspect)
+	var row_style := inspect.get_theme_stylebox("normal") as StyleBoxFlat
+	row_style.bg_color = Color.TRANSPARENT
+	var icon := Icons.view("gun" if _catalog.modules.get(type, {}).has("projectile") else "settings", 20)
+	icon.position = Vector2(14, 18)
+	inspect.add_child(icon)
+	var heading := Styles.label(title, 14)
 	heading.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	heading.offset_left = 72
-	heading.offset_right = -7
-	heading.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	heading.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	heading.offset_left = 50
+	heading.offset_right = -12
+	heading.offset_top = 5
+	heading.offset_bottom = -26
+	heading.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	inspect.add_child(heading)
+	var caption := Styles.label(Locale.text(description).get_slice(".", 0), 12)
+	Styles.muted(caption)
+	caption.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	caption.offset_left = 50
+	caption.offset_right = -12
+	caption.offset_top = 29
+	caption.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	inspect.add_child(caption)
+	var actions := VBoxContainer.new()
+	actions.add_theme_constant_override("separation", 8)
+	actions.visible = false
+	_inspector_actions.add_child(actions)
+	_module_actions[type] = actions
+	column.set_meta("actions", actions)
 	return column
 
 func _action(parent: VBoxContainer, row: Dictionary, caption: String) -> void:
@@ -311,7 +382,7 @@ func _action(parent: VBoxContainer, row: Dictionary, caption: String) -> void:
 	var button := Styles.button(caption + (Locale.text(" · %d ЛОМ") % cost if cost > 0 else ""))
 	button.custom_minimum_size = Vector2(0, 30)
 	button.add_theme_font_size_override("font_size", 12)
-	button.clip_text = true
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.set_meta("action_id", str(row.id))
 	var invalid_mount: bool = (str(row.id).begins_with("module:") or str(row.id).begins_with("attachment:")) and str(row.id) != "module:bumper" and (not mount_selector.valid_target())
 	if str(row.id) == "module:bumper" and mount_selector.selected_carrier() != "crawler":
@@ -319,7 +390,21 @@ func _action(parent: VBoxContainer, row: Dictionary, caption: String) -> void:
 	button.disabled = not row.get("enabled", false) or invalid_mount
 	button.tooltip_text = button.text + "\n" + (Locale.text("Нет свободных слотов") if invalid_mount else Locale.text(str(row.get("disabled_reason", row.get("description", "")))))
 	button.pressed.connect(func() -> void: action_requested.emit("buy", _purchase_id(str(row.id))))
-	parent.add_child(button)
+	var target: VBoxContainer = parent.get_meta("actions", parent)
+	target.add_child(button)
+	if button.disabled:
+		var reason := Locale.text("Нет свободных слотов") if invalid_mount else Locale.text(str(row.get("disabled_reason", "")))
+		if cost > int(_player.get("coins", 0)):
+			reason = ("Не хватает %d лома" if Locale.language == "ru" else "Need %d more scrap") % (cost - int(_player.get("coins", 0)))
+		if not reason.is_empty():
+			var explanation := Styles.label(reason, 14)
+			explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			explanation.add_theme_color_override("font_color", Fieldwork.ACCENT)
+			target.add_child(explanation)
+
+func _show_actions() -> void:
+	for type: String in _module_actions:
+		_module_actions[type].visible = type == _selected
 
 func _purchase_id(id: String) -> String:
 	var mount: Dictionary = mount_selector.selected_mount()
@@ -338,9 +423,12 @@ func _mount_changed(mount: Dictionary) -> void:
 
 func select_module(type: String) -> void:
 	_selected = type
+	_show_actions()
+
 	for key: String in _tile_panels:
 		var style := _tile_panels[key].get_theme_stylebox("panel") as StyleBoxFlat
-		style.border_color = Color("e6ac58") if key == type else Color("46523f")
+		style.border_color = Fieldwork.ACCENT if key == type else Fieldwork.LINE
+		style.bg_color = Fieldwork.RAISED if key == type else Fieldwork.PANEL
 	preview.show_attachment(type.trim_prefix("attachment:")) if type.begins_with("attachment:") else preview.show_module(type)
 	if type == "walkerTrailer":
 		details.text = ("Колёсный прицеп\nОтдельная техника с тремя креплениями.\nПокупка добавляет новый прицеп в список.\nВсего до 6 прицепов." if Locale.language == "ru" else "Wheeled trailer\nSeparate unit with three module mounts.\nPurchase adds a new trailer to the selector.\nUp to 6 trailers.")
@@ -365,7 +453,7 @@ func select_module(type: String) -> void:
 			lines.append(Locale.text(str(upgrade.description)))
 		if not upgrade.get("enabled", false) and not str(upgrade.get("disabled_reason", "")).is_empty():
 			lines.append(Locale.text(str(upgrade.disabled_reason)))
-	details.text = "\n".join(lines)
+	details.text = "[font_size=22][b][color=#EEEBDD]" + lines[0] + "[/color][/b][/font_size]\n\n" + "\n\n".join(lines.slice(1))
 
 func refresh_save_status(status: String, dirty: bool) -> void:
 	var captions := {"ready": Locale.text("сохранён"), "default": Locale.text("новый локальный профиль"), "recovered": Locale.text("восстановлен после повреждения"), "migrated": Locale.text("обновлён"), "read-only-future": Locale.text("новая версия профиля: доступ только для чтения"), "unavailable": Locale.text("файл недоступен"), "unsaved": Locale.text("не удалось сохранить; повторим автоматически")}
@@ -469,7 +557,7 @@ func _show_attachment(type: String) -> void:
 	for installed: Dictionary in _carrier_data().get("attachments", []):
 		if installed.type == type:
 			lines.append(Locale.text("Установлено: %s · слот %d") % [_carrier_caption(mount_selector.selected_carrier()), int(installed.slot) + 1])
-	details.text = "\n".join(lines)
+	details.text = "[font_size=22][b][color=#EEEBDD]" + lines[0] + "[/color][/b][/font_size]\n\n" + "\n\n".join(lines.slice(1))
 
 func select_carrier(id: String) -> void:
 	mount_selector.select_carrier(id)
@@ -478,7 +566,10 @@ func set_embedded(value: bool) -> void:
 	_embedded = value
 	if _header:
 		_header.visible = not value
+		summary.visible = not value
+		_catalog_heading.visible = not value
+		_mount_hint.visible = not value
 	if _margin:
 		for side in ["left", "right", "top", "bottom"]:
-			_margin.add_theme_constant_override("margin_" + side, 8 if value else 12)
+			_margin.add_theme_constant_override("margin_" + side, 0 if value else 12)
 	_layout()

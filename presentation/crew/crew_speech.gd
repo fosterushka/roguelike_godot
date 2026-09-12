@@ -1,5 +1,6 @@
 extends PanelContainer
-# One screen-space bubble owns both background and wrapped text.
+# One screen-space label owns its background and wrapped text.
+const Fieldwork = preload("res://presentation/ui/fieldwork_tokens.gd")
 signal interaction_requested
 var label: Label
 var prompt: Button
@@ -10,10 +11,10 @@ var message := ""
 func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("#1c292b")
-	style.border_color = Color("#718580")
+	style.bg_color = Fieldwork.PANEL
+	style.border_color = Fieldwork.CONTROL
 	style.set_border_width_all(1)
-	style.set_corner_radius_all(10)
+	style.set_corner_radius_all(Fieldwork.CONTROL_RADIUS)
 	style.content_margin_left = 12
 	style.content_margin_right = 12
 	style.content_margin_top = 8
@@ -23,7 +24,7 @@ func _init() -> void:
 	label.custom_minimum_size.x = 206
 	label.size.x = 206
 	label.add_theme_font_size_override("font_size", 15)
-	label.add_theme_color_override("font_color", Color("#f1e8cf"))
+	label.add_theme_color_override("font_color", Fieldwork.TEXT)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -38,7 +39,7 @@ func _init() -> void:
 	prompt.focus_mode = Control.FOCUS_NONE
 	var key_style := StyleBoxFlat.new()
 	key_style.bg_color = Color.TRANSPARENT
-	key_style.border_color = Color("#f1e8cf")
+	key_style.border_color = Fieldwork.TEXT
 	key_style.set_border_width_all(2)
 	prompt.add_theme_stylebox_override("normal", key_style)
 	prompt.add_theme_stylebox_override("hover", key_style)
@@ -79,7 +80,6 @@ func _draw() -> void:
 			draw_arc(center + Vector2(0, 12), 8, PI + 0.35, TAU - 0.35, 20, Color("#18372b"), 2, true)
 		else:
 			draw_arc(center + Vector2(0, -1), 9, 0.25, PI - 0.25, 20, Color("#18372b"), 2, true)
-	draw_colored_polygon(PackedVector2Array([Vector2(size.x/2-5, size.y), Vector2(size.x/2+5, size.y), Vector2(size.x/2, size.y+6)]), Color("#1c292b"))
 
 func follow(camera: Camera3D, point: Vector3) -> void:
 	visible = camera != null and not camera.is_position_behind(point)

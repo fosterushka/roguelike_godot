@@ -39,6 +39,10 @@ func setup(expedition_value: RefCounted, combat_value: Node, world_value: Node, 
 	view.prepare()
 	view.interaction_requested.connect(interact_person)
 
+func set_interaction_ui_visible(value: bool) -> void:
+	if is_instance_valid(view):
+		view.set_interaction_ui_visible(value)
+
 func reset(seed_value: int) -> void:
 	_seed = seed_value
 	recruits.clear()

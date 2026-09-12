@@ -56,9 +56,9 @@ func run() -> void:
 	var slot := preload("res://presentation/ui/ability_slot.gd").new()
 	root.add_child(slot)
 	slot.update_state({"nitro_cooldown": 1},true)
-	check(slot.disabled and slot._normal.border_width_left == 3 and slot._normal.bg_color == Color("67471d") and slot._hover.border_width_left == 3, "Selected cooling slot keeps strong outline and background under hover")
+	check(slot.disabled and slot._normal.border_width_left == 1 and slot._normal.bg_color == preload("res://presentation/ui/fieldwork_tokens.gd").ACCENTBG and slot._hover.border_width_left == 1, "Selected cooling slot keeps FIELDWORK selection under hover")
 	slot.update_state({},false)
-	check(slot._normal.border_width_left == 1 and slot._normal.bg_color == Color("18201b"), "Previous slot restores neutral styling")
+	check(slot._normal.border_width_left == 1 and slot._normal.bg_color == preload("res://presentation/ui/fieldwork_tokens.gd").BG, "Previous slot restores neutral styling")
 	var game := preload("res://app/main.tscn").instantiate()
 	game.profile_path = "/private/tmp/iron-feedback-profile-%d.json" % Time.get_ticks_usec()
 	game.run_seed_override = 72841

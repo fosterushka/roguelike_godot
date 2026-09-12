@@ -44,9 +44,15 @@ func _run() -> void:
 	check(board.visible_ids[0] == "mission-110" and board.visible_ids[1] == "mission-111", "Ready rewards and active tasks sort before available missions")
 	check(board.visible_ids.has("first_delivery"), "Starter task remains visible on first page")
 	check(board.summary.text.contains("2 / 5"), "Active count stays pinned outside the scrolled mission rows")
-	check(board.scroll.get_parent() == board and board.summary.get_parent().get_parent() == board, "Search and count remain outside the scrolling content")
+	check(board.scroll.get_parent().get_parent() == board and board.summary.get_parent().get_parent() == board, "Search and count remain outside the scrolling content")
+	board._selected_id = "first_delivery"
+	board._show_selected()
 	_press(panel, "accept:first_delivery")
+	board._selected_id = "mission-110"
+	board._show_selected()
 	_press(panel, "claim:mission-110")
+	board._selected_id = "mission-111"
+	board._show_selected()
 	_press(panel, "abandon:mission-111")
 	check(actions == [["accept", "first_delivery"], ["claim", "mission-110"], ["abandon", "mission-111"]], "Board forwards real accept, claim and abandon IDs through expedition panel")
 	board.next.pressed.emit()
@@ -72,11 +78,11 @@ func _run() -> void:
 	state.active = true
 	panel.show_state(state, "quests")
 	check(_button(panel, "claim:mission-110").disabled and _button(panel, "abandon:mission-110").disabled, "Raid blocks claim and abandon actions")
-	check(not _has_text(board.rows, "Not met"), "Already banked ready task does not show new raid conditions as failed")
+	check(not _has_text(board._inspector, "Not met"), "Already banked ready task does not show new raid conditions as failed")
 	quests[110].status = "active"
 	panel.show_state(state, "quests")
-	check(_has_text(board.rows, "Not met") and _has_text(board.rows, "125"), "Active raid condition shows failure and actual current metric")
-	check(_has_text(board.rows, "Hand in from vault: Scrap 0 / 6"), "Delivery requirement shows precise stash shortage")
+	check(_has_text(board._inspector, "Not met") and _has_text(board._inspector, "125"), "Active raid condition shows failure and actual current metric")
+	check(_has_text(board._inspector, "Hand in from vault: Scrap 0 / 6"), "Delivery requirement shows precise stash shortage")
 	state.active = false
 	Locale.set_language("ru")
 	panel.show_state(state, "quests")
@@ -100,13 +106,17 @@ func _run() -> void:
 	expedition.consume("repair_kit", model.player)
 	expedition.collect_loot("scrap", 3)
 	panel.show_state(expedition.snapshot(), "quests")
-	check(_has_text(board.rows, "Не выполнено") and _has_text(board.rows, "Сейчас: 1"), "Actual consumed kit breaches catalog mission condition in snapshot")
-	check(_has_text(board.rows, "+3 в рейде"), "Actual collected cargo shows pending mission objective progress")
+	board._selected_id = "freight_trial"
+	board._show_selected()
+	check(_has_text(board._inspector, "Не выполнено") and _has_text(board._inspector, "Сейчас: 1"), "Actual consumed kit breaches catalog mission condition in snapshot")
+	board._selected_id = "first_delivery"
+	board._show_selected()
+	check(_has_text(board._inspector, "+3 в рейде"), "Actual collected cargo shows pending mission objective progress")
 	expedition.collect_loot("scrap", 3)
 	expedition.finish_run(true)
 	expedition.action("sell", "scrap")
 	panel.show_state(expedition.snapshot(), "quests")
-	check(_button(panel, "claim:first_delivery").disabled and _has_text(board.rows, "Металлолом 5 / 6"), "Real completed delivery with sold cargo explains disabled claim using vault shortage")
+	check(_button(panel, "claim:first_delivery").disabled and _has_text(board._inspector, "Металлолом 5 / 6"), "Real completed delivery with sold cargo explains disabled claim using vault shortage")
 	panel.queue_free()
 	await process_frame
 	DirAccess.remove_absolute(Locale.settings_path)

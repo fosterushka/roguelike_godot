@@ -63,7 +63,7 @@ func _run() -> void:
 			await process_frame
 			await process_frame
 			check(panel.save_status.get_global_rect().end.y <= dimensions.y + 1 and panel.details.get_global_rect().end.y <= dimensions.y - 20, "All statistics and footer stay on screen: " + language + str(dimensions))
-			check(panel.preview.size.y <= 230 and panel.preview.get_global_rect().end.x < panel._catalog_scroll.get_global_rect().position.x, "Preview remains compact beside catalog")
+			check(not panel.preview.is_visible_in_tree() or (panel.preview.size.y <= 230 and panel.preview.get_global_rect().end.x < panel._catalog_scroll.get_global_rect().position.x), "Preview is compact beside catalog or collapsed at narrow widths")
 		panel.select_module("attachment:armor_panels")
 		check(panel.preview.selected.get_meta("attachment_type") == "armor_panels", "Uninstalled attachment previews its actual semantic geometry")
 		check(panel._purchase_id("attachment:armor_panels:wagon-6:0") == "attachment:armor_panels:wagon-6:1", "Attachment installation dispatches currently selected exact free mount")

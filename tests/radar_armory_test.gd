@@ -21,8 +21,8 @@ func _run() -> void:
 	var panel = game.hud.armory
 	await process_frame
 	_check(_action(panel, "radar:2") == null and _action(panel, "module:radar") != null, "Uninstalled radar exposes installation rather than an upgrade")
+	panel.select_module("radar")
 	var install: Button = _action(panel, "module:radar")
-	panel._catalog_scroll.ensure_control_visible(install)
 	await process_frame
 	var coins: int = game.combat.model.player.coins
 	_click(install.get_global_rect().get_center())
@@ -34,7 +34,6 @@ func _run() -> void:
 	game._show_armory()
 	var unaffordable: Button = _action(panel, "radar:2")
 	_check(unaffordable.disabled and unaffordable.tooltip_text.contains("45"), "Unaffordable radar upgrade is disabled with the required cost")
-	panel._catalog_scroll.ensure_control_visible(unaffordable)
 	await process_frame
 	_click(unaffordable.get_global_rect().get_center())
 	_check(_radar(game).level == 1 and game.combat.model.player.coins == 1, "Clicking a disabled upgrade leaves level and money unchanged")
@@ -45,7 +44,6 @@ func _run() -> void:
 	for expected in [{"level": 2, "range": 90.0, "cost": 45}, {"level": 3, "range": 160.0, "cost": 70}, {"level": 4, "range": 260.0, "cost": 100}, {"level": 5, "range": 360.0, "cost": 140}]:
 		var upgrade: Button = _action(panel, "radar:%d" % expected.level)
 		_check(upgrade != null and not upgrade.disabled, "Installed filter exposes radar upgrade to MK%d" % expected.level)
-		panel._catalog_scroll.ensure_control_visible(upgrade)
 		await process_frame
 		coins = game.combat.model.player.coins
 		_click(upgrade.get_global_rect().get_center())
@@ -54,7 +52,6 @@ func _run() -> void:
 	var capped: Button = _action(panel, "radar:5")
 	_check(capped != null and capped.disabled and capped.text == "MAX LEVEL", "Maximum radar level remains visible as a disabled capped control")
 	coins = game.combat.model.player.coins
-	panel._catalog_scroll.ensure_control_visible(capped)
 	await process_frame
 	_click(capped.get_global_rect().get_center())
 	_check(_radar(game).level == 5 and game.combat.model.player.coins == coins, "Capped control cannot charge scrap or exceed MK5")

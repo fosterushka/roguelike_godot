@@ -81,12 +81,14 @@ func _run() -> void:
 	root.add_child(panel)
 	raid.begin_run(model.player)
 	Locale.language = "ru"
+	view.set_interaction_ui_visible(false)
 	panel.show_person(npc, raid.caravan)
 	await capture("dialogue-ru")
 	Locale.language = "en"
 	panel.show_person(npc, raid.caravan)
 	await capture("dialogue-en")
 	panel.hide()
+	view.set_interaction_ui_visible(true)
 	npc.state = "boarding"
 	npc.faction = "ally"
 	npc.boarding_start = Vector3(2.3, 0, -1.25)

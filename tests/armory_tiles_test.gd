@@ -22,10 +22,10 @@ func _run() -> void:
 	var panel = game.hud.armory
 	await process_frame
 	await process_frame
-	_check(panel.cards.get_child_count() == panel._catalog.modules.size() and panel.cards.columns >= 2, "Armory exposes all modules as a tile grid; wagons are purchased in the hideout")
-	_check(panel.preview.size.x >= 350 and panel.preview.size.y >= 156 and panel.preview.size.y <= 230, "Vehicle inspection leaves room for visible statistics")
+	_check(panel.cards.get_child_count() == panel._catalog.modules.size() and panel.cards.columns == 1, "Armory exposes all modules as selectable rows; wagons stay in the hideout")
+	_check(panel.preview.size.x >= 240 and panel.preview.size.y >= 156 and panel.preview.size.y <= 230, "Vehicle inspection leaves room for visible statistics")
 	var tile: Control = panel._tile_panels.bazooka
-	_check(tile.size.y < 180 and tile.size.x < 360, "Uninstalled module is a compact tile instead of a description row")
+	_check(tile.size.y < 100 and tile.size.x <= panel._catalog_scroll.size.x, "Catalog row fits its list without inline transaction buttons")
 	var inspect: Button = tile.find_child("Inspect", true, false)
 	_click(inspect.get_global_rect().get_center())
 	_check(panel._selected == "bazooka" and panel.details.text.contains("Bazooka Pod") and is_instance_valid(panel.preview.selected), "Actual tile click selects the module and its 3D inspection model")
@@ -59,7 +59,7 @@ func _run() -> void:
 	panel.select_module("bazooka")
 	_check(preview.selected.get_meta("mount") == {"carrierId": "wagon-test", "slot": 1} and preview.selected.position == preload("res://presentation/vehicles/vehicle_view.gd").TRAILER_SLOTS[1], "Chosen wagon mount previews equipment in local coordinates")
 	var purchase: Button = _action(panel, "module:bazooka")
-	panel._catalog_scroll.ensure_control_visible(purchase)
+	_check(purchase.is_visible_in_tree(), "Selected module actions are visible in the fixed inspector")
 	await process_frame
 	var money_before: int = game.combat.model.player.coins
 	_click(purchase.get_global_rect().get_center())
@@ -76,7 +76,7 @@ func _run() -> void:
 		panel.size = dimensions
 		await process_frame
 		await process_frame
-		_check(panel.preview.get_global_rect().end.x < panel._catalog_scroll.get_global_rect().position.x and panel.save_status.get_global_rect().end.y <= dimensions.y, "Preview, catalog and footer fit " + str(dimensions))
+		_check((not panel.preview.is_visible_in_tree() or panel.preview.get_global_rect().end.x < panel._catalog_scroll.get_global_rect().position.x) and panel.save_status.get_global_rect().end.y <= dimensions.y, "Preview, catalog and footer fit " + str(dimensions))
 	preview.set_active(false)
 	yaw_before = preview.yaw
 	preview._gui_input(drag)

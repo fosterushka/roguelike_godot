@@ -8,8 +8,8 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	offset_left = -165
 	offset_right = 165
-	offset_top = -102
-	offset_bottom = -65
+	offset_top = -144
+	offset_bottom = -107
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	caption = Label.new()
 	caption.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -33,6 +33,7 @@ func _ready() -> void:
 	add_child(meter)
 
 func update_player(player: Dictionary) -> void:
+	visible = float(player.get("road_fury_overdrive", 0.0)) > 0 or float(player.get("road_fury_cooldown", 0.0)) > 0 or int(player.get("road_fury_combo", 0)) > 0
 	var active := float(player.get("road_fury_overdrive", 0.0))
 	var cooldown := float(player.get("road_fury_cooldown", 0.0))
 	var ru := Locale.language == "ru"

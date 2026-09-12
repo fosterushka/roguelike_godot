@@ -1,4 +1,6 @@
 extends Control
+
+const Fieldwork = preload("res://presentation/ui/fieldwork_tokens.gd")
 const Profiler = preload("res://infrastructure/diagnostics/runtime_profiler.gd")
 
 const Geometry = preload("res://presentation/ui/map_geometry.gd")
@@ -168,7 +170,7 @@ func _draw_map() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color("111713"))
 	draw_rect(Rect2(Vector2.ZERO, size), Color("786347"), false)
 	var font := ThemeDB.fallback_font
-	draw_string(font, Vector2(10, 18), Locale.text("ПОМЕХИ" if jammed else "РАДАР" if float(state.get("player", {}).get("radar_range", 0)) > 0 else "КАРТА") + (" %d/%d" % [int(state.get("player", {}).get("radar_level", 1)), RadarRules.MAX_LEVEL] if float(state.get("player", {}).get("radar_range", 0)) > 0 else ""), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("edc575"))
+	draw_string(font, Vector2(10, 18), Locale.text("ПОМЕХИ" if jammed else "РАДАР" if float(state.get("player", {}).get("radar_range", 0)) > 0 else "КАРТА") + (" %d/%d" % [int(state.get("player", {}).get("radar_level", 1)), RadarRules.MAX_LEVEL] if float(state.get("player", {}).get("radar_range", 0)) > 0 else ""), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Fieldwork.ACCENT)
 	draw_rect(_map_rect, Color("080c09"))
 	var cell_width := WORLD_SIZE / GRID
 	var location: Vector3 = state.get("player", {}).get("position", Vector3.ZERO)
@@ -243,12 +245,12 @@ func _draw_map() -> void:
 		draw_colored_polygon(arrow, Color.WHITE)
 	var north := Vector2(sin(_heading), -cos(_heading)) * -1
 	var north_point := Geometry.edge_point(_map_rect.get_center() + north * 1000, _map_rect.grow(-8))
-	draw_string(font, north_point + Vector2(-4, 4), "N", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("edc575"))
+	draw_string(font, north_point + Vector2(-4, 4), "N", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Fieldwork.ACCENT)
 	draw_rect(_map_rect, Color("786347"), false)
 	var bearing := fposmod(PI - heading, TAU)
 	var labels := ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
-	draw_string(font, Vector2(8, size.y - 20), "%s %03d° · %d%s" % [labels[roundi(bearing / TAU * 16) % 16], roundi(rad_to_deg(bearing)) % 360, display_range, Locale.text("м")], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("eee9db"))
-	draw_string(font, Vector2(8, size.y - 6), "X %04d · Z %04d" % [origin.x, origin.z], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("b8b7aa"))
+	draw_string(font, Vector2(8, size.y - 20), "%s %03d° · %d%s" % [labels[roundi(bearing / TAU * 16) % 16], roundi(rad_to_deg(bearing)) % 360, display_range, Locale.text("м")], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Fieldwork.TEXT)
+	draw_string(font, Vector2(8, size.y - 6), "Исследуйте местность" if Locale.language == "ru" else "Explore to reveal", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Fieldwork.MUTED)
 
 func _road_line(start: Vector3, end: Vector3) -> void:
 	var steps := maxi(1, ceili(start.distance_to(end) / (WORLD_SIZE / GRID * 0.5)))
