@@ -4,6 +4,10 @@ const CaravanSave = preload("res://modules/caravan/caravan_save.gd")
 const Missions = preload("res://modules/meta/mission_catalog.gd")
 const MissionProgress = preload("res://modules/meta/mission_progress.gd")
 
+const MAX_ITEM_STACK := 9999
+const BASE_CARGO_CAPACITY := 12
+const CARGO_UPGRADE_CAPACITY := 4
+
 const ITEMS := {
 	"scrap": {"name": "Металлолом", "description": "Материал для продажи и первого задания.", "buy": 16, "sell": 8, "size": 1, "usable": false, "rarity": "common"},
 	"circuit": {"name": "Электроника", "description": "Ценная добыча для торговца.", "buy": 80, "sell": 40, "size": 1, "usable": false, "rarity": "uncommon"},
@@ -43,14 +47,14 @@ static func quests() -> Dictionary:
 	return Missions.all()
 
 static func defaults() -> Dictionary:
-	return {"credits": 1000 if OS.is_debug_build() else 300, "xp": 0, "stash": {"repair_kit": 2, "fuel_cell": 1}, "loadout": {}, "upgrades": {"cargo": 0, "armor": 0, "engine": 0}, "quests": {}, "caravan": CaravanSave.defaults()}
+	return {"credits": 1000 if OS.is_debug_build() else 300, "xp": 0, "stash": {"repair_kit": 2, "fuel_cell": 1}, "loadout": {}, "last_supplies": {}, "upgrades": {"cargo": 0, "armor": 0, "engine": 0}, "quests": {}, "caravan": CaravanSave.defaults()}
 
 static func integer(value: Variant, maximum: int = 1000000000) -> int:
 	if not (value is int or value is float) or not is_finite(float(value)) or floor(float(value)) != float(value):
 		return 0
 	return clampi(int(value), 0, maximum)
 
-static func inventory(value: Variant, limit: int = 9999, usable_only: bool = false) -> Dictionary:
+static func inventory(value: Variant, limit: int = MAX_ITEM_STACK, usable_only: bool = false) -> Dictionary:
 	var result := {}
 	if value is Dictionary:
 		for id: String in ITEMS:
@@ -70,12 +74,13 @@ static func normalize(value: Variant) -> Dictionary:
 	for id: String in UPGRADES:
 		result.upgrades[id] = integer(upgrades.get(id, 0), UPGRADES[id].max_level) if upgrades is Dictionary else 0
 	var loadout := inventory(value.get("loadout", {}), 24, true)
-	var space: int = 12 + 4 * result.upgrades.cargo
+	var space: int = BASE_CARGO_CAPACITY + CARGO_UPGRADE_CAPACITY * result.upgrades.cargo
 	for id: String in loadout:
 		var amount := mini(loadout[id], int(space / int(ITEMS[id].size)))
 		if amount > 0:
 			result.loadout[id] = amount
 			space -= amount * int(ITEMS[id].size)
+	result.last_supplies = inventory(value.get("last_supplies", {}), BASE_CARGO_CAPACITY + CARGO_UPGRADE_CAPACITY * int(UPGRADES.cargo.max_level), true)
 	result.quests = MissionProgress.normalize(value.get("quests", {}), quests())
 	result.caravan = CaravanSave.normalize(value.get("caravan"))
 	return result

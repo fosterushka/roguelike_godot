@@ -10,6 +10,8 @@ const WAGON_HITCH := 2.1
 const MAX_JOINT_ANGLE := 1.05
 const MAX_YAW_RATE := 2.8
 const MAX_SPEED := 28.0
+const TOW_CATCHUP_MULTIPLIER := 1.35
+const RECOUPLING_SPEED := 6.0
 var _previous_player: Dictionary = {}
 
 func reset() -> void:
@@ -104,7 +106,9 @@ func _advance_wagon(wagon: Dictionary, leader: Dictionary, scale_value: float, d
 	var next_heading := heading + turn
 	var ideal := hitch - _forward(next_heading) * (FRONT_AXLE + DRAWBAR) * scale_value
 	ideal.y = start.y
-	var maximum_speed := 6.0 if wagon.get("recoupling", false) else MAX_SPEED
+	# A valid boosted tow must not stretch its hitch simply by outrunning the solver.
+	# Keep the bounded approach: collisions and sudden position jumps can still break it.
+	var maximum_speed := RECOUPLING_SPEED if wagon.get("recoupling", false) else maxf(MAX_SPEED, absf(float(leader.speed)) * TOW_CATCHUP_MULTIPLIER)
 	var target := start + (ideal - start).limit_length(maximum_speed * delta)
 	var actual: Vector3 = resolve_motion.call(start, target, _radius(wagon, scale_value)) if resolve_motion.is_valid() else target
 	var blocked := Vector2(actual.x - target.x, actual.z - target.z).length()

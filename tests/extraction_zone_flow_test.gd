@@ -187,7 +187,18 @@ func _run() -> void:
 		_tick(game, 1)
 		peak_attackers = maxi(peak_attackers, _defenders(game).size())
 		advanced += 1
+	check(game.screen_state == "departing" and results.size() == 1 and not game.expedition.active, "Successful extraction saves once before cosmetic departure")
+	var exit_position: Vector3 = game.combat.model.player.position
+	var exit_visual: Node3D = game.vehicle.get_node("VehicleView")
+	var render_position := exit_visual.global_position
+	game.extraction_departure.set_process(false)
+	for frame in 12:
+		game.extraction_departure.advance(0.05)
+	check(exit_visual.global_position.distance_to(render_position) > 1.0 and game.combat.model.player.position == exit_position, "Departure moves presentation while authoritative position stays fixed")
+	for frame in 14:
+		game.extraction_departure.advance(0.05)
 	check(advanced >= 390 and advanced <= 440 and game.screen_state == "result", "Surviving full defense timer reaches actual Main result screen")
+	check(results.size() == 1, "Cosmetic departure cannot emit a duplicate extracted result")
 	check(wave_events.size() >= wave_count_before + 2 and peak_attackers <= 10, "Timer schedules reinforcements while keeping live extraction attackers bounded across retries")
 	check(results.size() == 1 and results[0].get("extracted", false) and model.status == "extracted", "Zone completion emits exactly one extracted result")
 	var saved: Dictionary = Store.new(path).load_profile()
@@ -220,8 +231,47 @@ func _run() -> void:
 	_place(game, site.position)
 	_key(game, KEY_E)
 	check(activities.extraction.active, "Fresh raid can request extraction again without prior quests or credits")
+	await _test_departure_convoy(game, path)
 	game.queue_free()
 	await process_frame
 	paused = false
 	print("Extraction zone flow tests: ", checks - failures, "/", checks)
 	quit(1 if failures else 0)
+
+func _test_departure_convoy(game, path: String) -> void:
+	game.show_start_menu()
+	game.progression.profile.expedition.credits = 1000
+	var roster = game.expedition.caravan
+	for index in 3:
+		check(roster.buy_wagon("cargo"), "Departure fixture buys a real owned wagon")
+	var ids: Array = roster.data().selected_wagon_ids.duplicate()
+	check(roster.install_attachment(ids[0], 0, "cargo_rack"), "Departure fixture installs persistent trailer gear")
+	await _start(game)
+	var attached: Dictionary = roster.find_wagon(ids[0])
+	var detached: Dictionary = roster.find_wagon(ids[1])
+	var destroyed: Dictionary = roster.find_wagon(ids[2])
+	detached.attached = false
+	roster.damage_wagon(ids[2], destroyed.max_hp)
+	game.combat._publish()
+	var view: Node3D = game.vehicle.get_node("VehicleView")
+	view.render_interpolated(1.0)
+	var attached_visual: Node3D = view._trailers[ids[0]]
+	var detached_visual: Node3D = view._trailers[ids[1]]
+	var destroyed_visual: Node3D = view._trailers[ids[2]]
+	var attached_before := attached_visual.global_position
+	var detached_before := detached_visual.global_position
+	var canonical_before: Dictionary = attached.duplicate(true)
+	check(not destroyed_visual.visible, "Destroyed trailer is hidden before successful extraction")
+	check(game.combat.finish_run(false, "extracted") and game.screen_state == "departing", "Actual successful save starts departure with all trailer states represented")
+	game.world._publish()
+	game.combat._publish()
+	for frame in 12:
+		game.extraction_departure.advance(0.05)
+	game.world._publish()
+	game.combat._publish()
+	check(attached_visual.global_position.distance_to(attached_before) > 1.0 and detached_visual.global_position.is_equal_approx(detached_before) and not destroyed_visual.visible, "Only attached live trailer departs after saved roster clears and state republishes")
+	check(view._attachments.has("%s:0:cargo_rack" % ids[0]) and attached == canonical_before, "Saved departure retains visible trailer equipment without changing its authoritative state")
+	var saved: Dictionary = Store.new(path).load_profile().expedition.caravan
+	check(saved.wagons.size() == 1 and saved.wagons.has(ids[0]) and not saved.wagons.has(ids[1]) and not saved.wagons.has(ids[2]), "Departure cannot return detached or destroyed wagons to persistent garage")
+	game.show_start_menu()
+	check(not game.extraction_departure.active and attached_visual.global_position.is_equal_approx(attached_before), "Menu interruption clears only cosmetic departure offset")

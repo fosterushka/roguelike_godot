@@ -1,5 +1,8 @@
 extends Node3D
 
+signal occlusion_layout_changed
+signal occlusion_prop_moved(id: String, offset: Vector3)
+
 const Biomes = preload("res://modules/world/biome_rules.gd")
 const TerrainSurface = preload("res://modules/caravan/terrain_surface.gd")
 const SourceModel = preload("res://presentation/combat/source_model.gd")
@@ -16,6 +19,8 @@ var _prop_colliders: Dictionary = {}
 var _collision_nodes: Array[StaticBody3D] = []
 var _roads: Node3D
 var _prop_offsets: Dictionary = {}
+var _prop_destroyed: Dictionary = {}
+var _prop_fades: Dictionary = {}
 
 
 func _ready() -> void:
@@ -192,27 +197,79 @@ func _add_collision(point: Vector3, radius: float, height: float) -> StaticBody3
 func set_prop_destroyed(id: String, destroyed: bool) -> bool:
 	if not _prop_records.has(id):
 		return false
+	_prop_destroyed[id] = destroyed
+	_set_prop_visuals(id, destroyed or _prop_fades.has(id))
+	if _prop_fades.has(id):
+		_prop_fades[id].visible = not destroyed
+	if _prop_colliders.has(id):
+		var collider: StaticBody3D = _prop_colliders[id]
+		collider.collision_layer = 0 if destroyed else 1
+	return true
+
+func _set_prop_visuals(id: String, hidden: bool) -> void:
 	var prop: Dictionary = _prop_records[id]
 	for node: Node3D in prop.get("visual_nodes", []):
 		if is_instance_valid(node):
-			node.visible = not destroyed
+			node.visible = not hidden
 	for part in prop.get("parts", []):
 		var visual := source_world.get_child(int(part.mesh)) as MultiMeshInstance3D
 		if visual == null:
 			continue
 		var transform := SourceModel._transform(part.matrix)
-		if destroyed:
+		if hidden:
 			# Keep hidden instances inside their spatial batch instead of expanding to world zero.
 			transform.basis = Basis.from_scale(Vector3.ZERO)
-		if not destroyed:
+		if not hidden:
 			transform.origin += Vector3(_prop_offsets.get(id, Vector3.ZERO))
 		visual.multimesh.set_instance_transform(int(part.instance), transform)
 	for index in prop.get("meshes", []):
-		source_world.get_child(int(index)).visible = not destroyed
-	if _prop_colliders.has(id):
-		var collider: StaticBody3D = _prop_colliders[id]
-		collider.collision_layer = 0 if destroyed else 1
-	return true
+		source_world.get_child(int(index)).visible = not hidden
+
+func is_prop_destroyed(id: String) -> bool:
+	return bool(_prop_destroyed.get(id, false))
+
+func fade_prop(id: String, transparency: float) -> void:
+	if not _prop_records.has(id):
+		return
+	if transparency <= 0.0:
+		if _prop_fades.has(id):
+			_prop_fades[id].free()
+			_prop_fades.erase(id)
+			_set_prop_visuals(id, is_prop_destroyed(id))
+		return
+	if is_prop_destroyed(id):
+		return
+	if not _prop_fades.has(id):
+		var proxy := clone_prop(id)
+		proxy.name = "Occlusion_" + id
+		add_child(proxy)
+		_prop_fades[id] = proxy
+		_set_prop_visuals(id, true)
+	for child: MeshInstance3D in _prop_fades[id].get_children():
+		child.transparency = clampf(transparency, 0.0, 1.0)
+
+func occlusion_records() -> Array:
+	var result: Array = []
+	for id: String in _prop_records:
+		var prop: Dictionary = _prop_records[id]
+		if str(prop.kind) not in ["building", "monument", "windmill", "ruin", "tree", "deadTree", "rock"]:
+			continue
+		var pieces: Array[Dictionary] = []
+		for part: Dictionary in prop.get("parts", []):
+			var source := source_world.get_child(int(part.mesh)) as MultiMeshInstance3D
+			if source != null:
+				pieces.append({"mesh": source.multimesh.mesh, "transform": SourceModel._transform(part.matrix)})
+		for node: Node3D in prop.get("visual_nodes", []):
+			_clone_pieces(node, Vector3.ZERO, pieces)
+		for index in prop.get("meshes", []):
+			_clone_pieces(source_world.get_child(int(index)), Vector3.ZERO, pieces)
+		if pieces.is_empty():
+			continue
+		var bounds: AABB = pieces[0].transform * pieces[0].mesh.get_aabb()
+		for piece: Dictionary in pieces:
+			bounds = bounds.merge(piece.transform * piece.mesh.get_aabb())
+		result.append({"id": id, "kind": str(prop.kind), "position": bounds.get_center(), "radius": bounds.size.length() * 0.5, "bounds": bounds})
+	return result
 
 func set_prop_position(id: String, point: Vector3) -> void:
 	if not _prop_records.has(id):
@@ -223,6 +280,8 @@ func set_prop_position(id: String, point: Vector3) -> void:
 	offset.y = TerrainSurface.height_at(point.x, point.z) - TerrainSurface.height_at(origin.x, origin.z)
 	var previous: Vector3 = _prop_offsets.get(id, Vector3.ZERO)
 	_prop_offsets[id] = offset
+	if _prop_fades.has(id):
+		_prop_fades[id].position += offset - previous
 	for node: Node3D in prop.get("visual_nodes", []):
 		node.position += offset - previous
 	for index in prop.get("meshes", []):
@@ -230,6 +289,8 @@ func set_prop_position(id: String, point: Vector3) -> void:
 	if _prop_colliders.has(id):
 		_prop_colliders[id].position += offset - previous
 	set_prop_destroyed(id, false)
+	if not offset.is_equal_approx(previous):
+		occlusion_prop_moved.emit(id, offset - previous)
 
 func clone_prop(id: String, reusable: Node3D = null) -> Node3D:
 	if not _prop_records.has(id):
@@ -285,6 +346,10 @@ func rebuild_from_context(context: RefCounted) -> bool:
 	_prop_records.clear()
 	_prop_colliders.clear()
 	_prop_offsets.clear()
+	_prop_destroyed.clear()
+	for proxy: Node3D in _prop_fades.values():
+		proxy.free()
+	_prop_fades.clear()
 	source_world.free()
 	source_world = next_world
 	add_child(source_world)
@@ -293,6 +358,7 @@ func rebuild_from_context(context: RefCounted) -> bool:
 	_create_ground()
 	_roads.setup(context.layout.roads)
 	_bind_layout_collisions()
+	occlusion_layout_changed.emit()
 	return true
 
 func set_game_time(elapsed: float) -> void:

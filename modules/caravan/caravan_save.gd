@@ -3,9 +3,10 @@ const Wagons = preload("res://modules/caravan/wagon_catalog.gd")
 const Factory = preload("res://modules/caravan/wagon_factory.gd")
 const Crew = preload("res://modules/crew/crew_catalog.gd")
 const CrewFactory = preload("res://modules/crew/crew_factory.gd")
+const Customization = preload("res://modules/caravan/vehicle_customization.gd")
 
 static func defaults() -> Dictionary:
-	return {"next_id": 1, "wagons": {}, "crew": {}, "selected_wagon_ids": [], "selected_crew_ids": []}
+	return {"next_id": 1, "wagons": {}, "crew": {}, "selected_wagon_ids": [], "selected_crew_ids": [], "customization": Customization.defaults(), "builds": {}}
 
 static func number(value: Variant, maximum: float, fallback: float = 0.0) -> float:
 	return clampf(float(value), 0.0, maximum) if (value is int or value is float) and is_finite(float(value)) else fallback
@@ -17,6 +18,8 @@ static func normalize(value: Variant) -> Dictionary:
 	var result := defaults()
 	if not value is Dictionary:
 		return result
+	result.customization = Customization.normalize(value.get("customization", {}))
+	result.builds = _normalize_builds(value.get("builds", {}), result.customization.owned)
 	result.next_id = maxi(1, int(number(value.get("next_id", 1), 1000000000, 1)))
 	var wagons: Variant = value.get("wagons", {})
 	if wagons is Dictionary:
@@ -89,4 +92,40 @@ static func normalize(value: Variant) -> Dictionary:
 			for id: Variant in entries:
 				if id is String and source.has(id) and not result[field].has(id):
 					result[field].append(id)
+	return result
+
+static func _normalize_builds(value: Variant, owned: Array) -> Dictionary:
+	var result := {}
+	if not value is Dictionary:
+		return result
+	for slot in Customization.BUILD_LIMIT:
+		var raw: Variant = value.get(str(slot), {})
+		if not raw is Dictionary or raw.is_empty():
+			continue
+		var build := {"name": str(raw.get("name", "Build %d" % (slot + 1))).strip_edges().left(Customization.BUILD_NAME_LIMIT), "selected": Customization.normalize_selection(raw.get("selected", {}), owned), "wagon_ids": [], "crew_ids": [], "seats": {}}
+		for field: String in ["wagon_ids", "crew_ids"]:
+			var entries: Variant = raw.get(field, [])
+			if not entries is Array:
+				continue
+			var prefix := "wagon" if field == "wagon_ids" else "crew"
+			var limit := Wagons.MAX_WAGONS if field == "wagon_ids" else Wagons.MAX_CREW
+			for id: Variant in entries:
+				if valid_id(id, prefix) and not build[field].has(id) and build[field].size() < limit:
+					build[field].append(id)
+		var seats: Variant = raw.get("seats", {})
+		if seats is Dictionary:
+			var occupied := {}
+			for id: String in build.crew_ids:
+				var assignment: Variant = seats.get(id, {})
+				if not assignment is Dictionary:
+					continue
+				var carrier: Variant = assignment.get("carrier_id", "")
+				var seat: Variant = assignment.get("seat", -1)
+				if not carrier is String or (carrier != "crawler" and not build.wagon_ids.has(carrier)) or not (seat is int or seat is float) or seat not in [0, 1]:
+					continue
+				var key := "%s:%d" % [carrier, int(seat)]
+				if not occupied.has(key):
+					build.seats[id] = {"carrier_id": carrier, "seat": int(seat)}
+					occupied[key] = true
+		result[str(slot)] = build
 	return result

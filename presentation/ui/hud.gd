@@ -464,13 +464,18 @@ func update_world(data: Dictionary) -> void:
 	jammer_vhs.update_weather(data)
 	markers.update_world(data)
 	radar.update_world(data)
-	var activity: Dictionary = data.get("activity", {}).get("current", {})
+	var activity: Dictionary = data.get("activity", {}).get("primary", {})
 	var extraction: Dictionary = data.get("extraction", {})
 	var lines: Array[String] = []
 	if not activity.is_empty():
-		lines.append(Locale.text("ЗАДАЧА: %s · %s") % [Locale.text(str(activity.get("type", ""))).to_upper(), Locale.text(str(activity.get("state", "")))])
+		lines.append(("ЦЕЛЬ: %s · %d м · %d с" if Locale.language == "ru" else "TARGET: %s · %dm · %ds") % [Locale.text(str(activity.get("type", ""))).to_upper(), roundi(float(activity.get("distance", 0.0))), ceili(float(activity.get("remaining_seconds", 0.0)))])
+		lines.append(Locale.text(str(activity.get("objective", ""))))
 		if not str(activity.get("reward_label", "")).is_empty():
 			lines.append(Locale.text(str(activity.reward_label)))
+	var service: Dictionary = data.get("activity", {}).get("repair_service", {})
+	if not service.is_empty():
+		var ru := Locale.language == "ru"
+		lines.append(("РЕМОНТ ИСПОЛЬЗОВАН" if ru else "REPAIR SERVICE USED") if service.mode == "used" else ("КОРПУС ЦЕЛ · РЕМОНТ СОХРАНЁН" if ru else "HULL FULL · REPAIR AVAILABLE LATER") if service.mode == "full" else (("[E] РЕМОНТ +%d · ОДИН РАЗ" if ru else "[E] REPAIR +%d · ONE USE") % roundi(float(service.amount))))
 	if extraction.get("visible", false):
 		var ru := Locale.language == "ru"
 		if extraction.get("active", false):

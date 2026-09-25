@@ -219,6 +219,12 @@ func _test_edge_hints(markers: Control, camera: Camera3D, data: Dictionary) -> v
 	markers.hide()
 	_check(markers.edge_hints().is_empty(), "Hidden gameplay UI suppresses edge hints in menus")
 	markers.show()
+	data.player.radar_level = 0
+	markers.update_state(data, camera)
+	var pinned := {"id": "pinned", "type": "scavengerRoute", "state": "active", "position": Vector3(500, 0, 0)}
+	markers.update_world({"activity": {"primary": pinned, "records": [pinned]}})
+	var primary_hints: Array = markers.edge_candidates()
+	_check(primary_hints.any(func(candidate: Dictionary) -> bool: return candidate.id == "activity:pinned" and not candidate.get("signal", false) and not candidate.label.is_empty()), "Pinned reachable destination remains named without radar or intermittent signal")
 	await process_frame
 	await process_frame
 	markers.occluders.clear()

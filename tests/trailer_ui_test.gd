@@ -12,9 +12,15 @@ func _run() -> void:
 	game.profile_path = "/private/tmp/trailer-ui-profile-%d.json" % Time.get_ticks_usec()
 	root.add_child(game)
 	await game.game_ready
+	root.size = Vector2i(960, 600)
+	root.content_scale_size = Vector2i(960, 600)
 	game.caravan_flow.open_trailers()
 	var panel = game.caravan_panel
 	check(panel.tab == "wagons" and _tab(panel, "shop") != null, "First-time owner has a visible BUY TRAILER entry")
+	_action(panel, "customize_pickup:crawler").pressed.emit()
+	check(panel.tab == "customization", "Owned pickup provides direct customization navigation")
+	panel.tab = "wagons"
+	game.caravan_flow.refresh()
 	_tab(panel, "shop").pressed.emit()
 	game.progression.profile.expedition.credits = 0
 	game.caravan_flow.refresh()
@@ -27,9 +33,12 @@ func _run() -> void:
 	check(roster.data().wagons.size() == 1 and game.progression.profile.expedition.credits == 820, "BUY & ATTACH charges exactly once and owns a trailer")
 	check(panel.tab == "equipment" and panel.equipment_wagon_id == id and not panel.purchase_notice.is_empty(), "Purchase opens exact trailer equipment with attached confirmation")
 	check(_action(panel, "install_attachment:attachment:cargo_rack:%s:0" % id) != null, "Empty mount receives clearly priced equipment action")
+	for frame in 4:
+		await process_frame
+	check(_action(panel, "install_attachment:attachment:cargo_rack:%s:0" % id).get_global_rect().end.y < game.hideout_hub.deploy_button.get_global_rect().position.y, "Equipment purchase stays fully above departure footer at 960 by 600")
 	_action(panel, "install_attachment:attachment:cargo_rack:%s:0" % id).pressed.emit()
 	check(roster.data().wagons[id].attachments == [{"type": "cargo_rack", "slot": 0}] and game.progression.profile.expedition.credits == 730, "Base equipment purchase persists on correct trailer and charges credits")
-	check(_action(panel, "install_attachment:attachment:cargo_rack:%s:1" % id).disabled, "Installed equipment cannot be bought twice")
+	check(_action(panel, "install_attachment:attachment:cargo_rack:%s:-1" % id).disabled, "Installed equipment cannot be bought twice")
 	_action(panel, "remove_attachment:%s:0" % id).pressed.emit()
 	check(roster.data().wagons[id].attachments.is_empty() and game.progression.profile.expedition.credits == 775, "Explicit REMOVE refunds half price and frees mount")
 	panel.tab = "wagons"
@@ -37,12 +46,20 @@ func _run() -> void:
 	_action(panel, "select_wagon:%s:0" % id).pressed.emit()
 	check(not roster.data().selected_wagon_ids.has(id) and roster.data().wagons.has(id), "DETACH leaves purchased trailer safely at base")
 	_action(panel, "configure_wagon:" + id).pressed.emit()
-	_action(panel, "install_attachment:attachment:armor_panels:%s:0" % id).pressed.emit()
-	check(roster.data().wagons[id].attachments.size() == 1, "Detached base trailer can still be equipped")
+	game.caravan_flow._action("select_mount", id, "2")
+	panel.select_equipment("armor_panels")
+	check(_action(panel, "install_attachment:attachment:armor_panels:%s:2" % id).is_visible_in_tree(), "Selecting a mount and equipment exposes one matching purchase action")
+	_action(panel, "install_attachment:attachment:armor_panels:%s:2" % id).pressed.emit()
+	check(roster.data().wagons[id].attachments == [{"type": "armor_panels", "slot": 2}], "Detached trailer equips the explicitly selected mount")
 	panel.tab = "wagons"
 	game.caravan_flow.refresh()
 	_action(panel, "select_wagon:%s:1" % id).pressed.emit()
 	check(roster.data().selected_wagon_ids.has(id), "ATTACH TO PICKUP restores saved trailer for next raid")
+	panel.tab = "customization"
+	panel._customization_category = "paint"
+	game.caravan_flow.refresh()
+	_action(panel, "select_customization:sand:paint").pressed.emit()
+	check(roster.data().customization.selected.paint == "sand", "Garage customization action updates the saved pickup paint")
 	game.caravan_flow.close()
 	await game.restart_run()
 	game.combat.model.player.pending_upgrades = 0

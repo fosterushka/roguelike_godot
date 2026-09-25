@@ -8,6 +8,7 @@ var _airdrop: Dictionary
 var _markers: Array[MeshInstance3D] = []
 var _routes: Array[MultiMeshInstance3D] = []
 var _extraction_zones: Node3D
+var _aftermath: Node3D
 var _state: Dictionary = {}
 var _warmup := false
 var _visual_elapsed := 0.0
@@ -50,6 +51,8 @@ func _ready() -> void:
 		_routes.append(route)
 	_extraction_zones = preload("res://presentation/world/extraction_zone_view.gd").new()
 	add_child(_extraction_zones)
+	_aftermath = preload("res://presentation/world/activity_aftermath_view.gd").new()
+	add_child(_aftermath)
 
 func apply_state(state: Dictionary) -> void:
 	_state = state
@@ -91,6 +94,7 @@ func apply_state(state: Dictionary) -> void:
 	else:
 		_place_airdrop(drops[0])
 	_extraction_zones.apply_state(state.get("extraction", {}))
+	_aftermath.apply_state(state.get("activity", {}).get("aftermath", []))
 
 func _update_route(view: MultiMeshInstance3D, points: Array, color: Color) -> void:
 	view.multimesh.mesh.material.albedo_color = color

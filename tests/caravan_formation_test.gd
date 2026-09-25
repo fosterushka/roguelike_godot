@@ -80,6 +80,7 @@ func _run() -> void:
 	_test_collision()
 	_test_middle_loss()
 	_test_frame_rates()
+	_test_boosted_towing()
 	await _test_view()
 	print("CARAVAN_FORMATION: %d checks, %d failures" % [checks, failures])
 	quit(0 if failures == 0 else 1)
@@ -181,3 +182,42 @@ func _test_frame_rates() -> void:
 	var excess := _wagons(7)
 	Formation.new().step({"position": Vector3.ZERO, "heading": 0.0}, excess, 0.0)
 	check(not excess[6].attached, "Formation cannot attach a seventh wagon even if bad input bypasses purchase validation")
+
+func _test_boosted_towing() -> void:
+	var motion_rules = preload("res://modules/caravan/vehicle_motion.gd")
+	var fuel_rules = preload("res://modules/caravan/vehicle_fuel.gd")
+	var road_rules = preload("res://modules/world/road_surface.gd")
+	for fps: int in [30, 60, 120]:
+		for motor_level: int in [0, 5]:
+			var formation := Formation.new()
+			var wagons := _wagons()
+			var motion := preload("res://modules/caravan/vehicle_motion_state.gd").new()
+			var stats := {"weight": fuel_rules.BASE_WEIGHT, "level": 1, "nitro_timer": 0.0, "motor_speed_mult": 1.0, "motor_acceleration_mult": 1.0, "core_upgrades": {"motor": 0}}
+			for wagon: Dictionary in wagons:
+				stats.weight += wagon.mass
+			for upgrade in motor_level:
+				preload("res://modules/progression/upgrade_rules.gd").apply_core("motor", stats)
+			var player := {"position": Vector3.ZERO, "heading": 0.0, "scale": 0.88, "speed": 0.0}
+			formation.step(player, wagons, 0.0)
+			var stayed_coupled := true
+			var peak_speed := 0.0
+			for frame in fps * 12:
+				stats.nitro_timer = 1.0 if frame >= fps * 8 else 0.0
+				var tuning: Dictionary = fuel_rules.drive_tuning(100.0, stats)
+				tuning.maximum_speed *= road_rules.SPEED_MULTIPLIER
+				tuning.wheeled = true
+				motion_rules.step(motion, {"throttle": 1.0, "steer": 0.12, "handbrake": false}, tuning, 1.0 / fps)
+				player.position = Vector3(motion.x, 0, motion.z)
+				player.heading = motion.heading
+				player.speed = motion.speed
+				peak_speed = maxf(peak_speed, motion.speed)
+				var events := formation.step(player, wagons, 1.0 / fps)
+				stayed_coupled = stayed_coupled and events.is_empty() and wagons.all(func(wagon: Dictionary) -> bool: return wagon.attached)
+			check(stayed_coupled, "Road nitro with six wagons remains coupled at %d FPS, motor level %d" % [fps, motor_level])
+			if motor_level > 0:
+				check(peak_speed > Formation.MAX_SPEED, "Upgraded road nitro exercises towing above the old solver speed limit")
+			var blocked_events: Array[Dictionary] = []
+			for frame in fps:
+				player.position += Formation._forward(player.heading) * float(player.speed) / fps
+				blocked_events.append_array(formation.step(player, wagons, 1.0 / fps, func(start: Vector3, _target: Vector3, _radius: float) -> Vector3: return start))
+			check(blocked_events.any(func(event: Dictionary) -> bool: return event.kind == "wagon_detached") and wagons.all(func(wagon: Dictionary) -> bool: return not wagon.attached), "Boosted collision still disconnects the blocked tail at %d FPS" % fps)

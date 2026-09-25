@@ -54,6 +54,10 @@ func _run() -> void:
 	var final_position: Vector3 = game.vehicle.global_position
 	game.world.activities._update_extraction(20.0)
 	check(results.size() == 2 and results[1].extracted and not results[1].won, "Extraction publishes one nonvictory result immediately")
+	check(game.screen_state == "departing" and not game.expedition.active and game.expedition.last_result.get("success", false), "Successful extraction saves before cosmetic departure")
+	game.extraction_departure.set_process(false)
+	for frame in 26:
+		game.extraction_departure.advance(0.05)
 	check(game.screen_state == "result" and paused and not game.vehicle._driving_enabled, "Extraction reaches real result screen")
 	check(game.vehicle.health > 0 and game.vehicle.global_position == final_position, "Extraction retains living player and final position")
 	check(game.progression.contracts.ended and not game.progression.contracts.active and game.progression.profile.lifetimeStats.victories == 0, "Extraction closes profile without granting victory")

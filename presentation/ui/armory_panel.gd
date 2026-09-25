@@ -28,7 +28,7 @@ var _body: HBoxContainer
 var _core_summary: Label
 var _protocol_summary: Label
 var _sidebar: VBoxContainer
-var mount_selector: HBoxContainer
+var mount_selector: VBoxContainer
 var _tile_panels: Dictionary = {}
 var _catalog_scroll: ScrollContainer
 var reset_view_button: Button
@@ -244,6 +244,7 @@ func _layout() -> void:
 	if not _inspector:
 		return
 	var compact := size.x < Fieldwork.ARMORY_COMPACT_WIDTH
+	mount_selector.set_compact(compact)
 	_sidebar.visible = not compact
 	_sidebar.custom_minimum_size.x = 292
 	_catalog_column.custom_minimum_size.x = (size.x - 16) * 0.45 if compact else 300
@@ -418,6 +419,16 @@ func _mount_changed(mount: Dictionary) -> void:
 	preview.set_mount_target(mount)
 	_refresh_unit_stats()
 	rebuild_cards()
+	for module: Dictionary in _player.get("modules", []):
+		if module.get("mount", {}) == mount:
+			select_module(str(module.type))
+			return
+	for installed: Dictionary in _carrier_data().get("attachments", []):
+		if int(installed.slot) == int(mount.get("slot", -1)):
+			_selected = "attachment:" + str(installed.type)
+			_show_attachment(str(installed.type))
+			_show_actions()
+			return
 	if not _selected.is_empty():
 		select_module(_selected)
 

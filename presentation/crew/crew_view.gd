@@ -18,6 +18,9 @@ var _pickup_benches: Dictionary = {}
 
 func _ready() -> void:
 	process_priority = 20
+	# This callback only follows rendered seats/speech anchors. It must also
+	# follow the saved-extraction departure while the simulation is paused.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _exit_tree() -> void:
 	_clear_pickup_benches()

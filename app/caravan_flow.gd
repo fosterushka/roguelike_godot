@@ -95,7 +95,7 @@ func refresh() -> void:
 	convoy.attachment_rows = {}
 	if not convoy.active:
 		for wagon: Dictionary in convoy.wagons:
-			convoy.attachment_rows[wagon.id] = game.expedition.caravan.attachment_rows(wagon.id)
+			convoy.attachment_rows[wagon.id] = game.expedition.caravan.attachment_rows(wagon.id, int(game.caravan_panel.selected_mounts.get(wagon.id, -1)))
 	game.caravan_panel.show_state(convoy, int(state.credits), int(state.stash.get("scrap", 0)))
 
 func _action(kind: String, id: String, target: String) -> void:
@@ -103,6 +103,12 @@ func _action(kind: String, id: String, target: String) -> void:
 		return
 	var roster: RefCounted = game.expedition.caravan
 	match kind:
+		"customize_pickup": game.caravan_panel.tab = "customization"
+		"select_mount": game.caravan_panel.selected_mounts[id] = int(target)
+		"purchase_customization": roster.purchase_customization(id)
+		"select_customization": roster.select_customization(target, id)
+		"save_build": roster.save_build(int(id))
+		"apply_build": roster.apply_build(int(id))
 		"buy_wagon":
 			if roster.buy_wagon(id):
 				var ids: Array = roster.data().selected_wagon_ids

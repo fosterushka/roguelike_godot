@@ -40,7 +40,8 @@ func _run() -> void:
 	var panel = game.hud.armory
 	var install: Button = _action(panel, "module:mineHacker")
 	_check(install != null and not install.disabled, "Mine Hacking Kit is purchasable in the actual armory")
-	panel._catalog_scroll.ensure_control_visible(install)
+	panel.select_module("mineHacker")
+	_check(install.is_visible_in_tree(), "Selected mine hacker exposes its fixed inspector action")
 	await process_frame
 	var coins: int = model.player.coins
 	_click(install.get_global_rect().get_center())

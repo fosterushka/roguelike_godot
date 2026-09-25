@@ -349,7 +349,7 @@ func set_warmup_visible(enabled: bool) -> void:
 
 
 func interact() -> bool:
-	return activities.request_extraction()
+	return activities.request_repair() or activities.request_extraction()
 
 
 func rebind_world(seed_value: int) -> void:

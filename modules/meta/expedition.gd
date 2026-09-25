@@ -37,7 +37,7 @@ func _commit(before: Dictionary) -> bool:
 	return false
 
 func base_capacity() -> int:
-	return 12 + 4 * int(_data().upgrades.cargo)
+	return Catalog.BASE_CARGO_CAPACITY + Catalog.CARGO_UPGRADE_CAPACITY * int(_data().upgrades.cargo)
 
 func capacity() -> int:
 	var total := base_capacity()
@@ -82,6 +82,7 @@ func begin_run(player: Dictionary) -> bool:
 	var before := _data().duplicate(true)
 	var carried: Dictionary = _data().loadout.duplicate(true)
 	var staged: Dictionary = caravan.stage_begin()
+	_data().last_supplies = carried.duplicate(true)
 	_data().loadout.clear()
 	if not _commit(before):
 		return false
@@ -196,7 +197,7 @@ func abandon_run() -> void:
 		_pending_result = null
 		notice = "Рейд прерван. Всё в рюкзаке потеряно."
 
-func action(kind: String, id: String) -> bool:
+func action(kind: String, id: String, quantity: int = 1) -> bool:
 	if kind == "retry_save" and _pending_result != null:
 		return finish_run(bool(_pending_result))
 	if _pending_result != null:
@@ -210,7 +211,9 @@ func action(kind: String, id: String) -> bool:
 	var before := _data().duplicate(true)
 	var changed := false
 	match kind:
-		"buy", "sell", "equip", "unequip": changed = _item_action(kind, id)
+		"buy", "sell": changed = _item_action(kind, id)
+		"equip", "unequip": changed = _transfer_supplies(kind, id, quantity)
+		"refill_supplies": changed = _refill_supplies()
 		"accept":
 			var definitions := Catalog.quests()
 			if definitions.has(id) and not _data().quests.has(id) and MissionProgress.active_count(_data().quests) < MissionProgress.LIMIT and Catalog.account(_data().xp).level >= int(definitions[id].min_level):
@@ -230,13 +233,63 @@ func action(kind: String, id: String) -> bool:
 	notice = "Сохранено."
 	return true
 
-func _move_one(from: Dictionary, into: Dictionary, id: String) -> bool:
-	if int(from.get(id, 0)) <= 0 or int(into.get(id, 0)) >= 9999:
+func transfer_offer(kind: String, id: String) -> Dictionary:
+	var result := {"maximum": 0, "reason": "unavailable"}
+	if active or kind not in ["equip", "unequip"] or not Catalog.ITEMS.has(id) or not Catalog.ITEMS[id].usable:
+		return result
+	var from: Dictionary = _data().stash if kind == "equip" else _data().loadout
+	var into: Dictionary = _data().loadout if kind == "equip" else _data().stash
+	var maximum := mini(int(from.get(id, 0)), Catalog.MAX_ITEM_STACK - int(into.get(id, 0)))
+	if kind == "equip":
+		maximum = mini(maximum, maxi(0, int((capacity() - Catalog.used(_data().loadout)) / int(Catalog.ITEMS[id].size))))
+	result.maximum = maximum
+	result.reason = "" if maximum > 0 else "empty" if int(from.get(id, 0)) == 0 else "full"
+	return result
+
+func _transfer_supplies(kind: String, id: String, quantity: int) -> bool:
+	if quantity <= 0 or quantity > int(transfer_offer(kind, id).maximum):
 		return false
-	from[id] -= 1
+	var from: Dictionary = _data().stash if kind == "equip" else _data().loadout
+	var into: Dictionary = _data().loadout if kind == "equip" else _data().stash
+	from[id] -= quantity
 	if from[id] == 0:
 		from.erase(id)
-	into[id] = int(into.get(id, 0)) + 1
+	into[id] = int(into.get(id, 0)) + quantity
+	return true
+
+func refill_offer() -> Dictionary:
+	var wanted: Dictionary = _data().get("last_supplies", {})
+	var result := {"enabled": false, "reason": "no_previous", "missing": {}, "quantity": 0}
+	if active or wanted.is_empty():
+		return result
+	var space := capacity() - Catalog.used(_data().loadout)
+	for id: String in wanted:
+		var missing := maxi(0, int(wanted[id]) - int(_data().loadout.get(id, 0)))
+		if missing == 0:
+			continue
+		result.missing[id] = missing
+		result.quantity += missing
+		space -= missing * int(Catalog.ITEMS[id].size)
+	if result.quantity == 0:
+		result.reason = "ready"
+		return result
+	if space < 0:
+		result.reason = "full"
+		return result
+	for id: String in result.missing:
+		if int(_data().stash.get(id, 0)) < int(result.missing[id]):
+			result.reason = "missing_stock"
+			return result
+	result.enabled = true
+	result.reason = ""
+	return result
+
+func _refill_supplies() -> bool:
+	var offer := refill_offer()
+	if not offer.enabled:
+		return false
+	for id: String in offer.missing:
+		_transfer_supplies("equip", id, int(offer.missing[id]))
 	return true
 
 func _item_action(kind: String, id: String) -> bool:
@@ -258,9 +311,6 @@ func _item_action(kind: String, id: String) -> bool:
 				_data().stash.erase(id)
 			_data().credits += item.sell
 			return true
-		"equip":
-			return item.usable and Catalog.used(_data().loadout) + int(item.size) <= capacity() and _move_one(_data().stash, _data().loadout, id)
-		"unequip": return _move_one(_data().loadout, _data().stash, id)
 	return false
 
 func _claim(id: String) -> bool:
@@ -346,4 +396,8 @@ func snapshot() -> Dictionary:
 		row.cost_label = "%d кредитов · ур. аккаунта %d" % [row.cost, row.required_level]
 		row.enabled = not active and row.level < row.max_level and account.level >= row.required_level and _data().credits >= row.cost
 		upgrades.append(row)
-	return {"active": active, "pending_result": _pending_result != null, "credits": _data().credits, "xp": account.xp, "total_xp": _data().xp, "xp_next": account.xp_next, "level": account.level, "capacity": capacity(), "used": cargo_used(), "stash": _data().stash.duplicate(true), "loadout": _data().loadout.duplicate(true), "backpack": cargo_inventory(), "caravan": caravan.snapshot(), "items": Catalog.ITEMS.duplicate(true), "quests": quests, "active_quest_count": count, "quest_limit": MissionProgress.LIMIT, "upgrades": upgrades, "last_result": last_result.duplicate(true), "notice": notice, "storage_status": progression.store.status}
+	var transfers := {"equip": {}, "unequip": {}}
+	for id: String in Catalog.ITEMS:
+		for kind: String in transfers:
+			transfers[kind][id] = transfer_offer(kind, id)
+	return {"transfers": transfers, "refill": refill_offer(), "last_supplies": _data().get("last_supplies", {}).duplicate(true), "active": active, "pending_result": _pending_result != null, "credits": _data().credits, "xp": account.xp, "total_xp": _data().xp, "xp_next": account.xp_next, "level": account.level, "capacity": capacity(), "used": cargo_used(), "stash": _data().stash.duplicate(true), "loadout": _data().loadout.duplicate(true), "backpack": cargo_inventory(), "caravan": caravan.snapshot(), "items": Catalog.ITEMS.duplicate(true), "quests": quests, "active_quest_count": count, "quest_limit": MissionProgress.LIMIT, "upgrades": upgrades, "last_result": last_result.duplicate(true), "notice": notice, "storage_status": progression.store.status}

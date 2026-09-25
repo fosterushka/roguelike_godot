@@ -71,10 +71,13 @@ var _pointer_dragged: Dictionary = {}
 var preparation := Preparation.new()
 var world_warmup := preload("res://infrastructure/loading/world_warmup.gd").new()
 var _result_event: Dictionary = {}
+var extraction_departure := preload("res://presentation/vehicles/extraction_departure.gd").new()
 var profile_path := "user://iron_caravan_profile.json"
 
 func _ready() -> void:
 	get_tree().auto_accept_quit = false
+	add_child(extraction_departure)
+	extraction_departure.finished.connect(_finish_extraction_departure)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	process_physics_priority = 10
 	_seed_source.randomize()
@@ -153,6 +156,12 @@ func _ready() -> void:
 	world = WorldRuntime.new()
 	add_child(world)
 	world.setup(arena, combat, vehicle)
+	var occlusion := preload("res://presentation/camera/occlusion_fade.gd").new()
+	occlusion.name = "OcclusionFade"
+	occlusion.process_mode = Node.PROCESS_MODE_PAUSABLE
+	add_child(occlusion)
+	occlusion.setup(arena, camera, vehicle)
+	combat.state_changed.connect(occlusion.update_state)
 	world.state_changed.connect(_on_world_state)
 	world.world_event.connect(progression_feedback.on_event)
 	world.world_event.connect(sound.on_world_event)
@@ -210,7 +219,7 @@ func _input(event: InputEvent) -> void:
 	if is_instance_valid(hud) and is_instance_valid(hud.run_menu) and hud.run_menu.settings_panel.capture_input(event):
 		get_viewport().set_input_as_handled()
 		return
-	if not ready_to_drive or screen_state in ["countdown", "death"] or (event is InputEventKey and event.echo):
+	if not ready_to_drive or screen_state in ["countdown", "death", "departing"] or (event is InputEventKey and event.echo):
 		return
 	if screen_state == "encounter":
 		if event.is_action_pressed("pause_game"):
@@ -356,6 +365,8 @@ func _show_options(return_screen: String) -> void:
 	hud.run_menu.show_settings(settings_controller)
 
 func _set_screen(value: String) -> void:
+	if value in ["menu", "loading"]:
+		extraction_departure.cancel()
 	if is_instance_valid(hideout_hub) and hideout_hub.visible and value != "expedition":
 		hideout_hub.detach()
 	screen_state = value
@@ -564,7 +575,7 @@ func _show_armory() -> void:
 		hud.show_armory(shop, combat.model.player)
 
 func _menu_action(action: String, id: String) -> void:
-	if screen_state in ["countdown", "death"] and action not in ["restart", "menu"]:
+	if screen_state in ["countdown", "death", "departing"] and action not in ["restart", "menu"]:
 		return
 	match action:
 		"singleplayer": _show_singleplayer_menu()
@@ -749,10 +760,23 @@ func _set_language(value: String) -> void:
 
 func _show_result() -> void:
 	if expedition != null and expedition.snapshot().get("pending_result", false):
+		extraction_departure.skip(combat.model.generation)
 		hud.show_menu(ExpeditionPanel.words("НЕ УДАЛОСЬ СОХРАНИТЬ", "SAVE FAILED"), ExpeditionPanel.words("Груз сохранён в памяти. Повторите сохранение перед выходом.", "Cargo is held in memory. Retry saving before leaving."), [{"label": ExpeditionPanel.words("ПОВТОРИТЬ СОХРАНЕНИЕ", "RETRY SAVE"), "action": "retry_save"}])
 		return
 	var event := _result_event
+	# The loot transaction above has already succeeded. Delay only its result UI,
+	# never the save, and move the visual pose without touching simulation state.
+	if event.get("extracted", false) and not extraction_departure.has_played(combat.model.generation):
+		_set_screen("departing")
+		hud.hide_menus()
+		extraction_departure.start(vehicle.get_node("VehicleView"), combat.model.generation, vehicle.motion.heading)
+		return
 	hud.show_menu(Locale.text("ЭВАКУАЦИЯ ЗАВЕРШЕНА") if event.get("extracted", false) else Locale.text("ПОБЕДА") if event.get("won", false) else Locale.text("ЗАЕЗД ОКОНЧЕН"), (Locale.text("Волна %d · Убито %d · Время %ds") % [event.get("wave", 1), event.get("kills", 0), event.get("elapsed", 0)]) + _expedition_result_text(), [{"label": Locale.text("НОВЫЙ ЗАЕЗД"), "action": "restart"}, {"label": Locale.text("ГЛАВНОЕ МЕНЮ"), "action": "menu"}, {"label": ExpeditionPanel.words("СКЛАД И НАГРАДЫ", "VAULT AND REWARDS"), "action": "hideout"}])
+
+func _finish_extraction_departure() -> void:
+	if screen_state == "departing" and extraction_departure.has_played(combat.model.generation):
+		_set_screen("result")
+		_show_result()
 
 func _setup_expedition_ui() -> void:
 	_mission_hint = preload("res://presentation/ui/mission_hint.gd").new()
@@ -761,6 +785,7 @@ func _setup_expedition_ui() -> void:
 	expedition_panel = ExpeditionPanel.new()
 	hud.get_node("Screen").add_child(expedition_panel)
 	expedition_panel.action_requested.connect(_expedition_action)
+	expedition_panel.supplies_transfer_requested.connect(_expedition_action)
 	expedition_panel.closed.connect(_close_expedition)
 	hideout_hub = preload("res://presentation/ui/hideout_hub.gd").new()
 	hud.get_node("Screen").add_child(hideout_hub)
@@ -819,14 +844,14 @@ func _close_expedition() -> void:
 	else:
 		_set_screen("running")
 
-func _expedition_action(kind: String, id: String) -> void:
+func _expedition_action(kind: String, id: String, quantity: int = 1) -> void:
 	if screen_state != "expedition":
 		return
 	if kind == "consume":
 		expedition.consume(id, combat.model.player)
 		_sync_progression_stats()
 	else:
-		expedition.action(kind, id)
+		expedition.action(kind, id, quantity)
 	expedition_panel.show_state(expedition.snapshot())
 	if hideout_hub.visible:
 		hideout_hub.update_account(expedition.snapshot(), int(combat.model.player.coins))

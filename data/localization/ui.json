@@ -6,7 +6,7 @@
   "ОДИНОЧНАЯ ИГРА": "SINGLEPLAYER",
   "СКОРОСТЬ": "SPEED",
   "000 км/ч": "000 km/h",
-  "ПАУЗА": "PAUSED",
+  "ПАУЗА": "PAUSE",
   "Заезд приостановлен": "Run paused",
   "ПРОДОЛЖИТЬ": "RESUME",
   "НАЧАТЬ ЗАНОВО": "RESTART RUN",
@@ -351,5 +351,13 @@
   "Сохранено.": "Saved.",
   "Использовано: %s": "Used: %s",
   "%d кредитов · %d XP": "%d credits · %d XP",
-  "%d кредитов · ур. аккаунта %d": "%d credits · account level %d"
+  "%d кредитов · ур. аккаунта %d": "%d credits · account level %d",
+  "Уничтожьте конвой, пока он не покинул дорогу": "Destroy the convoy before it clears the road",
+  "Устраните рейдеров, угрожающих поселению": "Clear the raiders threatening the village",
+  "Перехватите подкрепление завода": "Intercept the foundry reinforcement",
+  "Встретьте машину сборщика на дороге": "Meet the scavenger crawler on the road",
+  "Чертёж оружия и оружейный груз": "Weapon blueprint + weapon cargo",
+  "Ремонт 35% корпуса и медикаменты": "Repair 35% hull + medical supplies",
+  "Редкий груз улучшений": "Rare upgrade cargo",
+  "Топливо и груз материалов": "Fuel + salvage cargo"
 }

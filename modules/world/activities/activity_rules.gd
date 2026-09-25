@@ -1,5 +1,7 @@
 extends RefCounted
 const Fuel = preload("res://modules/caravan/vehicle_fuel.gd")
+const SETTLEMENT_REPAIR_RATIO := 0.35
+const REPAIR_SERVICE_RADIUS := 8.0
 const MAX_SPAWN_DISTANCE := 700.0
 const TRAVEL_SPEED_RATIO := 0.65
 const TRAVEL_DETOUR_RATIO := 1.25

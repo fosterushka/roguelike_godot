@@ -93,6 +93,7 @@ func _draw() -> void:
 			continue
 		draw_rect(Rect2(point - Vector2(18, 0), Vector2(36, 4)), Color("26221d"))
 		draw_rect(Rect2(point - Vector2(18, 0), Vector2(36 * progress, 4)), Color("f8d180"))
+	_draw_primary_destination()
 	for hint: Dictionary in edge_hints():
 		_draw_hint(hint)
 
@@ -140,10 +141,14 @@ func edge_candidates() -> Array[Dictionary]:
 	for site: Dictionary in sites:
 		if _offscreen(site.get("position", Vector3.ZERO)):
 			candidates.append(_signal_candidate("extraction:" + str(site.get("id", "")), site.get("position", Vector3.ZERO), "ЭВАКУАЦИЯ", true))
+	var primary: Dictionary = world_state.get("activity", {}).get("primary", {})
 	for activity: Dictionary in world_state.get("activity", {}).get("records", []):
 		if activity.get("state", "") not in ["announced", "active"] or not activity.has("position") or not _offscreen(activity.position):
 			continue
-		candidates.append(_signal_candidate("activity:" + str(activity.get("id", "")), activity.position, str(activity.get("type", "ЦЕЛЬ")), false))
+		if activity.get("id", "") == primary.get("id", "__none"):
+			candidates.append(_candidate("activity:" + str(activity.id), activity.position, str(activity.type), Color("dbb56a"), 1))
+		else:
+			candidates.append(_signal_candidate("activity:" + str(activity.get("id", "")), activity.position, str(activity.get("type", "ЦЕЛЬ")), false))
 	var nearest_loot: Dictionary = {}
 	for crate: Dictionary in world_state.get("raid_loot", []):
 		if not _offscreen(crate.position):
@@ -278,3 +283,23 @@ func projected_position(world_point: Vector3) -> Vector2:
 	if camera.projection != Camera3D.PROJECTION_ORTHOGONAL and camera.is_position_behind(world_point):
 		point = camera.get_viewport().get_visible_rect().get_center() * 2 - point
 	return point
+
+func _draw_primary_destination() -> void:
+	var primary: Dictionary = world_state.get("activity", {}).get("primary", {})
+	if primary.is_empty() or not primary.has("position") or _offscreen(primary.position):
+		return
+	var target: Vector3 = primary.position
+	target.y = Terrain.height_at(target.x, target.z) + 3.0
+	var point := projected_position(target)
+	for control in occluders:
+		if is_instance_valid(control) and control.is_visible_in_tree() and control.get_global_rect().grow(24).has_point(point + global_position):
+			return
+	var color := Color("dbb56a")
+	draw_line(point + Vector2(-12, -5), point + Vector2(0, 4), color, 2.0, true)
+	draw_line(point + Vector2(0, 4), point + Vector2(12, -5), color, 2.0, true)
+	var label := "%s · %d%s" % [Locale.text(str(primary.type)), roundi(float(primary.get("distance", 0.0))), Locale.text("м")]
+	var font := ThemeDB.fallback_font
+	var width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x
+	var origin := point + Vector2(-width * 0.5, -14)
+	draw_string_outline(font, origin, label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, 4, Color("101615"))
+	draw_string(font, origin, label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)

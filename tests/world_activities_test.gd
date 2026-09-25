@@ -59,10 +59,17 @@ func _run() -> void:
 	for event in combat.model.events:
 		contract_events += int(event.kind == "activity_completed")
 	check(contract_events == 1, "contracteventexactlyonce")
+	check(activities.get_state().aftermath.size() == 1, "Convoy completion records one raid-local aftermath despite repeated finish")
+	var pinned: Dictionary = activities.get_state().primary
+	check(not pinned.is_empty() and pinned.id == minor.id and pinned.distance >= 0.0 and pinned.remaining_seconds > 0.0, "Reachable live destination exposes distance and remaining time without radar")
+	vehicle.global_position = Vector3(195, 0, 0)
+	check(activities.get_state().primary.id == minor.id, "Primary destination stays pinned when another contact becomes closer")
+	vehicle.global_position = Vector3.ZERO
 	check(activities.finish(minor, "failed"), "failureaccepted")
 	check(combat.model.player.coins == coins + 18, "failuregrantsnoreward")
 	check(activities.recovery_until == 10, "source10secondrecovery")
 	world.reset_run()
+	check(activities.get_state().aftermath.is_empty() and activities.get_state().primary.is_empty(), "Raid reset removes destination and aftermath")
 	var expiring: Dictionary = activities.announce("scavengerRoute", {"position": Vector3(100, 0, 0), "route": route})
 	activities.elapsed = 82.0
 	activities._update(expiring, 0.0)
@@ -236,6 +243,37 @@ func _run() -> void:
 	activities._update(overflow, 0.0)
 	check(overflow.state == "announced" and overflow.participant_ids.is_empty() and combat.model.enemies.size() == pressure_count, "pressurecaprejectsconvoywithoutpartialspawn")
 	_check_reachable_routes(world, vehicle, combat)
+	world.reset_run()
+	vehicle.health = vehicle.max_health * 0.5
+	var service: Dictionary = activities.announce("settlementDistress", {"position": Vector3.ZERO, "source_id": arena.world_layout.villages[0].id})
+	check(activities.finish(service, "completed"), "Village service completes through existing reward owner")
+	var repaired: float = vehicle.health
+	var aftermath: Array = activities.get_state().aftermath
+	check(aftermath.size() == 1 and is_equal_approx(float(aftermath[0].reward_info.repair), vehicle.max_health * 0.35), "Lit village receipt uses the actual granted hull repair")
+	check(not activities.finish(service, "completed") and vehicle.health == repaired, "Visiting/repainting aftermath cannot repeat the repair reward")
+	world.set_running(true)
+	combat.set_running(true)
+	vehicle.global_position = Vector3(Rules.REPAIR_SERVICE_RADIUS + 1, 0, 0)
+	check(not world.interact() and activities.get_repair_service().is_empty(), "Field repair requires physical proximity")
+	vehicle.global_position = Vector3.ZERO
+	vehicle.health = vehicle.max_health
+	combat.model.player.hp = vehicle.health
+	check(not activities.request_repair() and activities.get_repair_service().mode == "full", "Full hull does not consume settlement service")
+	activities.extraction.active = true
+	check(activities.get_repair_service().is_empty() and not activities.request_repair(), "Extraction hides and blocks field service")
+	activities.extraction.active = false
+	vehicle.health -= 10.0
+	combat.model.player.hp = vehicle.health
+	check(world.interact() and vehicle.health == vehicle.max_health, "E uses field repair and caps at maximum hull")
+	check(activities.get_repair_service().mode == "used", "Consumed repair service advertises exhaustion")
+	vehicle.health -= 20.0
+	check(not activities.request_repair() and vehicle.health == vehicle.max_health - 20.0, "Repeated E cannot repair a second time")
+	world.reset_run()
+	check(activities.get_repair_service().is_empty(), "New raid clears service ownership")
+	service = activities.announce("settlementDistress", {"position": Vector3.ZERO, "source_id": arena.world_layout.villages[0].id})
+	activities.finish(service, "completed")
+	world.props.destroy(activities._village_props[arena.world_layout.villages[0].id][0])
+	check(activities.get_repair_service().is_empty() and not activities.request_repair() and activities.get_state().aftermath.is_empty(), "Destroyed settlement no longer offers repair or displays service lights")
 	print("WORLD_ACTIVITIES: %d checks, %d failures" % [checks, failures])
 	quit(0 if failures == 0 else 1)
 

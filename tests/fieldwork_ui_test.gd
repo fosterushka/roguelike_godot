@@ -26,7 +26,10 @@ func _run() -> void:
 			hub.select_tab("stash")
 			await process_frame
 			await process_frame
-			_check(game.expedition_panel.body.get_child(0).get_child_count() == 2, "Storage and packed supplies are visible together")
+			var supplies_columns: Node
+			for child in game.expedition_panel.body.get_children():
+				if child.get_meta("supplies_columns", false): supplies_columns = child
+			_check(supplies_columns != null and supplies_columns.get_child_count() == 2 and supplies_columns.is_visible_in_tree(), "Storage and packed supplies are visible together")
 			_check(Rect2(Vector2.ZERO, Vector2(dimensions)).encloses(hub.deploy_button.get_global_rect()), "Departure stays inside " + str(dimensions))
 			var settings: Button
 			for node in hub._rail.get_children():

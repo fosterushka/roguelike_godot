@@ -1,15 +1,20 @@
 extends RefCounted
 
 const Suspension = preload("res://modules/caravan/wheel_suspension.gd")
+const Customization = preload("res://presentation/vehicles/customization_view.gd")
 const DAMPER_RADIAL_SEGMENTS := 6
 
 static var _materials: Dictionary = {}
 static var _meshes: Dictionary = {}
 
-static func build_player() -> Node3D:
+static func build_player(selected: Dictionary = {}) -> Node3D:
 	var rig: Node3D = preload("res://presentation/vehicles/military_pickup.gd").build()
 	_build_struts(rig.get_meta("springs"))
+	customize(rig, selected)
 	return rig
+
+static func customize(rig: Node3D, selected: Dictionary) -> void:
+	Customization.apply(rig, selected, _box, _cylinder)
 
 static func build_trailer(type: String = "cargo") -> Node3D:
 	var adapter := preload("res://presentation/vehicles/military_wagon.gd")

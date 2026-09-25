@@ -14,6 +14,7 @@ var _model: Node3D
 var _ready_for_preview := false
 var preview_kind := ""
 var preview_id := ""
+var _customization: Dictionary = {}
 
 func _ready() -> void:
 	stretch = true
@@ -74,6 +75,15 @@ func set_rendering(value: bool) -> void:
 		return
 	viewport.render_target_update_mode = SubViewport.UPDATE_ONCE if value else SubViewport.UPDATE_DISABLED
 
+func set_customization(selected: Dictionary) -> void:
+	if _customization == selected:
+		return
+	_customization = selected.duplicate(true)
+	if is_instance_valid(_model) and preview_kind == "vehicle" and preview_id == "crawler":
+		WheeledRig.customize(_model, _customization)
+		_fit_camera()
+		_request_frame()
+
 func _rebuild() -> void:
 	if is_instance_valid(_model):
 		assembly.remove_child(_model)
@@ -91,7 +101,7 @@ func _build_model() -> Node3D:
 		"module", "attachment":
 			return Equipment.build(preview_id)
 		"vehicle":
-			return WheeledRig.build_player() if preview_id == "crawler" else WheeledRig.build_trailer(preview_id)
+			return WheeledRig.build_player(_customization) if preview_id == "crawler" else WheeledRig.build_trailer(preview_id)
 		"loot":
 			return LootModels.build(preview_id)
 	return null

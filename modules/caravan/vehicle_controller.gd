@@ -12,6 +12,7 @@ const Motion = preload("res://modules/caravan/vehicle_motion.gd")
 const Suspension = preload("res://modules/caravan/wheel_suspension.gd")
 const RoadSurface = preload("res://modules/world/road_surface.gd")
 const Fuel = preload("res://modules/caravan/vehicle_fuel.gd")
+const Customization = preload("res://modules/caravan/vehicle_customization.gd")
 
 var wheel_angle := 0.0
 var suspension := Suspension.create()
@@ -68,17 +69,18 @@ func _step_physics(delta: float) -> void:
 	motion.x = position.x
 	motion.z = position.z
 	var tuning := Fuel.drive_tuning(fuel, player_stats)
-	tuning.traction *= float(surface_effects.get("traction", 1.0)) * float(suspension.grip)
-	tuning.surface_traction = float(surface_effects.get("traction", 1.0))
+	var tire_surface := Customization.tire_effects(player_stats.get("customization", {}), surface_effects, RoadSurface.contains(global_position))
+	tuning.traction *= float(tire_surface.get("traction", 1.0)) * float(suspension.grip)
+	tuning.surface_traction = float(tire_surface.get("traction", 1.0))
 	tuning.mass = float(player_stats.get("weight", Motion.Handling.BASE_MASS))
 	tuning.wheeled = true
 	tuning.wheelbase = (Suspension.FRONT_Z - Suspension.REAR_Z) * float(player_stats.get("visual_scale", Dimensions.BASE_SCALE))
 	tuning.acceleration *= clampf(1.0 - float(suspension.slope) * signf(motion.speed) * 1.6, 0.65, 1.25)
-	tuning.maximum_speed *= float(surface_effects.get("movement", 1.0)) * RoadSurface.speed_multiplier_at(global_position)
-	tuning.acceleration *= float(surface_effects.get("movement", 1.0))
+	tuning.maximum_speed *= float(tire_surface.get("movement", 1.0)) * RoadSurface.speed_multiplier_at(global_position) * float(tire_surface.road_speed)
+	tuning.acceleration *= float(tire_surface.get("movement", 1.0))
 	tuning.maximum_speed *= float(tornado_effect.get("movement", 1.0))
 	tuning.acceleration *= float(tornado_effect.get("movement", 1.0))
-	controls.steer *= float(surface_effects.get("turn", 1.0))
+	controls.steer *= float(tire_surface.get("turn", 1.0))
 	controls = Jammer.controls(controls, player_stats)
 	Motion.step(motion, controls, tuning, delta)
 	var previous_position := position

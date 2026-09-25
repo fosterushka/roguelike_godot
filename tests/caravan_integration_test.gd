@@ -128,7 +128,11 @@ func _run() -> void:
 			break
 		game.session_flow.advance(0.05)
 		game.world.activities._update_extraction(0.05)
-	check(game.screen_state == "result" and game.expedition.last_result.get("success", false), "Extraction defense completion reaches actual Main result")
+	check(game.screen_state == "departing" and game.expedition.last_result.get("success", false), "Extraction defense saves its result before cosmetic departure")
+	game.extraction_departure.set_process(false)
+	for frame in 26:
+		game.extraction_departure.advance(0.05)
+	check(game.screen_state == "result", "Saved convoy departure finishes at actual Main result")
 	var saved: Dictionary = Store.new(path).load_profile()
 	check(saved.expedition.caravan.wagons.size() == 2 and not saved.expedition.caravan.wagons.has(ids[1]), "Result persists attached survivors and permanently removes destroyed wagon")
 	check(saved.expedition.caravan.crew.has(crew_id), "Boarded living mechanic saved under persistent ID")

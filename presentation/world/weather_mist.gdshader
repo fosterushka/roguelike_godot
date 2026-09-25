@@ -1,5 +1,7 @@
 shader_type spatial;
 render_mode unshaded, cull_disabled, depth_draw_never;
+#include "res://presentation/world/fog_lamp_beam.gdshaderinc"
+varying vec3 mist_world_position;
 uniform float uTime;
 uniform vec2 uAnchor;
 uniform vec2 uDrift;
@@ -29,6 +31,7 @@ void vertex(){
     vec4 viewPosition = MODELVIEW_MATRIX * vec4(center.x + uAnchor.x,
       1.8 + INSTANCE_CUSTOM.z * 3.0, center.y + uAnchor.y, 1.0);
     viewPosition.xy += VERTEX.xy * vec2(16.0 + INSTANCE_CUSTOM.w * 15.0, 3.0 + INSTANCE_CUSTOM.z * 4.0);
+    mist_world_position = (INV_VIEW_MATRIX * viewPosition).xyz;
     vUv = UV;
     vSeed = INSTANCE_CUSTOM.z;
     vEdge = 1.0 - smoothstep(32.0, 48.0, length(center));
@@ -42,6 +45,7 @@ void fragment(){
     float cloud = weatherNoise(flow) * 0.65 + weatherNoise(flow * 2.8 + uTime * 0.07) * 0.35;
     float density = smoothstep(0.22, 0.8, cloud) * edge * vEdge;
     float alpha = density * (uFog * 0.23 + uRain * 0.045 + uStorm * 0.07);
+    alpha *= 1.0 - lamp_coverage(mist_world_position.xz);
     if (alpha < 0.003) discard;
     vec3 color = mix(vec3(0.48, 0.57, 0.56), vec3(0.25, 0.34, 0.4), uStorm);
     color = mix(color, vec3(0.82, 0.91, 1.0), uLightning * 0.8);

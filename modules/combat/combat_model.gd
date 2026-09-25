@@ -227,7 +227,7 @@ func _update_weapons(delta: float) -> void:
 		var tuning := Sidegrades.tuning(player, weapon)
 		tuning.weapon_mount = weapon.get("mount", {"carrierId": "crawler", "slot": 0})
 		var origin: Vector3 = weapon_origin_query.call(weapon) if weapon_origin_query.is_valid() else player.position + Vector3.UP * 2.8
-		var target := resolve_target(float(tuning.range) * player.range_mult * (0.55 if player.jammed else 1.0) * weather_range_multiplier(player.get("radar_range", 0.0) > 0.0), origin)
+		var target := resolve_target(float(tuning.range) * player.range_mult * (0.55 if player.jammed else 1.0), origin, true)
 		if target.is_empty():
 			continue
 		var aim := _target_aim(target) + Vector3(target.get("shove_velocity", Vector3.ZERO)) * 0.18
@@ -239,12 +239,12 @@ func _update_weapons(delta: float) -> void:
 	var bonus: Dictionary = protocols.combined_weapon(player, weapons, elapsed)
 	if not bonus.is_empty():
 		var origin: Vector3 = weapon_origin_query.call(bonus) if weapon_origin_query.is_valid() else player.position + Vector3.UP * 2.8
-		var target := resolve_target(bonus.def.range * player.range_mult * (0.55 if player.jammed else 1.0), origin)
+		var target := resolve_target(bonus.def.range * player.range_mult * (0.55 if player.jammed else 1.0), origin, true)
 		if not target.is_empty():
 			protocols.primed_until = 0.0
 			fire_projectile(bonus.def.projectile, "player", origin, _target_aim(target) + Vector3(target.get("shove_velocity", Vector3.ZERO)) * 0.18, bonus.def.damage, target.id, {"module_type": bonus.type, "synergy_eligible": false})
 
-func resolve_target(distance_limit: float, origin: Vector3 = Vector3.INF) -> Dictionary:
+func resolve_target(distance_limit: float, origin: Vector3 = Vector3.INF, apply_weather: bool = false) -> Dictionary:
 	if origin == Vector3.INF:
 		origin = player.position
 	var nearest: Dictionary = {}
@@ -254,10 +254,13 @@ func resolve_target(distance_limit: float, origin: Vector3 = Vector3.INF) -> Dic
 		if enemy.dead or enemy.get("targetable", true) == false:
 			continue
 		var distance: float = Vector2(enemy.position.x - origin.x, enemy.position.z - origin.z).length_squared()
-		if enemy.id == focus_id and distance <= distance_limit * distance_limit:
+		var target_range := distance_limit
+		if apply_weather:
+			target_range *= preload("res://modules/combat/visibility_rules.gd").range_multiplier(player, enemy.position, fog_strength(), player.get("radar_range", 0.0) > 0.0)
+		if enemy.id == focus_id and distance <= target_range * target_range:
 			return enemy
 		var target_priority: float = enemy.get("priority", 0.0)
-		if distance < distance_limit * distance_limit and (target_priority > priority or (target_priority == priority and distance < best)):
+		if distance < target_range * target_range and (target_priority > priority or (target_priority == priority and distance < best)):
 			best = distance
 			priority = target_priority
 			nearest = enemy
@@ -620,6 +623,7 @@ func snapshot() -> Dictionary:
 	var profile_started := Profiler.begin()
 	var result := {"generation": generation, "wave": wave, "final_wave": Waves.FINAL_WAVE,
 		"status": status, "phase": status, "weather_type": weather_type, "running": running, "elapsed": elapsed,
+		"visibility_fog": fog_strength(),
 		"threat": clampf((wave - 1) * 12.0 + minf(58.0, _wave_remaining() * 2.0), 0.0, 100.0),
 		"intermission": intermission, "remaining": spawn_queue.size() + _wave_remaining(),
 		"safe_radius": Waves.radius(wave), "kills": player.kills, "scrap": player.coins,
@@ -700,5 +704,7 @@ func _emit(kind: String, data: Dictionary) -> void:
 		events.pop_front()
 
 func weather_range_multiplier(radar: bool = false, npc: bool = false) -> float:
-	var strength := weather_fog_strength if weather_fog_strength >= 0 else (1.0 if weather_type == "foggy" else 0.0)
-	return preload("res://modules/world/weather_rules.gd").visibility_multiplier(strength, radar, npc)
+	return preload("res://modules/world/weather_rules.gd").visibility_multiplier(fog_strength(), radar, npc)
+
+func fog_strength() -> float:
+	return weather_fog_strength if weather_fog_strength >= 0 else (1.0 if weather_type == "foggy" else 0.0)

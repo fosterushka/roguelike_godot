@@ -165,7 +165,7 @@ func _ready() -> void:
 		button.set_meta("hub_tab", key)
 		button.custom_minimum_size = Vector2(116, 32)
 		button.pressed.connect(func() -> void:
-			if key == "garage": caravan_page = "shop"
+			if key == "garage": caravan_page = "wagons"
 			select_tab(key))
 		tabs.add_child(button)
 		if key == "garage":
@@ -293,6 +293,7 @@ func refresh_labels() -> void:
 	if tab == "garage":
 		_page_title.text = ("Готовность каравана" if russian else "Caravan readiness") if caravan_page == "wagons" else ("Экипаж" if russian else "Crew") if caravan_page == "crew" else ("Гараж" if russian else "Garage")
 	_page_subtitle.text = ("Выберите крепление, затем оружие. Изменения видны до установки." if russian else "Choose a mount, then a weapon. Review changes before installing.") if tab == "armory" else ("Подготовьте караван к следующему выезду." if russian else "Prepare your caravan for the next raid.")
+	_page_subtitle.visible = tab != "garage"
 	_title_margin.add_theme_constant_override("margin_top", 6 if section == "caravan" else 0)
 	footer_hint.text = "Esc · Назад" if russian else "Esc · Back"
 	deploy_button.text = "В рейд" if russian else "Deploy"
@@ -304,13 +305,13 @@ func refresh_labels() -> void:
 		if button.has_meta("caravan_page"):
 			var page: String = button.get_meta("caravan_page")
 			button.text = ("Обзор" if russian else "Overview") if page == "wagons" else ("Экипаж" if russian else "Crew")
-			button.visible = section == "caravan"
+			button.visible = section == "caravan" and page != "wagons"
 			Styles.tab(button, tab == "garage" and caravan_page == page)
 			continue
 		var key: String = button.get_meta("hub_tab")
 		button.text = TABS[key][0 if russian else 1]
 		button.visible = section == "caravan" and key in ["armory", "garage"]
-		Styles.tab(button, key == tab and (key != "garage" or caravan_page == "shop"))
+		Styles.tab(button, key == tab)
 	tabs.visible = section == "caravan"
 	for node: Node in _rail.get_children():
 		if node.has_meta("section"):

@@ -6,6 +6,7 @@ const CrewFactory = preload("res://modules/crew/crew_factory.gd")
 const Assignment = preload("res://modules/crew/crew_assignment.gd")
 const Encounter = preload("res://modules/crew/crew_encounter.gd")
 const CrewCatalog = preload("res://modules/crew/crew_catalog.gd")
+const Customization = preload("res://modules/caravan/vehicle_customization.gd")
 var progression: RefCounted
 var active := false
 var locked := false
@@ -195,6 +196,7 @@ func activate(staged: Dictionary, player: Dictionary) -> void:
 	_player = player
 	player.carriers = wagons
 	player.crew = crew
+	player.customization = data().customization.selected.duplicate(true)
 	_next_rescue_id = staged.next_rescue_id
 	_rescue_id_limit = staged.rescue_limit
 	_rescued_sources.clear()
@@ -364,7 +366,7 @@ func snapshot() -> Dictionary:
 		for person: Dictionary in people:
 			person.carrier_id = assignments.get(person.id, {}).get("carrier_id", "")
 			person.seat = assignments.get(person.id, {}).get("seat", -1)
-	return {"active": active, "locked": locked, "wagons": wagons.duplicate(true) if active else data().wagons.values().duplicate(true), "crew": people, "selected_wagon_ids": data().selected_wagon_ids.duplicate(), "selected_crew_ids": data().selected_crew_ids.duplicate(), "types": Catalog.TYPES.duplicate(true), "attachments": Catalog.ATTACHMENTS.duplicate(true), "roles": CrewCatalog.ROLES.duplicate(true), "max_wagons": Catalog.MAX_WAGONS, "wage_currency": "stash_scrap", "notice": notice, "player_position": _player.get("position", Vector3.ZERO) if active else Vector3.ZERO, "player_speed": float(_player.get("speed", 0)) if active else 0.0}
+	return {"active": active, "locked": locked, "wagons": wagons.duplicate(true) if active else data().wagons.values().duplicate(true), "crew": people, "selected_wagon_ids": data().selected_wagon_ids.duplicate(), "selected_crew_ids": data().selected_crew_ids.duplicate(), "customization": customization_snapshot(), "types": Catalog.TYPES.duplicate(true), "attachments": Catalog.ATTACHMENTS.duplicate(true), "roles": CrewCatalog.ROLES.duplicate(true), "max_wagons": Catalog.MAX_WAGONS, "wage_currency": "stash_scrap", "notice": notice, "player_position": _player.get("position", Vector3.ZERO) if active else Vector3.ZERO, "player_speed": float(_player.get("speed", 0)) if active else 0.0}
 
 func drain_events() -> Array[Dictionary]:
 	var result := events.duplicate(true)
@@ -423,7 +425,7 @@ func _remove_raid_attachment(wagon_id: String, slot: int) -> bool:
 		return true
 	return false
 
-func attachment_rows(carrier_id: String) -> Array:
+func attachment_rows(carrier_id: String, selected_slot: int = -1) -> Array:
 	var wagon := find_wagon(carrier_id) if active else Factory.create(str(data().wagons.get(carrier_id, {}).get("type", "")), carrier_id, data().wagons.get(carrier_id, {}))
 	if wagon.is_empty():
 		return []
@@ -435,6 +437,8 @@ func attachment_rows(carrier_id: String) -> Array:
 		for entry: Dictionary in wagon.attachments:
 			installed = installed or entry.type == type
 		for candidate in 3:
+			if selected_slot >= 0 and candidate != selected_slot:
+				continue
 			var occupied := false
 			for entry: Dictionary in wagon.attachments:
 				occupied = occupied or int(entry.slot) == candidate
@@ -445,5 +449,77 @@ func attachment_rows(carrier_id: String) -> Array:
 				slot = candidate
 		var cost := maxi(18, roundi(float(definition.cost) * 0.35)) if active else int(definition.cost)
 		var funds := int(_player.get("coins", 0)) if active else int(progression.profile.expedition.credits)
-		result.append({"id": "attachment:%s:%s:%d" % [type, carrier_id, slot], "type": type, "carrier_id": carrier_id, "slot": slot, "label": definition.name, "name_en": definition.name_en, "description": "Масса +%.1f" % definition.mass, "cost": cost, "currency": "salvage" if active else "credits", "enabled": not locked and not wagon.dead and wagon.attached and slot >= 0 and not installed and funds >= cost, "disabled_reason": "Установлено" if installed else "Нет свободного крепления" if slot < 0 else "Недостаточно средств" if funds < cost else ""})
+		result.append({"id": "attachment:%s:%s:%d" % [type, carrier_id, slot], "type": type, "carrier_id": carrier_id, "slot": slot, "label": definition.name, "name_en": definition.name_en, "description": "Масса +%.1f" % definition.mass, "cost": cost, "currency": "salvage" if active else "credits", "enabled": not locked and not wagon.dead and wagon.attached and slot >= 0 and not installed and funds >= cost, "disabled_reason": "Установлено" if installed else ("Крепление занято" if selected_slot >= 0 else "Нет свободного крепления") if slot < 0 else "Недостаточно средств" if funds < cost else ""})
 	return result
+
+func purchase_customization(id: String) -> bool:
+	var definitions := Customization.purchasable()
+	if active or locked or not definitions.has(id) or data().customization.owned.has(id):
+		return false
+	var cost := int(definitions[id].cost)
+	if int(progression.profile.expedition.credits) < cost:
+		return false
+	var before: Dictionary = progression.profile.expedition.duplicate(true)
+	data().customization.owned.append(id)
+	progression.profile.expedition.credits -= cost
+	if id == "fog_lamps":
+		data().customization.selected.fog_lamps = true
+	else:
+		data().customization.selected.tires = id
+	return _commit(before)
+
+func select_customization(category: String, id: String) -> bool:
+	if active or locked or category not in ["tires", "paint", "emblem", "fog_lamps"]:
+		return false
+	var selection: Dictionary = data().customization.selected.duplicate(true)
+	if category == "fog_lamps":
+		if id not in ["fog_lamps", "none"] or (id == "fog_lamps" and not data().customization.owned.has(id)):
+			return false
+		selection.fog_lamps = id == "fog_lamps"
+	else:
+		selection[category] = id
+		if Customization.normalize_selection(selection, data().customization.owned)[category] != id:
+			return false
+	var before: Dictionary = progression.profile.expedition.duplicate(true)
+	data().customization.selected = selection
+	return _commit(before)
+
+func save_build(slot: int, build_name: String = "") -> bool:
+	if active or locked or slot < 0 or slot >= Customization.BUILD_LIMIT:
+		return false
+	var before: Dictionary = progression.profile.expedition.duplicate(true)
+	var seats := {}
+	for id: String in data().selected_crew_ids:
+		var person: Dictionary = data().crew[id]
+		seats[id] = {"carrier_id": person.get("carrier_id", "crawler"), "seat": person.get("seat", -1)}
+	data().builds[str(slot)] = {"name": build_name.strip_edges().left(Customization.BUILD_NAME_LIMIT) if not build_name.strip_edges().is_empty() else "Build %d" % (slot + 1), "selected": data().customization.selected.duplicate(true), "wagon_ids": data().selected_wagon_ids.duplicate(), "crew_ids": data().selected_crew_ids.duplicate(), "seats": seats}
+	return _commit(before)
+
+func _build_available(build: Dictionary) -> bool:
+	return build.wagon_ids.all(func(id: String) -> bool: return data().wagons.has(id)) and build.crew_ids.all(func(id: String) -> bool: return data().crew.has(id))
+
+func apply_build(slot: int) -> bool:
+	if active or locked or not data().builds.has(str(slot)):
+		return false
+	var build: Dictionary = data().builds[str(slot)]
+	if not _build_available(build):
+		notice = "Часть состава потеряна. Сохраните новый набор."
+		return false
+	var before: Dictionary = progression.profile.expedition.duplicate(true)
+	data().selected_wagon_ids = build.wagon_ids.duplicate()
+	data().selected_crew_ids = build.crew_ids.duplicate()
+	data().customization.selected = build.selected.duplicate(true)
+	for id: String in build.crew_ids:
+		var assignment: Dictionary = build.seats.get(id, {})
+		if not assignment.is_empty():
+			data().crew[id].carrier_id = assignment.carrier_id
+			data().crew[id].seat = assignment.seat
+	return _commit(before)
+
+func customization_snapshot() -> Dictionary:
+	var value: Dictionary = data().customization
+	var builds: Array = []
+	for slot in Customization.BUILD_LIMIT:
+		var build: Dictionary = data().builds.get(str(slot), {})
+		builds.append({"slot": slot, "name": build.get("name", ""), "available": not active and not locked and not build.is_empty() and _build_available(build), "saved": not build.is_empty()})
+	return {"selected": (_player.get("customization", value.selected) if active else value.selected).duplicate(true), "rows": Customization.rows(value, int(progression.profile.expedition.credits), not active and not locked), "builds": builds, "build_limit": Customization.BUILD_LIMIT}

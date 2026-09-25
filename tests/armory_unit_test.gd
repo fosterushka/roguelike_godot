@@ -50,7 +50,7 @@ func _run() -> void:
 		panel.mount_selector.carrier.select(6)
 		panel.mount_selector.carrier.item_selected.emit(6)
 		check(panel.mount_selector.selected_mount() == {"carrierId": "wagon-6", "slot": 1}, "Exact sixth wagon selected; weapon and attachment slots remain occupied")
-		check(panel.mount_selector.slot.is_item_disabled(0) and panel.mount_selector.slot.is_item_disabled(2), "Module and attachment share occupancy")
+		check(panel.mount_selector._occupied.has(0) and panel.mount_selector._occupied.has(2), "Module and attachment share occupancy while occupied mounts remain inspectable")
 		check(panel.preview.vehicle_view.get_child_count() == 3 and panel.preview._target.z == 0 and panel.preview._fit_size == 8, "Single selected wagon shows its own equipment at local origin")
 		check(_action(panel, "remove:0") == null and _action(panel, "remove:1") != null, "Selected wagon exposes only its own weapon removal")
 		_action(panel, "remove:1").pressed.emit()

@@ -26,6 +26,7 @@ var _seed := 72841
 var _state: Dictionary = {}
 var _flash := 0.0
 var _warmup := false
+var _local_fog: MeshInstance3D
 
 func setup(arena: Node3D, vehicle: Node3D) -> void:
 	_vehicle = vehicle
@@ -62,6 +63,10 @@ func setup(arena: Node3D, vehicle: Node3D) -> void:
 	add_child(_tornado_view)
 	_bolt = preload("res://presentation/world/lightning_view.gd").new()
 	add_child(_bolt)
+	if _environment != null:
+		_local_fog = preload("res://presentation/world/local_fog_view.gd").new()
+		add_child(_local_fog)
+		_local_fog.setup(_environment)
 
 func apply_state(state: Dictionary) -> void:
 	_state = state
@@ -146,6 +151,10 @@ func advance_visual(delta: float) -> void:
 	if not externally_driven:
 		_visual_elapsed += maxf(0, delta)
 		_apply_weather_mix()
+	var player: Dictionary = _vehicle.get("player_stats") if _vehicle.get("player_stats") is Dictionary else {}
+	if _local_fog != null:
+		_local_fog.apply_state(player)
+	_rain.set_lamp_state(player)
 	var wind: Dictionary = _state.get("wind", {})
 	_rain.advance(delta, _vehicle.global_position, _vehicle.velocity, wind.get("direction", Vector3.RIGHT), float(wind.get("strength", 0)))
 
@@ -159,6 +168,9 @@ func on_event(event: Dictionary) -> void:
 
 func reset_run(seed_value: int = -1) -> void:
 	preload("res://presentation/world/track_surface.gd").mud_zones = []
+	if _local_fog != null:
+		_local_fog.apply_state({})
+	_rain.set_lamp_state({})
 	if seed_value >= 0:
 		_seed = seed_value
 	_wind_debris.reset_run(_seed)

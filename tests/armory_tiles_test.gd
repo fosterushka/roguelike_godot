@@ -65,7 +65,7 @@ func _run() -> void:
 	_click(purchase.get_global_rect().get_center())
 	var mounted: Array = game.combat.model.player.modules.filter(func(module: Dictionary) -> bool: return module.type == "bazooka")
 	_check(mounted.size() == 1 and mounted[0].mount == {"carrierId": "wagon-test", "slot": 1} and game.combat.model.player.coins < money_before, "Actual tile purchase equips the weapon on the selected trailer slot and charges scrap")
-	_check(selector.selected_mount().get("carrierId") == "wagon-test" and selector.slot.is_item_disabled(1), "Refresh preserves carrier selection and disables the occupied mount")
+	_check(selector.selected_mount().get("carrierId") == "wagon-test" and not selector.valid_target(), "Refresh preserves selected occupied mount without allowing overwrite")
 	panel.query.text = "bazooka"
 	panel.rebuild_cards()
 	_check(panel.cards.get_child_count() == 1, "Tile search keeps matching catalog behavior")

@@ -66,6 +66,10 @@ func set_mix(mix: Vector4) -> void:
 func flash_lightning() -> void:
 	lightning_life = 0.28
 
+func set_lamp_state(player: Dictionary) -> void:
+	if materials.size() > 2:
+		preload("res://presentation/world/local_fog_view.gd").configure_beam(materials[2], player)
+
 func advance(delta: float, anchor: Vector3, velocity: Vector3, direction: Vector3, strength: float) -> void:
 	if warmup:
 		return

@@ -11,11 +11,14 @@ import tempfile
 import time
 
 TESTS = [
+    'visibility_qol_test.gd',
+    'supplies_qol_test.gd',
     'fieldwork_ui_test.gd',
     'settings_test.gd',
     'ui_audio_test.gd',
     'performance_bar_test.gd', 'combat_optimization_test.gd',
     'vehicle_playground_test.gd',
+    'vehicle_customization_test.gd',
     'vehicle_airborne_test.gd',
     'spatial_batches_test.gd', 'terrain_chunks_test.gd', 'view_culling_test.gd',
     'boundary_screen_test.gd',

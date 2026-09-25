@@ -7,6 +7,7 @@ signal closed
 const Styles = preload("res://presentation/ui/ui_styles.gd")
 const Icons = preload("res://presentation/ui/ui_icons.gd")
 const Locale = preload("res://presentation/ui/ui_locale.gd")
+const MountPicker = preload("res://presentation/ui/mount_picker.gd")
 const Catalog = preload("res://modules/caravan/wagon_catalog.gd")
 const Factory = preload("res://modules/caravan/wagon_factory.gd")
 const ModelPreview = preload("res://presentation/ui/item_model_preview.gd")
@@ -22,7 +23,11 @@ var tab := "wagons"
 var tabs: HBoxContainer
 var close_button: Button
 var equipment_wagon_id := ""
+var selected_mounts: Dictionary = {}
+var _customization_category := "tires"
+var _equipment_type := "cargo_rack"
 var purchase_notice := ""
+var _margins: MarginContainer
 var _scroll: ScrollContainer
 var _rendered_tab := ""
 var item_preview_pip
@@ -35,6 +40,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	color = Fieldwork.BG
 	var margins := MarginContainer.new()
+	_margins = margins
 	margins.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
 		margins.add_theme_constant_override("margin_" + side, 14)
@@ -87,13 +93,15 @@ func _refresh() -> void:
 			child.queue_free()
 	close_button.text = words("ЗАКРЫТЬ [ESC]", "CLOSE [ESC]")
 	heading.text = words("БАЗА  |  Кредиты %d  |  Лом %d", "BASE  |  Credits %d  |  Vault scrap %d") % [credits, scrap]
-	var tab_ids: Array[String] = ["wagons", "shop", "crew"]
+	var tab_ids: Array[String] = ["wagons", "shop", "customization"]
+	if not embedded:
+		tab_ids.append("crew")
 	if not equipment_wagon_id.is_empty() and not state.get("active", false):
 		tab_ids.insert(2, "equipment")
 	for id: String in tab_ids:
-		var captions := {"wagons": words("МОЙ СОСТАВ", "MY CONVOY"), "shop": words("ТОРГОВЛЯ", "TRADE"), "crew": words("ЭКИПАЖ", "CREW"), "equipment": words("ОБОРУДОВАНИЕ", "EQUIPMENT")}
+		var captions := {"wagons": words("МОЙ СОСТАВ", "MY CONVOY"), "shop": words("ТОРГОВЛЯ", "TRADE"), "crew": words("ЭКИПАЖ", "CREW"), "equipment": words("ОБОРУДОВАНИЕ", "EQUIPMENT"), "customization": words("ТЮНИНГ", "CUSTOMIZE")}
 		var button := Styles.button(captions[id])
-		Icons.apply(button, {"wagons": "base", "shop": "trade", "crew": "crew", "equipment": "armory"}[id])
+		Icons.apply(button, {"wagons": "base", "shop": "trade", "crew": "crew", "equipment": "armory", "customization": "settings"}[id])
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.set_meta("caravan_tab", id)
 		button.disabled = tab == id
@@ -114,6 +122,7 @@ func _refresh() -> void:
 		instruction = words("Вы в рейде. Купить и прицепить новые прицепы можно после эвакуации, в гараже на базе.", "You are in a raid. Extract first to buy and attach trailers in the base garage.")
 	var info := Styles.label(instruction, 14)
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.visible = tab == "shop" or tab == "crew" or state.get("active", false)
 	content.add_child(info)
 	if not purchase_notice.is_empty():
 		var confirmation := Styles.label(purchase_notice, 16)
@@ -129,6 +138,8 @@ func _refresh() -> void:
 		_shop()
 	elif tab == "equipment":
 		_equipment()
+	elif tab == "customization":
+		_customization()
 	else:
 		_crew()
 
@@ -214,7 +225,7 @@ func _wagons() -> void:
 	if active:
 		_action(pickup, words("ОБОРУДОВАНИЕ ПИКАПА", "EQUIP PICKUP"), "configure_wagon", "crawler")
 	else:
-		pickup.add_child(Styles.label(words("Оружие пикапа: Арсенал [B] в рейде.", "Pickup weapons: Armory [B] during a raid."), 14))
+		_action(pickup, words("НАСТРОИТЬ ПИКАП", "CUSTOMIZE PICKUP"), "customize_pickup", "crawler")
 	if owned.is_empty():
 		var empty := _row(words("Прицепов пока нет", "No trailers yet"), words("Купите первый прицеп за кредиты на базе. Он сразу добавится в конец состава.", "Buy your first trailer with base credits. It joins the back of your convoy automatically."))
 		var buy := Styles.button(words("ВЫБРАТЬ ПЕРВЫЙ ПРИЦЕП", "CHOOSE YOUR FIRST TRAILER"))
@@ -292,35 +303,134 @@ func _equipment() -> void:
 		occupied[int(entry.slot)] = {"name": Catalog.ATTACHMENTS[entry.type]["name" if Locale.language == "ru" else "name_en"], "attachment": true, "refund": int(Catalog.ATTACHMENTS[entry.type].cost) / 2}
 	for module: Dictionary in saved.get("modules", []):
 		occupied[int(module.get("mount", {}).get("slot", -1))] = {"name": Locale.text(str(module.get("def", {}).get("name", module.get("type", ""))))}
-	var mount_grid := GridContainer.new()
-	mount_grid.columns = 3
-	mount_grid.add_theme_constant_override("h_separation", 10)
-	content.add_child(mount_grid)
 	var next_free := -1
-	for slot in 3:
-		var mount := _row(words("Крепление %d", "Mount %d") % (slot + 1), str(occupied[slot].name) if occupied.has(slot) else words("Свободно", "Empty"), mount_grid)
-		if not occupied.has(slot) and next_free < 0:
+	var slots := {}
+	for slot in int(Factory.create(saved.type, saved.id, saved).slotCount):
+		if occupied.has(slot):
+			slots[slot] = str(occupied[slot].name)
+		elif next_free < 0:
 			next_free = slot
-		if occupied.has(slot) and occupied[slot].get("attachment", false):
-			_action(mount, words("СНЯТЬ · +%d КР.", "REMOVE · +%d CR") % occupied[slot].refund, "remove_attachment", equipment_wagon_id, str(slot))
-	var target := words("Выберите оборудование ниже. Покупка установит его на крепление %d.", "Choose equipment below. Purchase installs it on mount %d.") % (next_free + 1) if next_free >= 0 else words("Все крепления заняты. Снимите оборудование, чтобы установить другое.", "All mounts are occupied. Remove equipment to install another item.")
-	var hint := Styles.label(target + "\n" + words("Станции усиливают соответствующего члена экипажа. Оружие ставится в Арсенале во время рейда.", "Stations improve their matching crew member. Fit weapons in the Armory during a raid."), 14)
+	var selected := int(selected_mounts.get(equipment_wagon_id, next_free if next_free >= 0 else 0))
+	selected_mounts[equipment_wagon_id] = selected
+	var picker := MountPicker.new()
+	content.add_child(picker)
+	picker.display(int(Factory.create(saved.type, saved.id, saved).slotCount), slots, selected)
+	picker.selected.connect(func(slot: int) -> void: action_requested.emit("select_mount", equipment_wagon_id, str(slot)))
+	var mount := HBoxContainer.new()
+	content.add_child(mount)
+	var mount_title := Styles.label(words("Крепление %d: ", "Mount %d: ") % (selected + 1) + (str(occupied[selected].name) if occupied.has(selected) else words("Свободно", "Empty")), 14)
+	mount_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	mount.add_child(mount_title)
+	if occupied.has(selected) and occupied[selected].get("attachment", false):
+		_action(mount, words("СНЯТЬ · +%d КР.", "REMOVE · +%d CR") % occupied[selected].refund, "remove_attachment", equipment_wagon_id, str(selected))
+	var hint := Styles.label(words("Оружие: Арсенал в рейде. * Занятое крепление.", "Weapons: Armory during a raid. * Occupied mount."), 12)
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	content.add_child(hint)
-	var grid := _grid()
-	for row: Dictionary in state.get("attachment_rows", {}).get(equipment_wagon_id, []):
+	var rows: Array = state.get("attachment_rows", {}).get(equipment_wagon_id, [])
+	var choices := OptionButton.new()
+	choices.custom_minimum_size.y = 36
+	choices.set_meta("equipment_catalog", true)
+	for row: Dictionary in rows:
 		var definition: Dictionary = Catalog.ATTACHMENTS[row.type]
-		var description := _attachment_description(str(row.type))
-		var column := _row(definition["name" if Locale.language == "ru" else "name_en"], description, grid, "attachment", str(row.type))
+		choices.add_item(str(definition["name" if Locale.language == "ru" else "name_en"]) + " · %d " % int(row.cost) + words("кр.", "cr"))
+		choices.set_item_metadata(choices.item_count - 1, str(row.type))
+		if str(row.type) == _equipment_type:
+			choices.select(choices.item_count - 1)
+	choices.item_selected.connect(func(index: int) -> void: select_equipment(str(choices.get_item_metadata(index))))
+	content.add_child(choices)
+	for row: Dictionary in rows:
+		var definition: Dictionary = Catalog.ATTACHMENTS[row.type]
+		var column := HBoxContainer.new()
+		column.add_theme_constant_override("separation", 12)
+		column.visible = str(row.type) == _equipment_type
+		content.add_child(column)
+		var thumbnail := ModelPreview.new()
+		thumbnail.custom_minimum_size = Vector2(56, 54)
+		thumbnail.set_preview("attachment", str(row.type))
+		column.add_child(thumbnail)
+		var labels := VBoxContainer.new()
+		labels.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		column.add_child(labels)
+		labels.add_child(Styles.label(str(definition["name" if Locale.language == "ru" else "name_en"]), 16))
+		var description := Styles.label(_attachment_description(str(row.type)), 14)
+		description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		labels.add_child(description)
 		var installed: bool = saved.get("attachments", []).any(func(entry: Dictionary) -> bool: return entry.type == row.type)
 		var caption := words("УСТАНОВИТЬ · %d КР.", "INSTALL · %d CR") % row.cost
 		if installed:
 			caption = words("УСТАНОВЛЕНО", "INSTALLED")
-		elif next_free < 0:
-			caption = words("НЕТ СВОБОДНОГО КРЕПЛЕНИЯ", "NO EMPTY MOUNT")
+		elif occupied.has(selected):
+			caption = words("КРЕПЛЕНИЕ ЗАНЯТО", "MOUNT OCCUPIED")
 		elif credits < int(row.cost):
 			caption = words("НЕ ХВАТАЕТ %d КР.", "NEED %d MORE CR") % (int(row.cost) - credits)
 		_action(column, caption, "install_attachment", str(row.id), "", not row.get("enabled", false))
+
+func select_equipment(type: String) -> void:
+	_equipment_type = type
+	_refresh()
+
+func _customization() -> void:
+	var customization: Dictionary = state.get("customization", {})
+	content.add_child(Styles.label(words("Пикап: внешний вид и оснащение", "Pickup appearance and equipment"), 18))
+	var page := HBoxContainer.new()
+	page.add_theme_constant_override("separation", 16)
+	content.add_child(page)
+	var preview := ModelPreview.new()
+	preview.custom_minimum_size = Vector2(190, 160)
+	preview.set_customization(customization.get("selected", {}))
+	preview.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	preview.set_preview("vehicle", "crawler")
+	page.add_child(preview)
+	var details := VBoxContainer.new()
+	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	details.add_theme_constant_override("separation", 10)
+	page.add_child(details)
+	var categories := OptionButton.new()
+	categories.custom_minimum_size.y = 36
+	var titles := {"tires": words("Шины", "Tires"), "fog_lamps": words("Освещение", "Lighting"), "paint": words("Окраска", "Paint"), "emblem": words("Знак", "Emblem"), "builds": words("Сохранённые сборки", "Saved builds")}
+	for category: String in titles:
+		categories.add_item(titles[category])
+		categories.set_item_metadata(categories.item_count - 1, category)
+		if category == _customization_category:
+			categories.select(categories.item_count - 1)
+	categories.item_selected.connect(func(index: int) -> void: _customization_category = str(categories.get_item_metadata(index)); _refresh())
+	details.add_child(categories)
+	if _customization_category == "builds":
+		var explanation := Styles.label(words("Состав, экипаж и тюнинг. Оборудование остаётся на своих прицепах.", "Convoy, crew and customization. Equipment stays on its trailers."), 14)
+		explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		details.add_child(explanation)
+		for build: Dictionary in customization.get("builds", []):
+			var line := HBoxContainer.new()
+			details.add_child(line)
+			var name: String = str(build.get("name", ""))
+			var title := Styles.label(name if not name.is_empty() else words("Сборка %d", "Build %d") % (int(build.slot) + 1), 14)
+			title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			line.add_child(title)
+			_action(line, words("СОХРАНИТЬ", "SAVE"), "save_build", str(build.slot), "", state.get("active", false))
+			_action(line, words("ПРИМЕНИТЬ", "APPLY"), "apply_build", str(build.slot), "", state.get("active", false) or not build.get("available", false))
+		return
+	for row: Dictionary in customization.get("rows", []):
+		if str(row.category) != _customization_category:
+			continue
+		var line := VBoxContainer.new()
+		line.add_theme_constant_override("separation", 4)
+		details.add_child(line)
+		var heading_row := HBoxContainer.new()
+		line.add_child(heading_row)
+		var title := Styles.label(str(row.get("label", row.id) if Locale.language == "ru" else row.get("name_en", row.id)), 14)
+		title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		heading_row.add_child(title)
+		var selected: bool = row.get("selected", false)
+		var fog_toggle: bool = row.category == "fog_lamps" and selected
+		var caption := words("ВЫКЛЮЧИТЬ", "TURN OFF") if fog_toggle else words("ВЫБРАНО", "SELECTED") if selected else words("ВЫБРАТЬ", "SELECT") if row.get("owned", false) else words("КУПИТЬ · %d КР.", "BUY · %d CR") % int(row.get("cost", 0))
+		_action(heading_row, caption, "select_customization" if row.get("owned", false) else "purchase_customization", "none" if fog_toggle else str(row.id), str(row.category), not row.get("enabled", false) or (selected and not fog_toggle))
+		var description: String = str(row.get("description", "") if Locale.language == "ru" else row.get("description_en", ""))
+		if not row.get("owned", false) and int(row.get("cost", 0)) > credits:
+			description += " " + words("Не хватает %d кр.", "Need %d more credits.") % (int(row.cost) - credits)
+		var detail := Styles.label(description, 14)
+		detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		line.add_child(detail)
+		details.add_child(HSeparator.new())
 
 func _attachment_description(type: String) -> String:
 	var descriptions := {
@@ -388,6 +498,8 @@ func set_embedded(value: bool) -> void:
 	embedded = value
 	if is_instance_valid(top):
 		top.visible = not value
+		for side in ["left", "right", "top", "bottom"]:
+			_margins.add_theme_constant_override("margin_" + side, 0 if value else 14)
 
 func _crew_state(value: String) -> String:
 	var labels := {"boarded": ["На борту", "On board"], "repairing": ["Ремонтирует", "Repairing"], "shooting": ["Стреляет", "Firing"], "reloading": ["Заряжает", "Reloading"], "collecting": ["Идёт за добычей", "Collecting loot"], "returning": ["Возвращается", "Returning"], "waiting_carrier": ["Нужно новое место", "Needs a new assignment"], "cargo_full": ["Ждёт разгрузки у борта", "Waiting to unload"], "dead": ["Погиб", "Dead"], "airborne": ["Поднят торнадо", "Airborne"], "blocked": ["Путь перекрыт", "Route blocked"], "waiting_weapon": ["Ожидает оружие", "Waiting for weapon"], "stranded": ["Ждёт спасения", "Awaiting rescue"], "approaching": ["Идёт к вагону", "Walking to wagon"], "boarding": ["Залезает на борт", "Climbing aboard"]}

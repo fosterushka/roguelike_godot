@@ -3,6 +3,7 @@ extends ColorRect
 const Fieldwork = preload("res://presentation/ui/fieldwork_tokens.gd")
 
 signal action_requested(kind: String, id: String)
+signal supplies_transfer_requested(kind: String, id: String, quantity: int)
 signal closed
 signal shake_changed(value: float)
 
@@ -28,6 +29,9 @@ var mission_board: VBoxContainer
 var item_preview_pip
 var _trade_mode := "buy"
 var _trader_id := "mechanic"
+var _transfer_quantity := 1
+var _selected_supply := "repair_kit"
+var _supply_detail: Label
 
 static func words(ru: String, en: String) -> String:
 	return ru if Locale.language == "ru" else en
@@ -76,6 +80,9 @@ func _ready() -> void:
 	mission_board = preload("res://presentation/ui/mission_board.gd").new()
 	mission_board.action_requested.connect(func(kind: String, id: String) -> void: action_requested.emit(kind, id))
 	column.add_child(mission_board)
+	_supply_detail = Styles.label("", 14)
+	_supply_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(_supply_detail)
 	mission_board.visible = false
 	visible = false
 
@@ -96,6 +103,8 @@ func show_state(value: Dictionary, initial_tab := "") -> void:
 	refresh()
 
 func refresh() -> void:
+	var focused := get_viewport().gui_get_focus_owner()
+	var focus_key := str(focused.get_meta("supply_focus", "")) if focused != null else ""
 	if item_preview_pip:
 		item_preview_pip.hide_preview()
 	set_embedded(_embedded)
@@ -107,6 +116,7 @@ func refresh() -> void:
 		for child in parent.get_children():
 			parent.remove_child(child)
 			child.queue_free()
+	_supply_detail.visible = tab in ["stash", "loadout"]
 	var raid := bool(state.get("active", false))
 	heading.text = "%s  |  LV %d  |  XP %d / %d  |  %s %d" % [words("КАРАВАН / УБЕЖИЩЕ", "CARAVAN / HIDEOUT"), state.get("level", 1), state.get("xp", 0), state.get("xp_next", 100), words("КРЕДИТЫ", "CREDITS"), state.get("credits", 0)]
 	var choices := {"backpack": words("ГРУЗ", "CARGO"), "quests": words("ЗАДАНИЯ", "TASKS"), "settings": words("КАМЕРА", "CAMERA")} if raid else {"stash": words("СКЛАД", "VAULT"), "loadout": words("СНАРЯЖЕНИЕ", "LOADOUT"), "trade": words("ТОРГОВЕЦ", "TRADER"), "quests": words("ЗАДАНИЯ", "TASKS"), "upgrades": words("ПРОКАЧКА", "UPGRADES"), "settings": words("КАМЕРА", "CAMERA")}
@@ -132,8 +142,12 @@ func refresh() -> void:
 		notice.text = words("Эвакуируйтесь или одержите финальную победу, чтобы сохранить прогресс. Одновременно до 5 заданий.", "Extract or win the final battle to save progress. Track up to 5 tasks at once.")
 	if not str(state.get("notice", "")).is_empty():
 		notice.text += "\n" + Locale.text(str(state.notice))
+	if tab in ["stash", "loadout"]:
+		notice.text = "" if str(state.get("notice", "")) == "Сохранено." else Locale.text(str(state.get("notice", "")))
+	notice.visible = not notice.text.is_empty()
 	if state.get("storage_status", "ready") in ["unsaved", "read-only-future", "unavailable"]:
 		notice.text += "\n" + words("Не удалось сохранить профиль. Операция отменена.", "Profile could not be saved. Transaction cancelled.")
+		notice.show()
 	body.get_parent().visible = tab != "quests"
 	mission_board.visible = tab == "quests"
 	match tab:
@@ -143,6 +157,8 @@ func refresh() -> void:
 		"quests": _quests()
 		"upgrades": _upgrades()
 		"settings": _settings()
+	if not focus_key.is_empty():
+		_restore_supply_focus.call_deferred(focus_key)
 
 func item_name(id: String) -> String:
 	return preload("res://modules/meta/expedition_catalog.gd").item_name(id, Locale.language)
@@ -202,23 +218,119 @@ func _row(title: String, detail: String, actions: Array, icon_key: String = "sta
 		line.add_child(button)
 
 func _supplies() -> void:
-	var outer := body
+	var toolbar := HBoxContainer.new()
+	toolbar.add_theme_constant_override("separation", 12)
+	body.add_child(toolbar)
+	var capacity_label := Styles.label(words("Припасы: %d / %d мест", "Packed: %d / %d spaces") % [state.get("used", 0), state.get("capacity", 0)], 16)
+	capacity_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	toolbar.add_child(capacity_label)
+	toolbar.add_child(Styles.label(words("За раз", "Quantity"), 14))
+	var quantity := SpinBox.new()
+	quantity.custom_minimum_size = Vector2(84, 36)
+	quantity.min_value = 1
+	quantity.max_value = maxi(1, int(state.get("capacity", 1)))
+	quantity.step = 1
+	quantity.value = _transfer_quantity
+	quantity.get_line_edit().set_meta("supply_focus", "quantity")
+	quantity.set_meta("supply_quantity", true)
+	quantity.value_changed.connect(func(value: float) -> void: _transfer_quantity = int(value); refresh.call_deferred())
+	toolbar.add_child(quantity)
+	var refill: Dictionary = state.get("refill", {})
+	var repeat := Styles.button(words("ПОВТОРИТЬ ПРИПАСЫ", "REFILL LAST SUPPLIES"))
+	repeat.disabled = not refill.get("enabled", false)
+	repeat.set_meta("expedition_action", "refill_supplies:")
+	repeat.set_meta("supply_focus", "refill")
+	repeat.pressed.connect(func() -> void: action_requested.emit("refill_supplies", ""))
+	toolbar.add_child(repeat)
+	var reason := _supply_reason(str(refill.get("reason", "no_previous")))
+	if not reason.is_empty():
+		var explanation := Styles.label(reason, 12)
+		Styles.muted(explanation)
+		body.add_child(explanation)
 	var columns := HBoxContainer.new()
+	columns.set_meta("supplies_columns", true)
 	columns.add_theme_constant_override("separation", 16)
-	outer.add_child(columns)
+	body.add_child(columns)
 	for container: String in ["stash", "loadout"]:
-		var surface := PanelContainer.new()
-		surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		surface.add_theme_stylebox_override("panel", Styles.panel_style())
-		columns.add_child(surface)
 		var list := VBoxContainer.new()
 		list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		list.add_theme_constant_override("separation", 8)
-		surface.add_child(list)
-		body = list
-		body.add_child(Styles.label(words("Склад базы", "Base storage") if container == "stash" else words("В следующий рейд", "Next raid"), 20))
-		_inventory(container)
-	body = outer
+		list.add_theme_constant_override("separation", 4)
+		columns.add_child(list)
+		list.add_child(Styles.label(words("Склад базы", "Base storage") if container == "stash" else words("В следующий рейд", "Next raid"), 18))
+		var inventory: Dictionary = state.get(container, {})
+		if inventory.is_empty():
+			list.add_child(Styles.label(words("Пока пусто", "Nothing packed yet"), 14))
+		for id: String in inventory:
+			_supply_row(list, container, id, int(inventory[id]))
+	_select_supply(_selected_supply)
+
+func _supply_row(parent: Node, container: String, id: String, count: int) -> void:
+	var row := HBoxContainer.new()
+	row.custom_minimum_size.y = 40
+	row.add_theme_constant_override("separation", 6)
+	parent.add_child(row)
+	var thumbnail := ModelPreview.new()
+	thumbnail.custom_minimum_size = Vector2(28, 36)
+	thumbnail.set_preview("loot", id)
+	row.add_child(thumbnail)
+	var name_button := Styles.button("%s × %d" % [item_name(id), count])
+	name_button.flat = true
+	name_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	name_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_button.add_theme_font_size_override("font_size", 14)
+	name_button.clip_text = true
+	name_button.tooltip_text = item_name(id)
+	name_button.set_meta("supply_focus", "item:" + container + ":" + id)
+	name_button.pressed.connect(func() -> void: _select_supply(id))
+	row.add_child(name_button)
+	var definition: Dictionary = state.get("items", {}).get(id, {})
+	if not definition.get("usable", false):
+		return
+	var kind := "equip" if container == "stash" else "unequip"
+	var offer: Dictionary = state.get("transfers", {}).get(kind, {}).get(id, {})
+	var maximum := int(offer.get("maximum", 0))
+	var key := kind + ":" + id
+	var transfer := Styles.button(words("В рейд →", "Pack →") if kind == "equip" else words("← Склад", "← Store"))
+	transfer.custom_minimum_size = Vector2(80, 36)
+	transfer.add_theme_font_size_override("font_size", 14)
+	transfer.disabled = maximum < _transfer_quantity
+	transfer.set_meta("expedition_action", key)
+	transfer.set_meta("supply_focus", "transfer:" + key)
+	transfer.pressed.connect(func() -> void: supplies_transfer_requested.emit(kind, id, _transfer_quantity))
+	row.add_child(transfer)
+	if maximum < _transfer_quantity:
+		var reason := Styles.label(_supply_reason(str(offer.get("reason", "unavailable"))) if maximum == 0 else words("Можно перенести: %d", "Can transfer: %d") % maximum, 12)
+		reason.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		parent.add_child(reason)
+
+func _select_supply(id: String) -> void:
+	_selected_supply = id
+	if not is_instance_valid(_supply_detail):
+		return
+	var definition: Dictionary = state.get("items", {}).get(id, {})
+	_supply_detail.text = item_name(id) + ": " + Locale.text(str(definition.get("description", ""))) if not definition.is_empty() else ""
+
+func _supply_reason(reason: String) -> String:
+	match reason:
+		"full": return words("Нет свободного места. Уберите часть припасов.", "No space. Store some supplies first.")
+		"empty": return words("Нет на складе.", "None in storage.")
+		"no_previous": return words("После первого выезда здесь можно повторить его припасы.", "After your first departure, refill its supplies here.")
+		"ready": return words("Припасы прошлого выезда уже собраны.", "Last raid supplies are already packed.")
+		"missing_stock": return words("Для повтора не хватает предметов на складе.", "Storage is missing items needed for the last loadout.")
+		"unavailable": return words("Перенос недоступен.", "Transfer unavailable.")
+	return ""
+
+func _restore_supply_focus(key: String) -> void:
+	if not is_inside_tree():
+		return
+	var controls: Array[Node] = [body]
+	while not controls.is_empty():
+		var node := controls.pop_back() as Node
+		if node is Control and str(node.get_meta("supply_focus", "")) == key:
+			if not node is Button or not node.disabled:
+				node.grab_focus()
+			return
+		controls.append_array(node.get_children())
 
 func _inventory(container: String) -> void:
 	var items: Dictionary = state.get(container, {})

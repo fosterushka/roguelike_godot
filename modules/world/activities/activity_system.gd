@@ -20,6 +20,9 @@ var _extraction_attempt := 0
 var events: Array[Dictionary] = []
 var _villages: Dictionary = {}
 var _village_props: Dictionary = {}
+var _primary_id := ""
+var _aftermath: Dictionary = {}
+const NEED_THRESHOLD := 0.45
 
 func setup(runtime: Node3D) -> void:
 	world = runtime
@@ -36,6 +39,8 @@ func setup(runtime: Node3D) -> void:
 func reset(seed_value: int) -> void:
 	cancel_all("run reset")
 	records.clear()
+	_primary_id = ""
+	_aftermath.clear()
 	participants.clear()
 	credits = 0
 	next_sequence = 1
@@ -330,6 +335,9 @@ func finish(record: Dictionary, outcome: String, reason: String = "") -> bool:
 		world.combat.model.player.coins += int(record.reward)
 		world.combat.model.player.xp += maxi(1, roundi(float(record.reward) * 0.6))
 		record.reward_info = _apply_route_reward(str(record.type))
+		if record.type in ["settlementDistress", "raiderSupplyConvoy"]:
+			var key := str(record.source_id) if record.type == "settlementDistress" else str(record.id)
+			_aftermath[key] = {"id": key, "type": record.type, "position": record.position, "reward_info": record.reward_info.duplicate(true), "service_used": bool(_aftermath.get(key, {}).get("service_used", false))}
 		world.combat.model.events.append({"kind": "activity_completed", "id": "%d:%s" % [world.combat.model.generation, record.id], "generation": world.combat.model.generation, "activity_type": record.type, "weather": world.weather.phase.type, "position": record.position, "loot_source": Rules.LOOT_SOURCES[record.type], "loot_count": 2 if record.type == "raiderSupplyConvoy" else 1, "reward_info": record.reward_info})
 	for id in record.participant_ids:
 		var enemy: Dictionary = participants.get(id, {})
@@ -343,9 +351,7 @@ func _apply_route_reward(type: String) -> Dictionary:
 	var player: Dictionary = world.combat.model.player
 	var reward := {"repair": 0.0, "fuel": 0.0, "blueprint": "", "reward_label": Rules.REWARD_LABELS[type]}
 	if type == "settlementDistress":
-		reward.repair = minf(world.vehicle.max_health - world.vehicle.health, world.vehicle.max_health * 0.35)
-		world.vehicle.health += reward.repair
-		player.hp = world.vehicle.health
+		reward.repair = _repair_hull()
 	elif type == "scavengerRoute":
 		reward.fuel = minf(world.vehicle.max_fuel - world.vehicle.fuel, 25.0)
 		world.vehicle.fuel += reward.fuel
@@ -504,9 +510,69 @@ func get_state() -> Dictionary:
 		if record.state in Rules.LIVE:
 			live.append(record.duplicate(true))
 	live.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return (a.type in Rules.MAJOR) and not (b.type in Rules.MAJOR))
-	return {"available": true, "records": live, "current": live[0] if not live.is_empty() else {}, "credits": credits}
+	var aftermath := _aftermath.values().filter(func(site: Dictionary) -> bool: return site.type != "settlementDistress" or village_eligible(str(site.id)))
+	return {"available": true, "records": live, "current": live[0] if not live.is_empty() else {}, "primary": _primary_destination(live), "repair_service": get_repair_service(), "aftermath": aftermath.duplicate(true), "credits": credits}
 
 func drain_events() -> Array[Dictionary]:
 	var result := events.duplicate()
 	events.clear()
 	return result
+
+# Keep one reachable destination stable until it ends; only a new choice uses current needs.
+func _primary_destination(live: Array) -> Dictionary:
+	var candidates: Array = live.filter(func(record: Dictionary) -> bool: return reachable(record.position))
+	var selected: Dictionary = {}
+	for record: Dictionary in candidates:
+		if record.id == _primary_id:
+			selected = record
+	if selected.is_empty():
+		var preferred := "scavengerRoute" if world.vehicle.fuel / maxf(world.vehicle.max_fuel, 1.0) < NEED_THRESHOLD else "settlementDistress" if world.vehicle.health / maxf(world.vehicle.max_health, 1.0) < NEED_THRESHOLD else ""
+		candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+			if (a.type == preferred) != (b.type == preferred):
+				return a.type == preferred
+			return a.position.distance_squared_to(world.vehicle.global_position) < b.position.distance_squared_to(world.vehicle.global_position))
+		if not candidates.is_empty():
+			selected = candidates[0]
+	_primary_id = str(selected.get("id", ""))
+	if selected.is_empty() or extraction.active:
+		return {}
+	var destination := selected.duplicate(true)
+	destination.distance = selected.position.distance_to(world.vehicle.global_position)
+	destination.remaining_seconds = maxf(0.0, float(selected.expires_at) - elapsed)
+	return destination
+
+func _repair_hull() -> float:
+	var amount := minf(world.vehicle.max_health - world.vehicle.health, world.vehicle.max_health * Rules.SETTLEMENT_REPAIR_RATIO)
+	world.vehicle.health += amount
+	world.combat.model.player.hp = world.vehicle.health
+	return amount
+
+func get_repair_service() -> Dictionary:
+	if extraction.active:
+		return {}
+	var nearest: Dictionary = {}
+	var distance := INF
+	for site: Dictionary in _aftermath.values():
+		if site.type != "settlementDistress" or not village_eligible(str(site.id)):
+			continue
+		var candidate: float = Vector2(site.position.x - world.vehicle.global_position.x, site.position.z - world.vehicle.global_position.z).length()
+		if candidate > Rules.REPAIR_SERVICE_RADIUS or candidate >= distance:
+			continue
+		distance = candidate
+		nearest = site
+	if nearest.is_empty():
+		return {}
+	return {"id": nearest.id, "position": nearest.position, "distance": distance,
+		"mode": "used" if nearest.service_used else "full" if world.vehicle.health >= world.vehicle.max_health else "ready",
+		"amount": minf(world.vehicle.max_health - world.vehicle.health, world.vehicle.max_health * Rules.SETTLEMENT_REPAIR_RATIO)}
+
+func request_repair() -> bool:
+	if not world.running or not world.combat.model.running or world.get_tree().paused or world.vehicle.health <= 0.0 or world.combat.model.player.hp <= 0.0 or extraction.active:
+		return false
+	var service := get_repair_service()
+	if service.is_empty() or service.mode != "ready":
+		return false
+	_aftermath[service.id].service_used = true
+	var amount := _repair_hull()
+	events.append({"kind": "settlement_repaired", "id": service.id, "position": service.position, "repair": amount})
+	return true

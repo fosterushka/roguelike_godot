@@ -30,6 +30,7 @@ var _elapsed := 0.0
 var _player: Dictionary = {}
 var _body := {"last_speed": 0.0, "pitch": 0.0, "roll": 0.0, "impact_pitch": 0.0, "impact_roll": 0.0, "elapsed": 0.0, "bob": 0.0, "speed_amount": 0.0, "wheel_angle": 0.0, "wheel_phase": 0.0}
 var _view_position := Vector3.ZERO
+var _departure_offset := Vector3.ZERO
 
 func _ready() -> void:
 	_model = WheeledRig.build_player()
@@ -52,6 +53,7 @@ func set_aim(target: Vector3) -> void:
 
 func apply_player_state(player: Dictionary, generation: int) -> void:
 	_player = player
+	WheeledRig.customize(_model, player.get("customization", {}))
 	if generation != _generation:
 		_generation = generation
 		for module: Node3D in _modules.values():
@@ -89,8 +91,12 @@ func apply_player_state(player: Dictionary, generation: int) -> void:
 			trailer.set_meta("pose", {"x": trailer.global_position.x, "z": trailer.global_position.z, "heading": trailer.global_rotation.y})
 			_trailers[carrier.id] = trailer
 		leader = _trailers[carrier.id]
+		# Retain the last authoritative carrier object for the result presentation.
+		# Successful saving clears the roster array, but its attached/dead state and
+		# installed gear must remain visible until this generation's views are freed.
+		leader.set_meta("carrier_state", carrier)
 		leader.global_basis = Basis(Vector3.UP, leader.global_rotation.y).scaled(Vector3.ONE * float(player.get("visual_scale", 0.88)))
-	_sync_attachments(player)
+	_sync_attachments()
 	var current: Dictionary = {}
 	for module: Dictionary in player.get("modules", []):
 		var mount: Dictionary = module.get("mount", {"carrierId": "crawler", "slot": 0})
@@ -195,9 +201,11 @@ func render_interpolated(fraction: float) -> void:
 		return
 	_rendered_pose = Pose.interpolate(_previous_pose, _current_pose, fraction)
 	global_transform = Pose.transform(_rendered_pose)
+	global_position += _departure_offset
 	_view_position = global_position
 	_suspension = _rendered_pose.suspension
-	WheeledRig.animate(_model, _suspension, _rendered_pose.steer, _rendered_pose.speed, _rendered_pose.wheel_angle)
+	var departure_wheel := _departure_offset.length() / (Suspension.RADIUS * float(_player.get("visual_scale", 0.88)))
+	WheeledRig.animate(_model, _suspension, _rendered_pose.steer, _rendered_pose.speed, _rendered_pose.wheel_angle + departure_wheel)
 	var leader: Node3D = self
 	var rear_hitch := 3.78
 	for trailer: Node3D in _trailers.values():
@@ -214,9 +222,12 @@ func render_interpolated(fraction: float) -> void:
 			continue
 		var pose := Pose.interpolate(trailer.get_meta("previous_pose"), current, fraction)
 		trailer.global_transform = Pose.transform(pose)
+		var departing: bool = carrier.get("attached", true)
+		if departing:
+			trailer.global_position += _departure_offset
 		trailer.set_meta("rendered_pose", pose)
 		var rig: Node3D = trailer.get_child(0)
-		WheeledRig.animate(rig, pose.suspension, pose.steer, pose.speed, pose.wheel_angle, true)
+		WheeledRig.animate(rig, pose.suspension, pose.steer, pose.speed, pose.wheel_angle + (departure_wheel if departing else 0.0), true)
 		var drawbar: Node3D = rig.get_meta("drawbar")
 		drawbar.visible = not canonical or carrier.get("attached", true)
 		if not drawbar.visible:
@@ -288,17 +299,17 @@ func get_weapon_origin(weapon: Dictionary) -> Vector3:
 func get_render_pose() -> Dictionary:
 	return _rendered_pose
 
-func _carrier_for(trailer: Node3D) -> Dictionary:
-	for carrier: Dictionary in _player.get("carriers", []):
-		if _trailers.get(carrier.id) == trailer:
-			return carrier
-	return {}
+func set_departure_offset(offset: Vector3) -> void:
+	_departure_offset = offset
+	render_interpolated(1.0)
 
-func _sync_attachments(player: Dictionary) -> void:
+func _carrier_for(trailer: Node3D) -> Dictionary:
+	return trailer.get_meta("carrier_state", {})
+
+func _sync_attachments() -> void:
 	var current: Dictionary = {}
-	for carrier: Dictionary in player.get("carriers", []):
-		if not _trailers.has(carrier.id):
-			continue
+	for trailer: Node3D in _trailers.values():
+		var carrier := _carrier_for(trailer)
 		for installation: Dictionary in carrier.get("attachments", []):
 			var slot := int(installation.get("slot", -1))
 			if slot < 0 or slot >= TRAILER_SLOTS.size():
